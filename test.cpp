@@ -10,7 +10,7 @@
 int main() {
 
     // --------- Setup sockets ----------------
-
+    //private:
     // structs representing an IPv4 socket address
     struct sockaddr_in server_addr;
     struct sockaddr_in client_addr;
@@ -24,8 +24,9 @@ int main() {
     // default IRC port
     int port = 6667;
 
+    //public:
     // --------- Create the server socket ----------------
-
+    //start
     // creating a socket and returns a fd
     // socket(address family for IPv4, TCP socket, default protocol)
     int server_fd = socket(AF_INET, SOCK_STREAM, 0);
