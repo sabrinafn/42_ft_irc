@@ -1,0 +1,14 @@
++--------------------+
+|      Server        |
++--------------------+
+| - SocketManager    |
+| - list<Clients>    |
+| - list<Channels>   |
+| - password         |
++--------------------+
+| + run()            |
+| + processClientIO()|
+| + dispatchCommand()|
+| + findClientByNick()|
+| + findChannelByName()|
++--------------------+

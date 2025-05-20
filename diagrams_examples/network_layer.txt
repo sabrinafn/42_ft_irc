@@ -1,0 +1,27 @@
++--------------------+
+|    SocketManager   |
++--------------------+
+| - serverSocket     |
+| - pollfds          |
+| - clients          |
++--------------------+
+| + setupServer()    |
+| + pollEvents()     |
+| + acceptClient()   |
+| + closeConnection()|
++--------------------+
+         |
+         v
++-------------------+
+|      Client       |
++-------------------+
+| - fd              |
+| - recvBuffer      |
+| - sendBuffer      |
+| - lastActivity    |
+| - isConnected     |
++-------------------+
+| + receiveData()   |
+| + sendData()      |
+| + disconnect()    |
++-------------------+
