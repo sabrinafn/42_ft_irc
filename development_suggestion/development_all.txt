@@ -1,0 +1,62 @@
+1 Core Setup
+
+ [ ] Project setup and repository initialization (Makefile, folder structure)
+ [ ] Command-line argument handling (./ircserv <port> <password>)
+ [ ] Configuration handling (optional config file if used)
+
+2 Networking and Socket Management
+
+ [ ] Socket creation and setup (IPv4 and/or IPv6)
+ [ ] Setting socket options (SO_REUSEADDR)
+ [ ] Non-blocking socket configuration (fcntl)
+ [ ] Binding and listening on a port
+ [ ] Handling client connections with poll() (or select, epoll, or kqueue)
+ [ ] Graceful connection closure and cleanup
+
+3 IRC Protocol Basics
+
+ [ ] Client authentication (password handling)
+ [ ] Nickname and username registration (NICK, USER)
+ [ ] Command parser with buffer aggregation (handles partial messages)
+ [ ] Proper response formatting according to IRC standards (RFC)
+
+4 Channel Management
+
+ [ ] JOIN / PART command handling
+ [ ] Channel creation and client registration
+ [ ] Channel broadcasting (send message to all users in a channel)
+ [ ] PRIVMSG support (direct messages and channel messages)
+
+5 Operator Features and Channel Modes
+
+ [ ] Operator privilege assignment
+ [ ] KICK - Eject a user from a channel
+ [ ] INVITE - Invite a user to a channel
+ [ ] TOPIC - Set/view channel topic
+ [ ] MODE command handling:
+  [ ] +i - Invite-only channel
+  [ ] +t - Restrict TOPIC command to operators
+  [ ] +k - Set channel key (password)
+  [ ] +o - Grant/revoke operator privileges
+  [ ] +l - Set user limit in channel
+
+6 I/O and Communication
+
+ [ ] Handle reading/writing with poll() only
+ [ ] Support partial reads and message reconstruction
+ [ ] Handle low bandwidth scenarios and buffering
+ [ ] Gracefully disconnect idle or disconnected clients
+
+7 Testing and Reliability
+
+ [ ] Compatible with a reference IRC client (e.g. WeeChat, irssi, HexChat)
+ [ ] Manual testing via nc -C 127.0.0.1 6667
+ [ ] Error handling and logging (invalid commands, disconnects, etc.)
+ [ ] Edge case testing (split messages, invalid data, flooding, etc.)
+
+8 Code Quality and Documentation
+
+ [ ] Clean, modular C++98 code
+ [ ] Proper organization of header/source files
+ [ ] Meaningful comments and documentation
+ [ ] Complete Makefile (all, clean, fclean, re)
