@@ -15,5 +15,5 @@ Client& Client::operator=(const Client &other) {
     if (this != &other) {
         (void)other;
     }
-    return this;
+    return *this;
 }

@@ -17,6 +17,6 @@ class Server {
 
         /* OPERATOR OVERLOADING */
         Server &operator=(const Server &other);
-}
+};
 
 #endif

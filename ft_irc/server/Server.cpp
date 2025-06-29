@@ -15,5 +15,5 @@ Server& Server::operator=(const Server &other) {
     if (this != &other) {
         (void)other;
     }
-    return this;
+    return *this;
 }

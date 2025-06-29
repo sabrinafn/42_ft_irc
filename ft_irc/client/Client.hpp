@@ -18,6 +18,6 @@ class Client {
         /* OPERATOR OVERLOADING */
         Client &operator=(const Client &other);
 
-}
+};
 
 #endif
