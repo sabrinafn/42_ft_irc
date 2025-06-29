@@ -4,14 +4,17 @@ CC := c++
 
 FLAGS := -Wall -Wextra -Werror -std=c++98
 
-CPPFILES := main.cpp server.cpp client.cpp
+OBJ_DIR := obj
 
-OBJFILES := $(CPPFILES:.cpp=.o)
+CPPFILES := main.cpp server/Server.cpp client/Client.cpp
+
+OBJFILES := $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(CPPFILES))
 
 all: $(NAME)
 
-%.o: %.cpp
-	$(CC) $(FLAGS) -c $<
+$(OBJ_DIR)/%.o: %.cpp
+	@mkdir -p $(dir $@)
+	$(CC) $(FLAGS) -c $< -o $@
 
 $(NAME): $(OBJFILES)
 	$(CC) $(FLAGS) $(OBJFILES) -o $(NAME)
@@ -19,8 +22,8 @@ $(NAME): $(OBJFILES)
 v:
 	valgrind --leak-check=full ./$(NAME)
 
-clean: 
-	rm -f $(OBJFILES)
+clean:
+	rm -rf $(OBJ_DIR)
 
 fclean: clean
 	rm -f $(NAME)
