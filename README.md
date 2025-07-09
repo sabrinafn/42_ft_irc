@@ -160,3 +160,21 @@ PRIVMSG #canal :Olá!
 10. **Refinar**: adicionar CI, linter e documentação final.
 
 ---
+
+### 👥 Trabalho em Equipe
+
+# 1. Convenções de Branch
+
+main: branch estável, usada para releases.
+
+dev: branch de integração contínua.
+
+feature/<nome>: branches para cada nova feature ou módulo.
+
+# 2. Papéis e Responsabilidades
+
+Part A: Infraestrutura e Loop de Eventos (Makefile, Server, poll()).
+
+Part B: Parser e CommandHandler (Parser.hpp/cpp, CommandHandler).
+
+Part C: Canal, Módulos de Canal, Utilitários e Testes.
