@@ -63,22 +63,32 @@ O **ft\_irc** é um servidor de Internet Relay Chat (IRC) compatível com o prot
 ## Estrutura do Projeto
 
 ```
-ft_irc-42sp/
-├── includes/               # Cabeçalhos (.hpp)
+ft_irc/                             # Project root
+├── include/                        # Public headers
+│   ├── ft_irc/                     # “Namespaced” headers
+│   │   ├── server/                 # server-side types & APIs
+│   │   ├── parser/                 # parsing interfaces
+│   │   ├── command/                # command handler APIs
+│   │   └── utils/                  # general-purpose utilities
+│   └── ft_irc.hpp                  # umbrella include for consumers
+├── src/                            # Implementation files
 │   ├── server/
 │   ├── parser/
 │   ├── command/
 │   └── utils/
-├── sources/                # Implementações (.cpp)
-│   ├── server/
-│   ├── parser/
-│   ├── command/
-│   └── utils/
-├── config/                 # Arquivos de configuração (ex.: motd)
-├── tests/                  # Testes manuais e scripts
-├── Makefile
-├── README.md
+├── config/                         # Runtime configuration (e.g. motd.conf)
+├── tests/                          # Automated tests & helpers
+│   ├── unit/                       # small, module-level tests
+│   └── integration/                # end-to-end scripts
+├── docs/                           # Design docs, protocol notes, RFC links
+├── scripts/                        # Helper scripts (build, test runner, lint)
+├── build/                          # Out-of-source build directory
+│   ├── bin/                        # compiled executables
+│   └── obj/                        # object files
+├── Makefile                        # Orchestrates everything under build/
+├── README.md                       # Project overview, build & usage
 └── .gitignore
+
 ```
 
 ---
@@ -220,21 +230,21 @@ Part C: Canal, Módulos de Canal, Utilitários e Testes.
 ## Part B: Parser e CommandHandler
 
 - [ ] **Parser de mensagens IRC**  
-  - [ ] Manter buffer por cliente 
-  - [ ] Acumular dados lidos até encontrar `\r\n`  
-  - [ ] Extrair linha completa e deixar resto no buffer  
+  - [ ] Manter buffer por cliente
+  - [ ] Acumular dados lidos até encontrar `\r\n`
+  - [ ] Extrair linha completa e deixar resto no buffer
   - [ ] Tokenizar: separar comando e parâmetros (até `:` final)  
-  - [ ] Tratar com espaço após `:` como único parâmetro  
+  - [ ] Tratar com espaço após `:` como único parâmetro
 
-- [ ] **Implementar comando PASS**  
-  - [ ] Validar senha recebida contra a senha do servidor  
-  - [ ] Atualizar estado de autenticação do `Client` (enum)  
-  - [ ] Enviar erro 464 “Password incorrect” se falhar  
+- [ ] **Implementar comando PASS**
+  - [ ] Validar senha recebida contra a senha do servidor
+  - [ ] Atualizar estado de autenticação do `Client` (enum)
+  - [ ] Enviar erro 464 “Password incorrect” se falhar
 
-- [ ] **Implementar comando NICK**  
-  - [ ] Validar formato de nickname (regex `[A-Za-z][A-Za-z0-9\-\[\]\\\`^{}]*`)  
-  - [ ] Rejeitar nick duplicado (broadcast 433)  
-  - [ ] Atualizar atributo `nick` do `Client`  
+- [ ] **Implementar comando NICK**
+  - [ ] Validar formato de nickname (regex `[A-Za-z][A-Za-z0-9\-\[\]\\\`^{}]*`)
+  - [ ] Rejeitar nick duplicado (broadcast 433)
+  - [ ] Atualizar atributo `nick` do `Client`
 
 - [ ] **Implementar comando USER**  
   - [ ] Verificar recebimento completo de 4 parâmetros (`username`, `mode`, `unused`, `realname`)  
