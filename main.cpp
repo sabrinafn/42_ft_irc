@@ -4,7 +4,7 @@ int main(void) {
 
     Server *server;
     
-    server->createSocket();
+    server->initServer();
 
     return 0;
 }
