@@ -1,6 +1,10 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include <iostream>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
 class Server {
 
     private:
@@ -19,9 +23,6 @@ class Server {
 
         /* DESTRUCTOR */
         ~Server(void);
-
-        /* INIT SERVER */
-        void initServer(void);
 
         /* CREATE SOCKET */
         void createSocket(void);
