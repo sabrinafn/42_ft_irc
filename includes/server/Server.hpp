@@ -11,6 +11,7 @@
 #include <fcntl.h>
 
 #include <vector>
+#include <string>
 
 class Server {
 
@@ -18,6 +19,7 @@ class Server {
         int port;
         int server_socket_fd;
         std::vector<int> clients_fd;
+        std::string data_received;
 
     public:
         /* CONSTRUCTOR */
@@ -32,8 +34,14 @@ class Server {
         /* DESTRUCTOR */
         ~Server(void);
 
+        /* INIT SERVER */
+        void initServer(void);
+
         /* CREATE SOCKET */
         void createSocket(void);
+
+        /* CONNECT TO CLIENT */
+        void connectToClient(void);
 };
 
 #endif

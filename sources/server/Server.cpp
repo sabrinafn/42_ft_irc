@@ -1,7 +1,7 @@
 #include "../includes/server/Server.hpp"
 
 /* CONSTRUCTOR */
-Server::Server(void) : port(54000), server_socket_fd(0), clients_fd(0, 0) {}
+Server::Server(void) : port(54000), server_socket_fd(0), clients_fd(0, 0), data_received("") {}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -11,12 +11,21 @@ Server &Server::operator=(const Server &other) {
     if (this != &other) {
         this->port = other.port;
         this->server_socket_fd = other.server_socket_fd;
+        this->clients_fd = other.clients_fd;
+        this->data_received = other.data_received;
     }
     return *this;
 }
 
 /* DESTRUCTOR */
 Server::~Server(void) {}
+
+/* INIT SERVER */
+void Server::initServer(void) {
+
+    createSocket();
+    connectToClient();
+}
 
 
 /* CREATE SOCKET */
@@ -65,19 +74,41 @@ void Server::createSocket(void) {
         std::cerr << "Can't listen" << std::endl;
         return;
     }
+}
 
 
+/* CONNECT TO CLIENT */
+void Server::connectToClient(void) {
 
     // accept(socket fd, socket struct new fd, socket struct size)
     struct sockaddr_in client_addr;
+
     // data type to store size of socket structures
     socklen_t client_addr_len = sizeof(client_addr);
+
     int client_one = accept(this->server_socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
     this->clients_fd.push_back(client_one);
     if (this->clients_fd[0] < 0) {
         std::cerr << "Can't connect to client" << std::endl;
         close(this->server_socket_fd);
+        close(this->clients_fd[0]);
         return ;
     }
+    char buffer[1024];
+    ssize_t bytes_read = read(this->clients_fd[0], buffer, sizeof(buffer) - 1);
+    if (bytes_read < 0) {
+        std::perror("read");
+        // Close sockets
+        close(this->clients_fd[0]);
+        close(this->clients_fd[0]);
+        return ;
+    }
+    buffer[bytes_read] = '\0';
+   
+    // print message received and stored in buffer
+    std::cout << "Received message: " << buffer << std::endl;
+    this->data_received = buffer;
 
+    close(this->clients_fd[0]);
+    close(this->server_socket_fd);
 }
