@@ -178,3 +178,109 @@ Part A: Infraestrutura e Loop de Eventos (Makefile, Server, poll()).
 Part B: Parser e CommandHandler (Parser.hpp/cpp, CommandHandler).
 
 Part C: Canal, Módulos de Canal, Utilitários e Testes.
+
+
+## Part A: Infraestrutura e Loop de Eventos
+
+- [ ] **Makefile padrão**  
+  - [ ] Definir variáveis `NAME`, `SRCDIR`, `INCDIR`, `OBJDIR`, `CXXFLAGS` (`-Wall -Wextra -Werror -std=c++98 -pedantic`)  
+  - [ ] Criar target `all` (compile e link)  
+  - [ ] Criar target `clean` (remove objetos)  
+  - [ ] Criar target `fclean` (remove objetos e binário)  
+  - [ ] Criar target `re` (fclean + all)  
+  - [ ] Criar target `style` que roda `cppcheck`/`clang-tidy`  
+
+- [ ] **Parse dos argumentos `<port> <password>`**  
+  - [ ] Verificar número de argumentos (`argc == 3`)  
+  - [ ] Converter e validar porta (inteiro entre 1024–65535)  
+  - [ ] Validar tamanho e caracteres da senha (mínimo 1, máximo 32)  
+  - [ ] Exibir mensagem de uso em caso de erro  
+
+- [ ] **Classe `Server` com socket não‐bloqueante**  
+  - [ ] Criar socket TCP (`socket(AF_INET, SOCK_STREAM, 0)`)  
+  - [ ] Setar `O_NONBLOCK` com `fcntl()`  
+  - [ ] `bind()` na porta passada  
+  - [ ] `listen()` com backlog definido (e.g. 10)  
+  - [ ] Tratar erros em cada chamada com `perror()` + exit status  
+
+- [ ] **Configuração do `poll()`**  
+  - [ ] Encapsular `std::vector<pollfd>` em classe `PollSet`  
+  - [ ] Método `add(fd)`, `remove(fd)`, `poll(timeout)`  
+  - [ ] Tratar retorno de `poll()` — distinguir `POLLIN`, `POLLHUP`, `POLLERR`  
+  - [ ] Implementar timeout global (PING/PONG, autenticação)  
+
+- [ ] **Gerenciamento de Conexões**  
+  - [ ] Ao detectar `POLLIN` no socket de escuta → `accept()`  
+  - [ ] Criar objeto `Client` e adicionar ao `PollSet`  
+  - [ ] Ao `POLLIN` em cliente → ler bytes para buffer interno  
+  - [ ] Ao `POLLHUP`/`POLLERR` → remover cliente, fechar fd, liberar recursos  
+
+---
+
+## Part B: Parser e CommandHandler
+
+- [ ] **Parser de mensagens IRC**  
+  - [ ] Manter buffer por cliente 
+  - [ ] Acumular dados lidos até encontrar `\r\n`  
+  - [ ] Extrair linha completa e deixar resto no buffer  
+  - [ ] Tokenizar: separar comando e parâmetros (até `:` final)  
+  - [ ] Tratar com espaço após `:` como único parâmetro  
+
+- [ ] **Implementar comando PASS**  
+  - [ ] Validar senha recebida contra a senha do servidor  
+  - [ ] Atualizar estado de autenticação do `Client` (enum)  
+  - [ ] Enviar erro 464 “Password incorrect” se falhar  
+
+- [ ] **Implementar comando NICK**  
+  - [ ] Validar formato de nickname (regex `[A-Za-z][A-Za-z0-9\-\[\]\\\`^{}]*`)  
+  - [ ] Rejeitar nick duplicado (broadcast 433)  
+  - [ ] Atualizar atributo `nick` do `Client`  
+
+- [ ] **Implementar comando USER**  
+  - [ ] Verificar recebimento completo de 4 parâmetros (`username`, `mode`, `unused`, `realname`)  
+  - [ ] Atualizar atributos `username` e `realname`  
+  - [ ] Após PASS+NICK+USER válidos, marcar cliente como “registered” e enviar mensagens 001–004  
+
+- [ ] **Dispatcher de comandos**  
+  - [ ] Criar interface base `ICommand { virtual void execute(Client&, Server&) = 0; }`  
+  - [ ] Mapear strings → objetos `ICommand` em `std::map<std::string, std::unique_ptr<ICommand>>`  
+  - [ ] No loop principal, para cada linha parseada → buscar e chamar `execute()`  
+
+---
+
+## Part C: Canal, Módulos de Canal, Utilitários e Testes
+
+- [ ] **Channel: modelos e operações básicas**  
+  - [ ] Classe `Channel` com nome, senha (`key`), tópico, limite (`limit`)  
+  - [ ] Containers `std::set<Client*> members`, `ops`, `invited`  
+  - [ ] Métodos `addMember()`, `removeMember()`, `broadcast()`  
+  - [ ] Gerenciar modos (`i, t, k, l, o`) com flags bitwise  
+
+- [ ] **JOIN / PRIVMSG / TOPIC**  
+  - [ ] **JOIN**: verificar modo `i` (invite), `k` (key), `l` (limit) antes de adicionar  
+  - [ ] **PRIVMSG**: destino usuário ou canal; falhar com erro 401/404 conforme necessário  
+  - [ ] **TOPIC**: se sem parâmetros → mostrar tópico; com parâmetros → somente operadores ou modo `t`  
+
+- [ ] **Comandos de Operador: KICK / INVITE / MODE**  
+  - [ ] **KICK**: remover membro, notificar canal; checar operador  
+  - [ ] **INVITE**: adicionar em `invited`, notificar convidado; checar modo `i`  
+  - [ ] **MODE**: alterar flags do canal ou do usuário; parâmetros variáveis  
+
+- [ ] **Utilitários e Protocol Helpers**  
+  - [ ] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
+  - [ ] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
+  - [ ] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
+
+- [ ] **Testes e Robustez**  
+  - [ ] Escrever scripts Bash em `tests/` para:  
+    - [ ] Autenticação completa (PASS+NICK+USER)  
+    - [ ] Fragmentação de linha (`echo -n "PRIV"; sleep 1; echo "MSG\r\n"`)  
+    - [ ] Múltiplos clientes simultâneos (loops `nc`)  
+  - [ ] Testar logs de erro e comportamentos inválidos (`NICK !nv@l!d\r\n`)  
+  - [ ] Conectar clientes reais (WeeChat/HexChat) e validar interoperabilidade  
+
+- [ ] **Extras Futuramente**  
+  - [ ] Mensagem de boas‐vindas via arquivo MOTD  
+  - [ ] Implementar QUIT, WHO, NAMES, LIST  
+
+---
