@@ -17,9 +17,8 @@ class Server {
 
     private:
         int port;
-        int server_socket_fd;
-        std::vector<int> clients_fd;
-        std::string data_received;
+        int socket_fd;
+        std::string password;
 
     public:
         /* CONSTRUCTOR */
@@ -34,14 +33,13 @@ class Server {
         /* DESTRUCTOR */
         ~Server(void);
 
-        /* INIT SERVER */
-        void initServer(void);
+        /* SETTERS */
+        void setPortNumber(int other);
+        void setServerPassword(std::string other);
 
-        /* CREATE SOCKET */
-        void createSocket(void);
-
-        /* CONNECT TO CLIENT */
-        void connectToClient(void);
+        /* GETTERS */
+        int getPortNumber(void);
+        std::string getServerPassword(void);
 };
 
 #endif
