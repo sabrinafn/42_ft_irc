@@ -9,7 +9,7 @@ BUILDDIR := build
 INCLUDEFILES := server.hpp
 INCLUDES := $(addprefix $(INCDIR)/, $(INCLUDEFILES))
 
-SRCS := $(wildcard $(SRCDIR)/**/*.cpp)
+SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 
 OBJS := $(SRCS:$(SRCDIR)/%.cpp=$(BUILDDIR)/%.o)
 
