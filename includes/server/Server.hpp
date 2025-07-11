@@ -1,17 +1,18 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-#include <iostream>
-#include <fstream>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <fcntl.h>
+#include <iostream> // std::cout, std::cerr
+#include <unistd.h> // read
+//#include <netinet/in.h> // sockaddr_in
+#include <arpa/inet.h> // htons, inet_pton
+#include <sys/socket.h> // socket, bind, listen, accept
+//#include <netdb.h>
+#include <fcntl.h> // fcntl
+#include <poll.h> // poll
+#include <vector> // std::vector
+#include <string> // std::string
 
-#include <vector>
-#include <string>
+#include "../client/Client.hpp" // client class
 
 class Server {
 
@@ -19,8 +20,8 @@ class Server {
         int port;
         int socket_fd;
         std::string password;
-        std::vector<int> clients_fd;
-        std::string data_received;
+        std::vector<Client> clients_fd;
+        std::vector<struct pollfd> pollFds;
 
     public:
         /* CONSTRUCTOR */
@@ -50,7 +51,7 @@ class Server {
         void initServer(void);
 
         /* CONNECT TO CLIENT */
-        void connectToClient(void);
+        void acceptClients(void);
 };
 
 #endif
