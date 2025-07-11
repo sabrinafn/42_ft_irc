@@ -2,7 +2,7 @@
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(0), socket_fd(0), password(""),
-    clients_fd(0, 0), pollFds(0, 0) {}
+    clients_fd(), pollFds() {}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -46,7 +46,7 @@ void Server::initServer(void) {
     createSocket();
 
     // use poll inside loop to connect and read from clients
-    acceptClients();
+    // acceptClients();
 
 }
 
@@ -117,51 +117,52 @@ void Server::createSocket(void) {
 }
 
 
-/* CONNECT TO CLIENT */
-void Server::acceptClients(void) {
-
-    while (true) {
-
-        // poll = waits for some events on a fd
-
-        struct pollfd = NULL;
-        int poll_fd = poll(fds, 1024, -1);
-        
-        for (int i = 0; i < 1024; i++) {
-            // accept(socket fd, socket struct new fd, socket struct size)
-            struct sockaddr_in client_addr;
-
-
-            // data type to store size of socket structures
-            socklen_t client_addr_len = sizeof(client_addr);
-
-
-            int client_one = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-            pollfd->fd.push_back(client_one);
-            if (pollfd->fd[i] < 0) {
-                std::cerr << "Can't connect to client" << std::endl;
-                close(this->socket_fd);
-                close(pollfd->fd[i]);
-                return ;
-            }
-            char buffer[1024];
-            ssize_t bytes_read = read(pollfd->fd[i], buffer, sizeof(buffer) - 1);
-            if (bytes_read < 0) {
-                std::perror("read");
-                // Close sockets
-                close(pollfd->fd[i]);
-                close(pollfd->fd[i]);
-                return ;
-            }
-            buffer[bytes_read] = '\0';
-
-            // print message received and stored in buffer
-            std::cout << "Received message: " << buffer << std::endl;
-
-
-            close(pollfd->fd[i]);
-            close(this->socket_fd);
-        }
-    }
-}
-
+///* CONNECT TO CLIENT */
+//void Server::acceptClients(void) {
+//
+//    while (true) {
+//
+//        // poll = waits for some events on a fd
+//
+//        struct pollfd = NULL;
+//        int poll_fd = poll(fds, 1024, -1);
+//        
+//        for (int i = 0; i < 1024; i++) {
+//            // accept(socket fd, socket struct new fd, socket struct size)
+//            struct sockaddr_in client_addr;
+//
+//
+//            // data type to store size of socket structures
+//            socklen_t client_addr_len = sizeof(client_addr);
+//
+//
+//            int client_one = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+//            pollfd->fd.push_back(client_one);
+//            if (pollfd->fd[i] < 0) {
+//                std::cerr << "Can't connect to client" << std::endl;
+//                close(this->socket_fd);
+//                close(pollfd->fd[i]);
+//                return ;
+//            }
+//            char buffer[1024];
+//            ssize_t bytes_read = read(pollfd->fd[i], buffer, sizeof(buffer) - 1);
+//            if (bytes_read < 0) {
+//                std::perror("read");
+//                // Close sockets
+//                close(pollfd->fd[i]);
+//                close(pollfd->fd[i]);
+//                return ;
+//            }
+//            buffer[bytes_read] = '\0';
+//
+//            // print message received and stored in buffer
+//            std::cout << "Received message: " << buffer << std::endl;
+//
+//
+//            close(pollfd->fd[i]);
+//            close(this->socket_fd);
+//        }
+//    }
+//}
+//
+//
