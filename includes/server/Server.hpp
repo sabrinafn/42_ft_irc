@@ -51,7 +51,7 @@ class Server {
         void initServer(void);
 
         /* CONNECT TO CLIENT */
-        void acceptClients(void);
+        //void acceptClients(void);
 };
 
 #endif
