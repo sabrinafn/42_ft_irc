@@ -43,5 +43,6 @@ int main(int ac, char **av) {
     std::cout << "Server starting on port " << server.getPortNumber()
           << " with password '" << server.getServerPassword() << "'" << std::endl;
 
+    server.initServer();
     return 0;
 }
