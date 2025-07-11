@@ -1,7 +1,7 @@
 #include "../includes/server/Server.hpp"
 
 /* CONSTRUCTOR */
-Server::Server(void) : port(0), socket_fd(0), password("") {}
+Server::Server(void) : port(0), socket_fd(0), password(""), clients_fd(0, 0), data_received("") {}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -11,6 +11,9 @@ Server &Server::operator=(const Server &other) {
     if (this != &other) {
         this->port = other.port;
         this->socket_fd = other.socket_fd;
+        this->password = other.password;
+        this->clients_fd = other.clients_fd;
+        this->data_received = other.data_received;
     }
     return *this;
 }
@@ -39,8 +42,11 @@ std::string Server::getServerPassword(void) {
 /* INIT SERVER */
 void Server::initServer(void) {
 
-   createSocket();
-   connectToClient();
+    createSocket();
+
+    // use poll inside loop to connect and read from clients
+    connectToClient();
+
 }
 
 /* CREATE SOCKET */
@@ -95,6 +101,8 @@ void Server::createSocket(void) {
        std::cerr << "Can't listen" << std::endl;
        return;
    }
+
+   std::cout << "Server listening on port " << this->port << std::endl;
 }
 
 
