@@ -74,24 +74,8 @@ void Server::createSocket(void) {
         return;
     }
 
-   /***********/
-
-   // server socket here
    /* Setar O_NONBLOCK com fcntl() */
-   int flags = fcntl(this->socket_fd, F_GETFL, 0);
-   if (flags == -1) {
-       std::cerr << "Erro ao obter flags do socket\n";
-       close(this->socket_fd);
-       return ;
-   }
-   flags |= O_NONBLOCK;
-   if (fcntl(this->socket_fd, F_SETFL, flags) == -1) {
-       std::cerr << "Erro ao setar O_NONBLOCK\n";
-       close(this->socket_fd);
-       return ;
-   }
-
-   /***********/
+   this->setNonBlocking(this->socket_fd);
 
    // bind socket to a IP/port
    std::cout << "Binding server socket to ip address" << std::endl;
@@ -114,12 +98,9 @@ void Server::createSocket(void) {
 
 /* CONNECT TO CLIENT */
 void Server::acceptClients(void) {
-
     while (true) {
-        
-        // waiting for an event to happen
-        std::cout << "poll waiting for an event to happen" << std::endl;
         // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
+        std::cout << "poll waiting for an event to happen" << std::endl;
         if (this->pollFds.poll(-1))
         {
             // checking all fds
@@ -142,19 +123,8 @@ void Server::acceptClients(void) {
                             continue ;
                         }
                     
-                        /* Setar each client flags as O_NONBLOCK with fcntl() */
-                        int flags = fcntl(client_fd, F_GETFL, 0);
-                        if (flags == -1) {
-                            std::cerr << "Error to get socket flags\n";
-                            close(client_fd);
-                            return ;
-                        }
-                        flags |= O_NONBLOCK;
-                        if (fcntl(client_fd, F_SETFL, flags) == -1) {
-                            std::cerr << "Error to set O_NONBLOCK\n";
-                            close(client_fd);
-                            return ;
-                        }
+                        /* Setar O_NONBLOCK with fcntl() */
+                        this->setNonBlocking(client_fd);
                     
                         // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
                         this->pollFds.add(client_fd);
@@ -188,3 +158,18 @@ void Server::acceptClients(void) {
     }
 }
 
+/* SET SOCKETS AS NON BLOCKING */
+void Server::setNonBlocking(int socket) {
+    int flags = fcntl(socket, F_GETFL, 0);
+    if (flags == -1) {
+        std::cerr << "Erro ao obter flags do socket\n";
+        close(this->socket_fd);
+        return ;
+    }
+    flags |= O_NONBLOCK;
+    if (fcntl(this->socket_fd, F_SETFL, flags) == -1) {
+        std::cerr << "Erro ao setar O_NONBLOCK\n";
+        close(this->socket_fd);
+        return ;
+    }
+}
