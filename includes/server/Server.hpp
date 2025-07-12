@@ -51,6 +51,9 @@ class Server {
 
         /* CONNECT TO CLIENT */
         void acceptClients(void);
+
+        /* SET SOCKETS AS NON BLOCKING */
+        void setNonBlocking(int socket);
 };
 
 #endif
