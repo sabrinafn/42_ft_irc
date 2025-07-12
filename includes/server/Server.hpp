@@ -57,7 +57,9 @@ class Server {
 
         /* ACCEPT A NEW CLIENT */
         void acceptClient(void);
-        
+
+        /* RECEIVE DATA FROM REGISTERED CLIENT */
+        void receiveData(int &fd);
 };
 
 #endif

@@ -116,26 +116,7 @@ void Server::monitorConnections(void) {
                 }
 	    		else {
                     // receive data for client that is already registered
-                    char buffer[1024];
-                    ssize_t bytes_read = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
-                    if (bytes_read < 0) {
-                        std::cerr << "Error to use read from fd with recv" << std::endl;
-                        close(this->pollFds[i].fd);
-                        pollFds.remove(i);
-                        --i; // fix index after erase
-                        continue;
-                    }
-                    if (bytes_read == 0) {
-                        std::cerr << "fd read completely" << std::endl;
-                        close(this->pollFds[i].fd);
-                        pollFds.remove(i);
-                        --i; // fix index after erase
-                        continue;
-                    }
-                    buffer[bytes_read] = '\0';
-                
-                    // print data received and stored in buffer
-                    std::cout << "Client [" << i << "]" << " data: '" << buffer << "'" << std::endl;
+                    this->receiveData(i);
                 }
             }
         }
@@ -174,4 +155,28 @@ void Server::acceptClient(void) {
 
     // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
     this->pollFds.add(client_fd);
+}
+
+/* RECEIVE DATA FROM REGISTERED CLIENT */
+void Server::receiveData(int &fd) {
+    char buffer[1024];
+    ssize_t bytes_read = recv(this->pollFds[fd].fd, buffer, sizeof(buffer) - 1, 0);
+    if (bytes_read < 0) {
+        std::cerr << "Error to use read from fd with recv" << std::endl;
+        close(this->pollFds[fd].fd);
+        pollFds.remove(fd);
+        --fd; // fix index after erase
+        return;
+    }
+    if (bytes_read == 0) {
+        std::cerr << "fd read completely" << std::endl;
+        close(this->pollFds[fd].fd);
+        pollFds.remove(fd);
+        --fd; // fix index after erase
+        return;
+    }
+    buffer[bytes_read] = '\0';
+
+    // print data received and stored in buffer
+    std::cout << "Client [" << fd << "]" << " data: '" << buffer << "'" << std::endl;
 }
