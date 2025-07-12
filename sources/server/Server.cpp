@@ -57,9 +57,9 @@ void Server::createSocket(void) {
     hint.sin_family = AF_INET; // IPV4
     hint.sin_port = htons(this->port); // convert number to network byte order
     hint.sin_addr.s_addr = INADDR_ANY; // set the address to any local machine address
-    //inet_pton(AF_INET, "0.0.0.0", &hint.sin_addr);
 
     // create socket
+    std::cout << "Creating server socket..." << std::endl;
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     //int listening_socket = socket(AF_INET, SOCK_STREAM, 0); // replace by line above
     if (this->socket_fd == -1) {
@@ -97,12 +97,14 @@ void Server::createSocket(void) {
 
 
    // bind socket to a IP/port
+   std::cout << "Binding server socket to ip address" << std::endl;
    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 ) {
        std::cerr << "Can't bind to IP/port";
        return;
    }
 
    // mark socket to start listening
+   std::cout << "Marking socket to start listening" << std::endl;
    if (listen(this->socket_fd, SOMAXCONN) == -1) {
        std::cerr << "Can't listen" << std::endl;
        return;
@@ -124,76 +126,76 @@ void Server::acceptClients(void) {
     while (true) {
         
         // waiting for an event to happen
+        std::cout << "poll waiting for an event to happen" << std::endl;
         if((poll(this->pollFds.data(), this->pollFds.size(), -1) == -1)) {
             std::cerr << "Can't listen" << std::endl;
             return;
         }
         // checking all fds
-        for (int i = 0; i < this->pollFds.size(); i++) {
+        for (int i = 0; i < (int)this->pollFds.size(); i++) {
             if (this->pollFds[i].revents & POLLIN)//-> check if there is data to read
 			{
+                std::cout << "Client with fd [" << i << "] connected" << std::endl;
 				if (this->pollFds[i].fd == this->socket_fd) {
                     // accept a new client
+                    // accept(socket fd, socket struct new fd, socket struct size)
+                    struct sockaddr_in client_addr;
+
+                    // data type to store size of socket structures
+                    socklen_t client_addr_len = sizeof(client_addr);
+
+                    int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+                    if (client_fd < 0) {
+                        std::cerr << "Can't connect to client" << std::endl;
+                        continue ;
+                    }
+                
+                    /* Setar each client flags as O_NONBLOCK with fcntl() */
+                    int flags = fcntl(client_fd, F_GETFL, 0);
+                    if (flags == -1) {
+                        std::cerr << "Error to get socket flags\n";
+                        close(client_fd);
+                        return ;
+                    }
+                    flags |= O_NONBLOCK;
+                    if (fcntl(client_fd, F_SETFL, flags) == -1) {
+                        std::cerr << "Error to set O_NONBLOCK\n";
+                        close(client_fd);
+                        return ;
+                    }
+                
+                    struct pollfd client_poll_fd;
+                    client_poll_fd.fd = client_fd; // add the client socket to the pollfd
+                    client_poll_fd.events = POLLIN; // set the event to POLLIN for reading data
+                    client_poll_fd.revents = 0; // set the revents to 0
+                
+
+                    this->pollFds.push_back(client_poll_fd); //-> add the server socket to the pollfd
                 }
 				else {
                     // receive data for client that is already registered
+                    char buffer[1024];
+                    ssize_t bytes_read = recv(this->pollFds[i].fd, buffer, sizeof(buffer) - 1, 0);
+                    if (bytes_read < 0) {
+                        std::cerr << "Error to use read from fd with recv" << std::endl;
+                        close(this->pollFds[i].fd);
+                        this->pollFds.erase(this->pollFds.begin() + i);
+                        --i; // fix index after erase
+                        continue;
+                    }
+                    if (bytes_read == 0) {
+                        std::cerr << "fd read completely" << std::endl;
+                        close(this->pollFds[i].fd);
+                        this->pollFds.erase(this->pollFds.begin() + i);
+                        --i; // fix index after erase
+                        continue;
+                    }
+                    buffer[bytes_read] = '\0';
+                
+                    // print data received and stored in buffer
+                    std::cout << "Client [" << i << "]" << " data: '" << buffer << "'" << std::endl;
                 }
             }
-        }
-
-            // accept(socket fd, socket struct new fd, socket struct size)
-            struct sockaddr_in client_addr;
-
-            // data type to store size of socket structures
-            socklen_t client_addr_len = sizeof(client_addr);
-
-            int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-            if (client_fd < 0) {
-                std::cerr << "Can't connect to client" << std::endl;
-                close(this->socket_fd);
-                return ;
-            }
-
-            /* Setar each client flags as O_NONBLOCK with fcntl() */
-            int flags = fcntl(this->socket_fd, F_GETFL, 0);
-            if (flags == -1) {
-                std::cerr << "Erro ao obter flags do socket\n";
-                close(this->socket_fd);
-                return ;
-            }
-            flags |= O_NONBLOCK;
-            if (fcntl(this->socket_fd, F_SETFL, flags) == -1) {
-                std::cerr << "Erro ao setar O_NONBLOCK\n";
-                close(this->socket_fd);
-                return ;
-            }
-
-            struct pollfd client_poll_fd;
-            client_poll_fd.fd = client_fd; // add the client socket to the pollfd
-            client_poll_fd.events = POLLIN; // set the event to POLLIN for reading data
-            client_poll_fd.revents = 0; // set the revents to 0
-
-
-            // aqui
-            this->pollFds.push_back(client_poll_fd); //-> add the server socket to the pollfd
-
-            char buffer[1024];
-            ssize_t bytes_read = read(pollfd->fd[i], buffer, sizeof(buffer) - 1);
-            if (bytes_read < 0) {
-                std::perror("read");
-                // Close sockets
-                close(pollfd->fd[i]);
-                close(pollfd->fd[i]);
-                return ;
-            }
-            buffer[bytes_read] = '\0';
-
-            // print data received and stored in buffer
-            std::cout << "Received data: " << buffer << std::endl;
-
-
-            close(pollfd->fd[i]);
-            close(this->socket_fd);
         }
     }
 }
