@@ -3,10 +3,8 @@
 
 #include <iostream> // std::cout, std::cerr
 #include <unistd.h> // read
-//#include <netinet/in.h> // sockaddr_in
 #include <arpa/inet.h> // htons, inet_pton
 #include <sys/socket.h> // socket, bind, listen, accept
-//#include <netdb.h>
 #include <fcntl.h> // fcntl
 #include <poll.h> // poll
 #include <vector> // std::vector
