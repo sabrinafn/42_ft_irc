@@ -110,11 +110,13 @@ void Server::createSocket(void) {
        return;
    }
 
+    // 01. CREATING POLL STRUCT FOR SERVER
     struct pollfd serverPollFd;
     serverPollFd.fd = this->socket_fd; //-> add the server socket to the pollfd
     serverPollFd.events = POLLIN; //-> set the event to POLLIN for reading data
     serverPollFd.revents = 0; //-> set the revents to 0
 
+    // 02. ADDING SERVER POLL FD TO THE POLLFD STRUCT
     this->pollFds.push_back(serverPollFd); //-> add the server socket to the pollfd
 
 }
@@ -127,14 +129,17 @@ void Server::acceptClients(void) {
         
         // waiting for an event to happen
         std::cout << "poll waiting for an event to happen" << std::endl;
+        // 03. MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
         if((poll(this->pollFds.data(), this->pollFds.size(), -1) == -1)) {
             std::cerr << "Can't listen" << std::endl;
             return;
         }
         // checking all fds
         for (int i = 0; i < (int)this->pollFds.size(); i++) {
-            if (this->pollFds[i].revents & POLLIN)//-> check if there is data to read
+            // 04. CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
+            if (this->pollFds[i].revents & POLLIN)
 			{
+                // 04. CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
                 std::cout << "Client with fd [" << i << "] connected" << std::endl;
 				if (this->pollFds[i].fd == this->socket_fd) {
                     // accept a new client
@@ -164,12 +169,13 @@ void Server::acceptClients(void) {
                         return ;
                     }
                 
+                    // 05. CREATING POLL STRUCT FOR CURRENT CLIENT
                     struct pollfd client_poll_fd;
                     client_poll_fd.fd = client_fd; // add the client socket to the pollfd
                     client_poll_fd.events = POLLIN; // set the event to POLLIN for reading data
                     client_poll_fd.revents = 0; // set the revents to 0
                 
-
+                    // 06. ADDING CURRENT CLIENT POLL FD TO THE POLLFD STRUCT
                     this->pollFds.push_back(client_poll_fd); //-> add the server socket to the pollfd
                 }
 				else {
