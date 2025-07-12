@@ -49,11 +49,15 @@ class Server {
         /* INIT SERVER */
         void initServer(void);
 
-        /* CONNECT TO CLIENT */
-        void acceptClients(void);
+        /* MONITORING FOR ACTIVITY ON FDS */
+        void monitorConnections(void);
 
         /* SET SOCKETS AS NON BLOCKING */
         void setNonBlocking(int socket);
+
+        /* ACCEPT A NEW CLIENT */
+        void acceptClient(void);
+        
 };
 
 #endif
