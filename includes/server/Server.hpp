@@ -11,6 +11,7 @@
 #include <string> // std::string
 
 #include "../client/Client.hpp" // client class
+#include "../pollset/Pollset.hpp" // pollset class
 
 class Server {
 
@@ -19,7 +20,7 @@ class Server {
         int socket_fd;
         std::string password;
         std::vector<Client> clients_fd;
-        std::vector<struct pollfd> pollFds;
+        Pollset pollFds;
 
     public:
         /* CONSTRUCTOR */

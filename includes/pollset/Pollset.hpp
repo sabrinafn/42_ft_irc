@@ -3,6 +3,7 @@
 
 #include <vector> // std::vector
 #include <poll.h> // poll
+#include <iostream> // std::cout std::cerr
 
 class Pollset {
 
@@ -18,6 +19,7 @@ class Pollset {
 
         /* OPERATORS */
         Pollset &operator=(const Pollset &other);
+        struct pollfd operator[](int index);
 
         /* DESTRUCTOR */
         ~Pollset(void);
@@ -28,6 +30,12 @@ class Pollset {
         /* REMOVE FD FROM THE POLL */
         void remove(int fd);
 
-};
+        /* POLL METHOD TO WRAP POLL FUNCTION CALL */
+        int poll(int timeout);
+
+        /* GETTTERS */
+        int getSize(void);
+
+    };
 
 #endif
