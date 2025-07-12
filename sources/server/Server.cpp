@@ -46,7 +46,7 @@ void Server::initServer(void) {
     createSocket();
 
     // use poll inside loop to connect and read from clients
-    // acceptClients();
+    acceptClients();
 
 }
 
@@ -77,6 +77,7 @@ void Server::createSocket(void) {
 
    /***********/
 
+   // server socket here
    /* Setar O_NONBLOCK com fcntl() */
    int flags = fcntl(this->socket_fd, F_GETFL, 0);
    if (flags == -1) {
@@ -117,52 +118,82 @@ void Server::createSocket(void) {
 }
 
 
-///* CONNECT TO CLIENT */
-//void Server::acceptClients(void) {
-//
-//    while (true) {
-//
-//        // poll = waits for some events on a fd
-//
-//        struct pollfd = NULL;
-//        int poll_fd = poll(fds, 1024, -1);
-//        
-//        for (int i = 0; i < 1024; i++) {
-//            // accept(socket fd, socket struct new fd, socket struct size)
-//            struct sockaddr_in client_addr;
-//
-//
-//            // data type to store size of socket structures
-//            socklen_t client_addr_len = sizeof(client_addr);
-//
-//
-//            int client_one = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
-//            pollfd->fd.push_back(client_one);
-//            if (pollfd->fd[i] < 0) {
-//                std::cerr << "Can't connect to client" << std::endl;
-//                close(this->socket_fd);
-//                close(pollfd->fd[i]);
-//                return ;
-//            }
-//            char buffer[1024];
-//            ssize_t bytes_read = read(pollfd->fd[i], buffer, sizeof(buffer) - 1);
-//            if (bytes_read < 0) {
-//                std::perror("read");
-//                // Close sockets
-//                close(pollfd->fd[i]);
-//                close(pollfd->fd[i]);
-//                return ;
-//            }
-//            buffer[bytes_read] = '\0';
-//
-//            // print message received and stored in buffer
-//            std::cout << "Received message: " << buffer << std::endl;
-//
-//
-//            close(pollfd->fd[i]);
-//            close(this->socket_fd);
-//        }
-//    }
-//}
-//
-//
+/* CONNECT TO CLIENT */
+void Server::acceptClients(void) {
+
+    while (true) {
+        
+        // waiting for an event to happen
+        if((poll(this->pollFds.data(), this->pollFds.size(), -1) == -1)) {
+            std::cerr << "Can't listen" << std::endl;
+            return;
+        }
+        // checking all fds
+        for (int i = 0; i < this->pollFds.size(); i++) {
+            if (this->pollFds[i].revents & POLLIN)//-> check if there is data to read
+			{
+				if (this->pollFds[i].fd == this->socket_fd) {
+                    // accept a new client
+                }
+				else {
+                    // receive data for client that is already registered
+                }
+            }
+        }
+
+            // accept(socket fd, socket struct new fd, socket struct size)
+            struct sockaddr_in client_addr;
+
+            // data type to store size of socket structures
+            socklen_t client_addr_len = sizeof(client_addr);
+
+            int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
+            if (client_fd < 0) {
+                std::cerr << "Can't connect to client" << std::endl;
+                close(this->socket_fd);
+                return ;
+            }
+
+            /* Setar each client flags as O_NONBLOCK with fcntl() */
+            int flags = fcntl(this->socket_fd, F_GETFL, 0);
+            if (flags == -1) {
+                std::cerr << "Erro ao obter flags do socket\n";
+                close(this->socket_fd);
+                return ;
+            }
+            flags |= O_NONBLOCK;
+            if (fcntl(this->socket_fd, F_SETFL, flags) == -1) {
+                std::cerr << "Erro ao setar O_NONBLOCK\n";
+                close(this->socket_fd);
+                return ;
+            }
+
+            struct pollfd client_poll_fd;
+            client_poll_fd.fd = client_fd; // add the client socket to the pollfd
+            client_poll_fd.events = POLLIN; // set the event to POLLIN for reading data
+            client_poll_fd.revents = 0; // set the revents to 0
+
+
+            // aqui
+            this->pollFds.push_back(client_poll_fd); //-> add the server socket to the pollfd
+
+            char buffer[1024];
+            ssize_t bytes_read = read(pollfd->fd[i], buffer, sizeof(buffer) - 1);
+            if (bytes_read < 0) {
+                std::perror("read");
+                // Close sockets
+                close(pollfd->fd[i]);
+                close(pollfd->fd[i]);
+                return ;
+            }
+            buffer[bytes_read] = '\0';
+
+            // print data received and stored in buffer
+            std::cout << "Received data: " << buffer << std::endl;
+
+
+            close(pollfd->fd[i]);
+            close(this->socket_fd);
+        }
+    }
+}
