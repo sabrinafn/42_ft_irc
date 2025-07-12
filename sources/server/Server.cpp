@@ -101,23 +101,23 @@ void Server::createSocket(void) {
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
     std::cout << "poll waiting for an event to happen" << std::endl;
-    if (this->pollFds.poll(-1))
-    {
-        // checking all fds
-        for (int i = 0; i < pollFds.getSize(); i++) {
-            // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
-            if (this->pollFds[i].revents & POLLIN)
-	    	{
-                // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-                std::cout << "Client with fd [" << i << "] connected" << std::endl;
-	    		if (this->pollFds[i].fd == this->socket_fd) {
-                    // accept a new client
-                    this->acceptClient();
-                }
-	    		else {
-                    // receive data for client that is already registered
-                    this->receiveData(i);
-                }
+    if (this->pollFds.poll(-1) == -1) {
+        return ;
+    }
+    // checking all fds
+    for (int i = 0; i < pollFds.getSize(); i++) {
+        // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
+        if (this->pollFds[i].revents & POLLIN)
+		{
+            // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
+            std::cout << "Client with fd [" << i << "] connected" << std::endl;
+			if (this->pollFds[i].fd == this->socket_fd) {
+                // accept a new client
+                this->acceptClient();
+            }
+			else {
+                // receive data for client that is already registered
+                this->receiveData(i);
             }
         }
     }

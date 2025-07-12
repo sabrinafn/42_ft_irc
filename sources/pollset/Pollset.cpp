@@ -47,6 +47,7 @@ int Pollset::poll(int timeout) {
     if (result == -1) {
         std::cerr << "Can't listen" << std::endl;
         //throw error
+        return -1;
     }
     return result;
 }
