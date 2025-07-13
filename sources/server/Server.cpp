@@ -102,13 +102,13 @@ void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
     std::cout << "poll waiting for an event to happen" << std::endl;
     if (this->pollFds.poll(-1) == -1) {
+        std::cerr << "poll() failed" << std::endl;
         return ;
     }
     // checking all fds
     for (int i = 0; i < pollFds.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
-        if (this->pollFds[i].revents & POLLIN)
-		{
+        if (this->pollFds[i].revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
             std::cout << "Client with fd [" << i << "] connected" << std::endl;
 			if (this->pollFds[i].fd == this->socket_fd) {
@@ -119,6 +119,9 @@ void Server::monitorConnections(void) {
                 // receive data for client that is already registered
                 this->receiveData(i);
             }
+        }
+        if (this->pollFds[i].revents & POLLHUP || this->pollFds[i].revents & POLLERR) {
+            this->disconnectClient(i);
         }
     }
 }
@@ -163,15 +166,13 @@ void Server::receiveData(int &fd) {
     ssize_t bytes_read = recv(this->pollFds[fd].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
         std::cerr << "Error to use read from fd with recv" << std::endl;
-        close(this->pollFds[fd].fd);
-        pollFds.remove(fd);
+        this->disconnectClient(fd);
         --fd; // fix index after erase
         return;
     }
     if (bytes_read == 0) {
         std::cerr << "fd read completely" << std::endl;
-        close(this->pollFds[fd].fd);
-        pollFds.remove(fd);
+        this->disconnectClient(fd);
         --fd; // fix index after erase
         return;
     }
@@ -179,4 +180,10 @@ void Server::receiveData(int &fd) {
 
     // print data received and stored in buffer
     std::cout << "Client [" << fd << "]" << " data: '" << buffer << "'" << std::endl;
+}
+
+/* DISCONNECT CLIENT */
+void Server::disconnectClient(int fd) {
+    close(this->pollFds[fd].fd);
+    pollFds.remove(fd);
 }
