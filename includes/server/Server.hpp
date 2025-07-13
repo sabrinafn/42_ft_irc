@@ -60,6 +60,9 @@ class Server {
 
         /* RECEIVE DATA FROM REGISTERED CLIENT */
         void receiveData(int &fd);
-};
+
+        /* DISCONNECT CLIENT */
+        void disconnectClient(int fd);
+    };
 
 #endif
