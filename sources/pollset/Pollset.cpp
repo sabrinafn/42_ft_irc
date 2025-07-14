@@ -40,16 +40,9 @@ void Pollset::remove(int fd) {
 }
 
 /* POLL METHOD TO WRAP POLL FUNCTION CALL */
-int Pollset::poll(int timeout) {
+int Pollset::poll(void) {
     // 03. MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
-    int result;
-    result = ::poll(this->fd.data(), this->fd.size(), timeout);
-    if (result == -1) {
-        std::cerr << "Can't listen" << std::endl;
-        //throw error
-        return -1;
-    }
-    return result;
+    return ::poll(this->fd.data(), this->fd.size(), -1);
 }
 
 /* GETTTERS */

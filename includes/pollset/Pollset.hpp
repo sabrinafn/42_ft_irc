@@ -31,7 +31,7 @@ class Pollset {
         void remove(int fd);
 
         /* POLL METHOD TO WRAP POLL FUNCTION CALL */
-        int poll(int timeout);
+        int poll(void);
 
         /* GETTTERS */
         int getSize(void);

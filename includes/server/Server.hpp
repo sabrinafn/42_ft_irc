@@ -9,6 +9,7 @@
 #include <poll.h> // poll
 #include <vector> // std::vector
 #include <string> // std::string
+#include <cstdio> // perror
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
