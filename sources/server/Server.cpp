@@ -112,7 +112,7 @@ void Server::monitorConnections(void) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
         if (this->pollFds[i].revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-            std::cout << "Client with fd [" << i << "] connected" << std::endl;
+            std::cout << "Client with fd [" << this->pollFds[i].fd << "] connected" << std::endl;
 			if (this->pollFds[i].fd == this->socket_fd) {
                 // accept a new client
                 this->acceptClient();
@@ -165,34 +165,57 @@ void Server::acceptClient(void) {
 
     // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
     this->pollFds.add(client_fd);
+
+    Client client;
+    client.setFd(client_fd);
+    this->clients_fd.push_back(client);
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
-void Server::receiveData(int &fd) {
+void Server::receiveData(int &index) {
+    int idx_cli = findClientByFd(this->pollFds[index].fd);
+    if (idx_cli == -1) {
+        throw std::invalid_argument("Client fd not found");
+    }
     char buffer[1024];
-    ssize_t bytes_read = recv(this->pollFds[fd].fd, buffer, sizeof(buffer) - 1, 0);
+    ssize_t bytes_read = recv(this->pollFds[index].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
         perror("recv");
         std::cerr << "Can't read, recv failed" << std::endl;
-        this->disconnectClient(fd);
-        --fd; // fix index after erase
+        this->disconnectClient(idx_cli);
+        --index; // fix index after erase
         return;
     }
     else if (bytes_read == 0) {
         std::cerr << "client disconnected" << std::endl;
-        this->disconnectClient(fd);
-        --fd; // fix index after erase
+        this->disconnectClient(idx_cli);
+        --index; // fix index after erase
         return;
     }
     else {
         buffer[bytes_read] = '\0';
         // print data received and stored in buffer
-        std::cout << "Client [" << fd << "]" << " data: '" << buffer << "'" << std::endl;
+        std::string buf = buffer;
+        this->clients_fd[idx_cli].appendData(buf);
+        std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]" << " data: '" << this->clients_fd[idx_cli].getData() << "'" << std::endl;
     }
 }
 
 /* DISCONNECT CLIENT */
-void Server::disconnectClient(int fd) {
-    close(this->pollFds[fd].fd);
-    pollFds.remove(fd);
+void Server::disconnectClient(int index) {
+    close(this->pollFds[index].fd);
+    pollFds.remove(index);
+}
+
+/* FIND CLIENT BY FD */
+int Server::findClientByFd(int fd_to_find) {
+
+    std::vector<Client>::iterator it = clients_fd.begin();
+    unsigned long i;
+    for (i = 0; i < clients_fd.size(); i++) {
+        if ((*it).getFd() == fd_to_find)
+            return static_cast<int>(i);
+        it++;
+    }
+    return -1;
 }
