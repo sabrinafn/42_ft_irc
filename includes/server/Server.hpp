@@ -60,10 +60,13 @@ class Server {
         void acceptClient(void);
 
         /* RECEIVE DATA FROM REGISTERED CLIENT */
-        void receiveData(int &fd);
+        void receiveData(int &index);
 
         /* DISCONNECT CLIENT */
-        void disconnectClient(int fd);
+        void disconnectClient(int index);
+
+        /* FIND CLIENT BY FD */
+        int findClientByFd(int fd_to_find);
     };
 
 #endif

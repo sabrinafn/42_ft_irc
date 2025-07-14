@@ -1,10 +1,13 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
+#include <string>
+
 class Client {
 
     private:
         int fd;
+        std::string data;
 
     public:
         /* CONSTRUCTOR */
@@ -21,9 +24,15 @@ class Client {
 
         /* SETTERS */
         void setFd(int other);
+        void setData(std::string other);
 
         /* GETTERS */
         int getFd(void);
+        std::string getData(void);
+
+        /* APPEND MORE DATA TO CURRENT BUFFER DATA */
+        void appendData(std::string other);
+
 };
 
 #endif
