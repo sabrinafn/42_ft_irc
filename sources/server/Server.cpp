@@ -63,33 +63,35 @@ void Server::createSocket(void) {
     std::cout << "Creating server socket..." << std::endl;
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd == -1) {
-        std::cerr << "Can't create a socket." << std::endl;
-        return ;
+        perror("socket");
+        throw std::runtime_error("Can't create a socket.");
     }
 
     // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
     if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        std::cerr << "setsockopt error" << std::endl;
+        perror("setsockopt");
         close(this->socket_fd);
-        return;
+        throw std::runtime_error("setsockopt not allowing address reuse.");
     }
 
-   /* Setar O_NONBLOCK com fcntl() */
-   this->setNonBlocking(this->socket_fd);
+    /* Setar O_NONBLOCK com fcntl() */
+    this->setNonBlocking(this->socket_fd);
 
-   // bind socket to a IP/port
-   std::cout << "Binding server socket to ip address" << std::endl;
-   if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 ) {
-       std::cerr << "Can't bind to IP/port";
-       return;
-   }
+    // bind socket to a IP/port
+    std::cout << "Binding server socket to ip address" << std::endl;
+    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 ) {
+        perror("bind");
+        close(this->socket_fd);
+        throw std::runtime_error("Can't bind to IP/port.");
+    }
 
-   // mark socket to start listening
-   std::cout << "Marking socket to start listening" << std::endl;
-   if (listen(this->socket_fd, SOMAXCONN) == -1) {
-       std::cerr << "Can't listen" << std::endl;
-       return;
+    // mark socket to start listening
+    std::cout << "Marking socket to start listening" << std::endl;
+    if (listen(this->socket_fd, SOMAXCONN) == -1) {
+        close(this->socket_fd);
+        perror("listen");
+        throw std::runtime_error("Can't mark socket to start listening.");
    }
 
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
@@ -101,9 +103,9 @@ void Server::createSocket(void) {
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
     std::cout << "poll waiting for an event to happen" << std::endl;
-    if (this->pollFds.poll(-1) == -1) {
-        std::cerr << "poll() failed" << std::endl;
-        return ;
+    if (this->pollFds.poll() == -1) {
+        close(this->socket_fd);
+        throw std::runtime_error("poll() can't monitor fds");
     }
     // checking all fds
     for (int i = 0; i < pollFds.getSize(); i++) {
@@ -130,15 +132,19 @@ void Server::monitorConnections(void) {
 void Server::setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0);
     if (flags == -1) {
-        std::cerr << "Erro ao obter flags do socket\n";
+        perror("fcntl");
+        if (socket != this->socket_fd)
+            close(socket);
         close(this->socket_fd);
-        return ;
+        throw std::runtime_error("Erro ao obter flags do socket");
     }
     flags |= O_NONBLOCK;
-    if (fcntl(this->socket_fd, F_SETFL, flags) == -1) {
-        std::cerr << "Erro ao setar O_NONBLOCK\n";
+    if (fcntl(socket, F_SETFL, flags) == -1) {
+        perror("fcntl");
+        if (socket != this->socket_fd)
+            close(socket);
         close(this->socket_fd);
-        return ;
+        throw std::runtime_error("Erro ao setar O_NONBLOCK");
     }
 }
 
@@ -149,6 +155,7 @@ void Server::acceptClient(void) {
     socklen_t client_addr_len = sizeof(client_addr);
     int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
     if (client_fd < 0) {
+        perror("accept");
         std::cerr << "Can't connect to client" << std::endl;
         return;
     }
@@ -165,21 +172,23 @@ void Server::receiveData(int &fd) {
     char buffer[1024];
     ssize_t bytes_read = recv(this->pollFds[fd].fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
-        std::cerr << "Error to use read from fd with recv" << std::endl;
+        perror("recv");
+        std::cerr << "Can't read, recv failed" << std::endl;
         this->disconnectClient(fd);
         --fd; // fix index after erase
         return;
     }
-    if (bytes_read == 0) {
-        std::cerr << "fd read completely" << std::endl;
+    else if (bytes_read == 0) {
+        std::cerr << "client disconnected" << std::endl;
         this->disconnectClient(fd);
         --fd; // fix index after erase
         return;
     }
-    buffer[bytes_read] = '\0';
-
-    // print data received and stored in buffer
-    std::cout << "Client [" << fd << "]" << " data: '" << buffer << "'" << std::endl;
+    else {
+        buffer[bytes_read] = '\0';
+        // print data received and stored in buffer
+        std::cout << "Client [" << fd << "]" << " data: '" << buffer << "'" << std::endl;
+    }
 }
 
 /* DISCONNECT CLIENT */
