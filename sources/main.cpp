@@ -37,6 +37,12 @@ int main(int ac, char **av) {
     }
 
     try {
+        // ctrl+c
+        signal(SIGINT, Server::signalHandler);
+        // ctrl+'\'
+        signal(SIGQUIT, Server::signalHandler);
+        // kill [pid]
+        signal(SIGTERM, Server::signalHandler);
         Server server;
         std::pair<int, std::string> pair = validatePortAndPassword(av);
         server.setPortNumber(pair.first);

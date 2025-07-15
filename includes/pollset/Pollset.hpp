@@ -36,6 +36,9 @@ class Pollset {
         /* GETTTERS */
         int getSize(void);
 
+        /* CLEAR VECTOR */
+        void clear(void);
+
     };
 
 #endif
