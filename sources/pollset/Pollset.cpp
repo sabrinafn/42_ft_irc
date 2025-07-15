@@ -49,3 +49,13 @@ int Pollset::poll(void) {
 int Pollset::getSize(void) {
     return static_cast<int>(this->fd.size());
 }
+
+/* CLEAR VECTOR */
+void Pollset::clear(void) {
+    std::vector<pollfd>::iterator it = this->fd.begin();
+    while (it != this->fd.end()) {
+        this->fd.erase(it);
+    }
+
+}
+

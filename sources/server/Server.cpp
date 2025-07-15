@@ -1,7 +1,9 @@
 #include "../includes/server/Server.hpp"
 
+bool Server::signals = false;
+
 /* CONSTRUCTOR */
-Server::Server(void) : port(0), socket_fd(0), password(""),
+Server::Server(void) : port(-1), socket_fd(-1), password(""),
     clients_fd(), pollFds() {}
 
 /* COPY CONSTRUCTOR */
@@ -46,7 +48,7 @@ void Server::initServer(void) {
     createSocket();
 
     // use poll inside loop to connect and read from clients
-    while (true) {
+    while (!Server::signals) {
         monitorConnections();
     }
 }
@@ -103,7 +105,8 @@ void Server::createSocket(void) {
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
     std::cout << "poll waiting for an event to happen" << std::endl;
-    if (this->pollFds.poll() == -1) {
+    if (this->pollFds.poll() == -1 && !Server::signals) {
+        perror("poll");
         close(this->socket_fd);
         throw std::runtime_error("poll() can't monitor fds");
     }
@@ -125,6 +128,7 @@ void Server::monitorConnections(void) {
         if (this->pollFds[i].revents & POLLHUP || this->pollFds[i].revents & POLLERR) {
             this->disconnectClient(i);
         }
+
     }
 }
 
@@ -205,7 +209,7 @@ void Server::receiveData(int &index) {
 /* DISCONNECT CLIENT */
 void Server::disconnectClient(int index) {
     close(this->pollFds[index].fd);
-    pollFds.remove(index);
+    this->pollFds.clear();
 }
 
 /* FIND CLIENT BY FD */
@@ -220,3 +224,11 @@ int Server::findClientByFd(int fd_to_find) {
     }
     return -1;
 }
+
+/* SIGNAL HANDLER FUNCTION */
+void Server::signalHandler(int sig) {
+    std::cout << "Program terminated with '" << sig << "'" << std::endl;
+    (void)sig;
+    Server::signals = true;
+}
+

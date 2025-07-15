@@ -10,6 +10,7 @@
 #include <vector> // std::vector
 #include <string> // std::string
 #include <cstdio> // perror
+#include <csignal> // signal
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
@@ -22,6 +23,7 @@ class Server {
         std::string password;
         std::vector<Client> clients_fd;
         Pollset pollFds;
+        static bool signals;
 
     public:
         /* CONSTRUCTOR */
@@ -67,6 +69,9 @@ class Server {
 
         /* FIND CLIENT BY FD */
         int findClientByFd(int fd_to_find);
+
+        /* SIGNAL HANDLER FUNCTION */
+        static void signalHandler(int sig);
     };
 
 #endif
