@@ -197,7 +197,8 @@ void Server::receiveData(int &index) {
         // print data received and stored in buffer
         std::string buf = buffer;
         this->clients_fd[idx_cli].appendData(buf);
-        std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]" << " data: '" << this->clients_fd[idx_cli].getData() << "'" << std::endl;
+        std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]"
+                  << " data: '" << this->clients_fd[idx_cli].getData() << "'" << std::endl;
     }
 }
 
