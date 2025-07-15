@@ -14,7 +14,7 @@ Pollset &Pollset::operator=(const Pollset &other) {
     return *this;
 }
 
-struct pollfd Pollset::operator[](int index) {
+struct pollfd &Pollset::operator[](int index) {
     return this->fd[index];
 }
 
@@ -34,8 +34,8 @@ void Pollset::add(int fd) {
 }
 
 /* REMOVE FD FROM THE POLL */
-void Pollset::remove(int fd) {
-    std::vector<pollfd>::iterator pos = this->fd.begin() + fd;
+void Pollset::remove(int fd_idx) {
+    std::vector<pollfd>::iterator pos = this->fd.begin() + fd_idx;
     this->fd.erase(pos);
 }
 

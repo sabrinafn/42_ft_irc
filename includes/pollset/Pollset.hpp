@@ -19,7 +19,7 @@ class Pollset {
 
         /* OPERATORS */
         Pollset &operator=(const Pollset &other);
-        struct pollfd operator[](int index);
+        struct pollfd& operator[](int index);
 
         /* DESTRUCTOR */
         ~Pollset(void);
@@ -28,7 +28,7 @@ class Pollset {
         void add(int fd);
 
         /* REMOVE FD FROM THE POLL */
-        void remove(int fd);
+        void remove(int fd_idx);
 
         /* POLL METHOD TO WRAP POLL FUNCTION CALL */
         int poll(void);

@@ -196,11 +196,13 @@ void Server::receiveData(int &index) {
     }
     else {
         buffer[bytes_read] = '\0';
-        // print data received and stored in buffer
         int idx_cli = findClientByFd(this->pollFds[index].fd);
         if (idx_cli == -1) {
             throw std::invalid_argument("Client fd not found");
         }
+        time_t current_time = time(NULL); // Get current time in seconds
+        this->clients_fd[idx_cli].setLastActivity(current_time);
+        // print data received and stored in buffer
         std::string buf = buffer;
         this->clients_fd[idx_cli].appendData(buf);
         std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]"
