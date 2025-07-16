@@ -43,6 +43,7 @@ class Pollset {
         /* GETTERS */
         size_t getSize(void) const;
         struct pollfd &getPollFd(int index);
+        const std::vector<pollfd>& getPollfds() const;
         
         /* CLEAR POLLFD VECTOR */
         void clear(void);

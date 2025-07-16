@@ -4,10 +4,10 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset() {}
+    clients(), pollset(), timeout_seconds(15) {} // 300 for 5 min
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
-        password(password), clients(), pollset() {
+        password(password), clients(), pollset(), timeout_seconds(15) {
     std::cout << "Server starting on port " << this->port
               << " with password '" << this->password << "'" << std::endl;
 }
@@ -23,6 +23,7 @@ Server &Server::operator=(const Server &other) {
         this->password = other.password;
         this->clients = other.clients;
         this->pollset = other.pollset;
+        this->timeout_seconds = other.timeout_seconds;
     }
     return *this;
 }
@@ -119,6 +120,44 @@ void Server::monitorConnections(void) {
             --i;
         }
     }
+    // check clients activity time
+    std::vector<Client>::iterator it = this->clients.begin();
+    time_t now = std::time(0);
+    while (it != this->clients.end()) {
+        std::cout << "result = " << now - (*it).getLastActivity() << std::endl;
+        std::cout << "now - (*it).getLastActivity() = " << now << " - " << (*it).getLastActivity()
+                  << "this->timeout_seconds = " << this->timeout_seconds << std::endl;
+        if (now - (*it).getLastActivity() >= this->timeout_seconds) {
+            int poll_fd_idx = this->getPollsetIdxByFd((*it).getFd());
+            std::cout << "poll_fd_idx = " << poll_fd_idx << std::endl;
+            if (poll_fd_idx != -1) {
+                std::cout << "client with fd [" << (*it).getFd() << "] timeouted" << std::endl;
+                //this->disconnectClient(poll_fd_idx); // index of position of fd in pollset
+                //close((*it).getFd());
+
+                // remove FD from pollset
+                struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
+                this->pollset.remove(poll_fd_idx);
+                // close FD
+                close(current.fd);
+
+
+            }
+            it = this->clients.erase(it);
+            std::cout << "Clients left: " << clients.size() << ", pollset size: " << pollset.getSize() << std::endl;
+        }
+        else
+            ++it;
+    }
+}
+
+size_t Server::getPollsetIdxByFd(int fd) {
+    for (size_t i = 0; i < pollset.getPollfds().size(); i++) {
+        if (pollset.getPollfds()[i].fd == fd) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 /* SET SOCKETS AS NON BLOCKING */
@@ -159,6 +198,8 @@ void Server::connectClient(void) {
     Client client;
     client.setFd(client_fd);
     this->clients.push_back(client);
+    client.setLastActivity(std::time(0));
+    std::cout << "First connection time: " << client.getFirstConnectionTime() << std::endl;
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -179,7 +220,7 @@ void Server::receiveData(size_t &index) {
         --index; // fix index after disconnecting
         return;
     }
-    else {
+    else if (bytes_read > 0){
         buffer[bytes_read] = '\0';
         // print data received and stored in buffer
         Client *client = getClientByFd(current.fd);
@@ -188,9 +229,13 @@ void Server::receiveData(size_t &index) {
         }
         if (client) {
             std::string buf = buffer;
+            if (buf.empty() || buffer[0] == '\0')
+                return; // ignora vazios
             client->appendData(buf);
             std::cout << "Client fd [" << client->getFd() << "]"
                   << " data: '" << client->getData() << "'" << std::endl;
+            client->setLastActivity(std::time(0));
+            std::cout << "Last activity time: " << client->getLastActivity() << std::endl;
         }
     }
 }
