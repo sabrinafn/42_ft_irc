@@ -34,11 +34,11 @@ void Server::setServerPassword(std::string other) {
 }
 
 /* GETTERS */
-int Server::getPortNumber(void) {
+int Server::getPortNumber(void) const {
     return this->port;
 }
 
-std::string Server::getServerPassword(void) {
+std::string Server::getServerPassword(void) const {
     return this->password;
 }
 
@@ -235,7 +235,7 @@ void Server::disconnectClient(size_t index) {
 
 /* FIND CLIENT BY FD */
 Client *Server::getClientByFd(int fd_to_find) {
-    std::vector<Client>::iterator it = clients.begin();
+    std::vector<Client>::iterator it = this->clients.begin();
     for (size_t i = 0; i < clients.size(); i++) {
         if ((*it).getFd() == fd_to_find)
             return &clients[i];
