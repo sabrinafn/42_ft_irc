@@ -1,7 +1,7 @@
 #include "../includes/client/Client.hpp"
 
 /* CONSTRUCTOR */
-Client::Client(void) : fd(0), data("") {}
+Client::Client(void) : fd(0), buffer("") {}
 
 /* COPY CONSTRUCTOR */
 Client::Client(const Client &other) { *this = other; }
@@ -10,7 +10,7 @@ Client::Client(const Client &other) { *this = other; }
 Client &Client::operator=(const Client &other) {
     if (this != &other) {
         this->fd = other.fd;
-        this->data = other.data;
+        this->buffer = other.buffer;
     }
     return *this;
 }
@@ -24,7 +24,7 @@ void Client::setFd(int other) {
 }
 
 void Client::setData(std::string other) {
-    this->data = other;
+    this->buffer = other;
 }
 
 /* GETTERS */
@@ -33,10 +33,10 @@ int Client::getFd(void) const {
 }
 
 std::string Client::getData(void) const {
-    return this->data;
+    return this->buffer;
 }
 
 /* APPEND MORE DATA TO CURRENT BUFFER DATA */
 void Client::appendData(std::string other) {
-    this->data += other;
+    this->buffer += other;
 }

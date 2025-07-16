@@ -1,3 +1,10 @@
+
+/*
+ * Pollset.hpp
+ *
+ * Defines the Pollset class, which encapsulates a collection of pollfd structs
+ * and provides methods for managing and polling multiple file descriptors.
+ */
 #ifndef POLLSET_HPP
 #define POLLSET_HPP
 

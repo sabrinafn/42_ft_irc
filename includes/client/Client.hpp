@@ -1,3 +1,10 @@
+
+/*
+ * Client.hpp
+ *
+ * Defines the Client class, representing a single IRC client connection,
+ * including its socket file descriptor, input buffer, and connection state.
+ */
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
@@ -7,7 +14,7 @@ class Client {
 
     private:
         int fd;
-        std::string data;
+        std::string buffer;
 
     public:
         /* CONSTRUCTOR */
