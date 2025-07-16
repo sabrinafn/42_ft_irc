@@ -14,22 +14,20 @@ Pollset &Pollset::operator=(const Pollset &other) {
     return *this;
 }
 
-struct pollfd Pollset::operator[](int index) {
-    return this->fd[index];
-}
+//struct pollfd Pollset::operator[](int index) {
+//    return this->fd[index];
+//}
 
 /* DESTRUCTOR */
 Pollset::~Pollset(void) {}
 
 /* ADD FD TO THE POLL*/
 void Pollset::add(int fd) {
-    // 01. CREATING POLL STRUCT FOR SERVER
     struct pollfd poll_fd;
     poll_fd.fd = fd; //-> add the server socket to the pollfd
     poll_fd.events = POLLIN; //-> set the event to POLLIN for reading data
     poll_fd.revents = 0; //-> set the revents to 0
 
-    // 02. ADDING SERVER POLL FD TO THE POLLFD STRUCT
     this->fd.push_back(poll_fd); //-> add the server socket to the pollfd
 }
 
@@ -41,12 +39,15 @@ void Pollset::remove(int fd) {
 
 /* POLL METHOD TO WRAP POLL FUNCTION CALL */
 int Pollset::poll(void) {
-    // 03. MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
+    // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
     return ::poll(this->fd.data(), this->fd.size(), -1);
 }
 
-/* GETTTERS */
+/* GETTERS */
 int Pollset::getSize(void) {
     return static_cast<int>(this->fd.size());
 }
 
+struct pollfd &Pollset::getPollFd(int index) {
+    return this->fd[index];
+}
