@@ -43,8 +43,9 @@ class Server {
         void setServerPassword(std::string other);
 
         /* GETTERS */
-        int getPortNumber(void);
-        std::string getServerPassword(void);
+        int getPortNumber(void) const;
+        std::string getServerPassword(void) const;
+        Client *getClientByFd(int fd_to_find);
 
         /* CREATE SOCKET */
         void createSocket(void);
@@ -66,9 +67,6 @@ class Server {
 
         /* DISCONNECT CLIENT */
         void disconnectClient(size_t index);
-
-        /* FIND CLIENT BY FD */
-        Client *getClientByFd(int fd_to_find);
 
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);

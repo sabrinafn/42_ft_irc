@@ -28,11 +28,11 @@ void Client::setData(std::string other) {
 }
 
 /* GETTERS */
-int Client::getFd(void) {
+int Client::getFd(void) const {
     return this->fd;
 }
 
-std::string Client::getData(void) {
+std::string Client::getData(void) const {
     return this->data;
 }
 

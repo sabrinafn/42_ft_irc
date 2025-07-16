@@ -27,8 +27,8 @@ class Client {
         void setData(std::string other);
 
         /* GETTERS */
-        int getFd(void);
-        std::string getData(void);
+        int getFd(void) const;
+        std::string getData(void) const;
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);

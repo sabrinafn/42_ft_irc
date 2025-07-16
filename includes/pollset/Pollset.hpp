@@ -33,7 +33,7 @@ class Pollset {
         int poll(void);
 
         /* GETTTERS */
-        size_t getSize(void);
+        size_t getSize(void) const;
         struct pollfd &getPollFd(int index);
 
     };

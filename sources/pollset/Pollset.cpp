@@ -40,7 +40,7 @@ int Pollset::poll(void) {
 }
 
 /* GETTERS */
-size_t Pollset::getSize(void) {
+size_t Pollset::getSize(void) const {
     return this->fd.size();
 }
 
