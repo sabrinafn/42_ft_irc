@@ -57,7 +57,6 @@ void Server::initServer(void) {
     while (!Server::signals) {
         monitorConnections();
     }
-    this->clearServer();
 }
 
 /* CREATE SOCKET */
@@ -79,7 +78,7 @@ void Server::createSocket(void) {
     if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         throwSystemError("setsockopt");
 
-    /* Setar O_NONBLOCK com fcntl() */
+    // Setar O_NONBLOCK com fcntl()
     this->setNonBlocking(this->socket_fd);
 
     // bind socket to a IP/port
@@ -111,7 +110,7 @@ void Server::monitorConnections(void) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
 			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
             if (current.fd == this->socket_fd) 
-                this->acceptClient(); // accept a new client
+                this->connectClient(); // accept a new client
 			else
                 this->receiveData(i); // receive data for client that is already registered
         }
@@ -119,7 +118,6 @@ void Server::monitorConnections(void) {
             this->disconnectClient(i);
             --i;
         }
-
     }
 }
 
@@ -141,7 +139,7 @@ void Server::setNonBlocking(int socket) {
 }
 
 /* ACCEPT A NEW CLIENT */
-void Server::acceptClient(void) {
+void Server::connectClient(void) {
     // accept a new client
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
@@ -152,7 +150,7 @@ void Server::acceptClient(void) {
         return;
     }
 
-    /* Setar O_NONBLOCK with fcntl() */
+    // Setar O_NONBLOCK with fcntl()
     this->setNonBlocking(client_fd);
 
     // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
@@ -212,7 +210,6 @@ void Server::disconnectClient(size_t index) {
         }
         it++;
     }
-
     // close FD
     close(current.fd);
 }
@@ -236,14 +233,12 @@ void Server::clearServer(void) {
         close(it->getFd());
         it = this->clients.erase(it);
     }
-
     // close fds in struct pollfd
     this->pollset.clear();
 }
 
 /* THROW + SYSTEM ERROR MESSAGE */
 void Server::throwSystemError(const std::string &msg){
-    //close(this->socket_fd);
     this->clearServer();
     int err = errno; // similar to perror(); returns the same error
     throw std::runtime_error(msg + ": " + strerror(err));

@@ -40,7 +40,7 @@ class Pollset {
         /* POLL METHOD TO WRAP POLL FUNCTION CALL */
         int poll(void);
 
-        /* GETTTERS */
+        /* GETTERS */
         size_t getSize(void) const;
         struct pollfd &getPollFd(int index);
         
