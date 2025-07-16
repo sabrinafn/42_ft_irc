@@ -1,3 +1,10 @@
+
+/*
+ * Server.hpp
+ *
+ * Defines the Server class, responsible for managing the IRC server's socket,
+ * event loop, client connections, and high-level server orchestration.
+ */
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
