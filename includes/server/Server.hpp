@@ -30,6 +30,7 @@ class Server {
     public:
         /* CONSTRUCTOR */
         Server(void);
+        Server(int port, const std::string &password);
 
         /* COPY CONSTRUCTOR */
         Server(const Server &other);

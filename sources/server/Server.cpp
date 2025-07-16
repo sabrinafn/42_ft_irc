@@ -6,6 +6,12 @@ bool Server::signals = false;
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
     clients(), pollset() {}
 
+Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
+        password(password), clients(), pollset() {
+    std::cout << "Server starting on port " << this->port
+              << " with password '" << this->password << "'" << std::endl;
+}
+
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
 
