@@ -10,7 +10,9 @@
 #include <vector> // std::vector
 #include <string> // std::string
 #include <cstdio> // perror
+ #include <errno.h> // errno
 #include <csignal> // signal
+#include <string.h> //strerror
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
@@ -67,6 +69,9 @@ class Server {
 
         /* DISCONNECT CLIENT */
         void disconnectClient(size_t index);
+
+        /* THROW + SYSTEM ERROR MESSAGE */
+        void throwSystemError(const std::string &msg) const;
 
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);
