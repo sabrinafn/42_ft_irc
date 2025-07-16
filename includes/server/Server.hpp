@@ -68,7 +68,7 @@ class Server {
         void disconnectClient(int index);
 
         /* FIND CLIENT BY FD */
-        int findClientByFd(int fd_to_find);
+        Client *getClientByFd(int fd_to_find);
 
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);

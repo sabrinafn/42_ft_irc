@@ -199,14 +199,17 @@ void Server::receiveData(int &index) {
     else {
         buffer[bytes_read] = '\0';
         // print data received and stored in buffer
-        int idx_cli = findClientByFd(current.fd);
-        if (idx_cli == -1) {
+        //int idx_cli = findClientByFd(current.fd);
+        Client *client = getClientByFd(current.fd);
+        if (!client) {
             throw std::invalid_argument("Client fd not found");
         }
-        std::string buf = buffer;
-        this->clients_fd[idx_cli].appendData(buf);
-        std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]"
-                  << " data: '" << this->clients_fd[idx_cli].getData() << "'" << std::endl;
+        if (client) {
+            std::string buf = buffer;
+            client->appendData(buf);
+            std::cout << "Client fd [" << client->getFd() << "]"
+                  << " data: '" << client->getData() << "'" << std::endl;
+        }
     }
 }
 
@@ -218,16 +221,14 @@ void Server::disconnectClient(int index) {
 }
 
 /* FIND CLIENT BY FD */
-int Server::findClientByFd(int fd_to_find) {
-
+Client *Server::getClientByFd(int fd_to_find) {
     std::vector<Client>::iterator it = clients_fd.begin();
-    unsigned long i;
-    for (i = 0; i < clients_fd.size(); i++) {
+    for (int i = 0; i < static_cast<int>(clients_fd.size()); i++) {
         if ((*it).getFd() == fd_to_find)
-            return static_cast<int>(i);
+            return &clients_fd[i];
         it++;
     }
-    return -1;
+    return NULL;
 }
 
 /* SIGNAL HANDLER FUNCTION */
