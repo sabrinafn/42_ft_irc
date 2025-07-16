@@ -1,3 +1,10 @@
+
+/*
+ * Client.hpp
+ *
+ * Defines the Client class, representing a single IRC client connection,
+ * including its socket file descriptor, input buffer, and connection state.
+ */
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
@@ -8,8 +15,7 @@ class Client {
 
     private:
         int fd;
-        std::string data;
-        time_t last_activity;
+        std::string buffer;
 
     public:
         /* CONSTRUCTOR */
@@ -30,9 +36,8 @@ class Client {
         void setLastActivity(time_t time);
 
         /* GETTERS */
-        int getFd(void);
-        std::string getData(void);
-        time_t getLastActivity(void);
+        int getFd(void) const;
+        std::string getData(void) const;
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);

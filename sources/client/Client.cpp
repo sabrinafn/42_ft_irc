@@ -1,7 +1,7 @@
 #include "../includes/client/Client.hpp"
 
 /* CONSTRUCTOR */
-Client::Client(void) : fd(0), data(""), last_activity(0) {}
+Client::Client(void) : fd(0), buffer("") {}
 
 /* COPY CONSTRUCTOR */
 Client::Client(const Client &other) { *this = other; }
@@ -10,8 +10,7 @@ Client::Client(const Client &other) { *this = other; }
 Client &Client::operator=(const Client &other) {
     if (this != &other) {
         this->fd = other.fd;
-        this->data = other.data;
-        this->last_activity = other.last_activity;
+        this->buffer = other.buffer;
     }
     return *this;
 }
@@ -25,7 +24,7 @@ void Client::setFd(int other) {
 }
 
 void Client::setData(std::string other) {
-    this->data = other;
+    this->buffer = other;
 }
 
 void Client::setLastActivity(time_t time) {
@@ -33,12 +32,12 @@ void Client::setLastActivity(time_t time) {
 }
 
 /* GETTERS */
-int Client::getFd(void) {
+int Client::getFd(void) const {
     return this->fd;
 }
 
-std::string Client::getData(void) {
-    return this->data;
+std::string Client::getData(void) const {
+    return this->buffer;
 }
 
 time_t Client::getLastActivity(void) {
@@ -47,5 +46,5 @@ time_t Client::getLastActivity(void) {
 
 /* APPEND MORE DATA TO CURRENT BUFFER DATA */
 void Client::appendData(std::string other) {
-    this->data += other;
+    this->buffer += other;
 }

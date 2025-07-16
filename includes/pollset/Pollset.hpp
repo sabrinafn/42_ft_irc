@@ -1,9 +1,17 @@
+
+/*
+ * Pollset.hpp
+ *
+ * Defines the Pollset class, which encapsulates a collection of pollfd structs
+ * and provides methods for managing and polling multiple file descriptors.
+ */
 #ifndef POLLSET_HPP
 #define POLLSET_HPP
 
 #include <vector> // std::vector
 #include <poll.h> // poll
 #include <iostream> // std::cout std::cerr
+#include <unistd.h> // close
 
 class Pollset {
 
@@ -19,7 +27,6 @@ class Pollset {
 
         /* OPERATORS */
         Pollset &operator=(const Pollset &other);
-        struct pollfd& operator[](int index);
 
         /* DESTRUCTOR */
         ~Pollset(void);
@@ -33,8 +40,12 @@ class Pollset {
         /* POLL METHOD TO WRAP POLL FUNCTION CALL */
         int poll(void);
 
-        /* GETTTERS */
-        int getSize(void);
+        /* GETTERS */
+        size_t getSize(void) const;
+        struct pollfd &getPollFd(int index);
+        
+        /* CLEAR POLLFD VECTOR */
+        void clear(void);
 
     };
 

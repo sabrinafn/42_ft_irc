@@ -4,7 +4,13 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients_fd(), pollFds() {}
+    clients(), pollset() {}
+
+Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
+        password(password), clients(), pollset() {
+    std::cout << "Server starting on port " << this->port
+              << " with password '" << this->password << "'" << std::endl;
+}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -15,8 +21,8 @@ Server &Server::operator=(const Server &other) {
         this->port = other.port;
         this->socket_fd = other.socket_fd;
         this->password = other.password;
-        this->clients_fd = other.clients_fd;
-        this->pollFds = other.pollFds;
+        this->clients = other.clients;
+        this->pollset = other.pollset;
     }
     return *this;
 }
@@ -25,20 +31,20 @@ Server &Server::operator=(const Server &other) {
 Server::~Server(void) {}
 
 /* SETTERS */
-void Server::setPortNumber(int other) {
-    this->port = other;
-}
+//void Server::setPortNumber(int other) {
+//    this->port = other;
+//}
 
-void Server::setServerPassword(std::string other) {
-    this->password = other;
-}
+//void Server::setServerPassword(std::string other) {
+//    this->password = other;
+//}
 
 /* GETTERS */
-int Server::getPortNumber(void) {
+int Server::getPortNumber(void) const {
     return this->port;
 }
 
-std::string Server::getServerPassword(void) {
+std::string Server::getServerPassword(void) const {
     return this->password;
 }
 
@@ -64,73 +70,54 @@ void Server::createSocket(void) {
     // create socket
     std::cout << "Creating server socket..." << std::endl;
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->socket_fd == -1) {
-        perror("socket");
-        throw std::runtime_error("Can't create a socket.");
-    }
+    if (this->socket_fd == -1)
+        throwSystemError("socket");
 
     // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
-    if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        perror("setsockopt");
-        close(this->socket_fd);
-        throw std::runtime_error("setsockopt not allowing address reuse.");
-    }
+    if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+        throwSystemError("setsockopt");
 
-    /* Setar O_NONBLOCK com fcntl() */
+    // Setar O_NONBLOCK com fcntl()
     this->setNonBlocking(this->socket_fd);
 
     // bind socket to a IP/port
     std::cout << "Binding server socket to ip address" << std::endl;
-    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 ) {
-        perror("bind");
-        close(this->socket_fd);
-        throw std::runtime_error("Can't bind to IP/port.");
-    }
+    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 )
+        throwSystemError("bind");
 
     // mark socket to start listening
     std::cout << "Marking socket to start listening" << std::endl;
-    if (listen(this->socket_fd, SOMAXCONN) == -1) {
-        close(this->socket_fd);
-        perror("listen");
-        throw std::runtime_error("Can't mark socket to start listening.");
-   }
+    if (listen(this->socket_fd, SOMAXCONN) == -1)
+        throwSystemError("listen");
 
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
-    this->pollFds.add(this->socket_fd);
+    this->pollset.add(this->socket_fd);
 }
-
 
 /* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
-    if (this->pollFds.poll() == -1 && !Server::signals) {
-        perror("poll");
-        close(this->socket_fd);
-        throw std::runtime_error("poll() can't monitor fds");
-    }
+    if (this->pollset.poll() == -1 && !Server::signals)
+        throwSystemError("poll");
+
     std::cout << "poll waiting for an event to happen" << std::endl;
     // checking all fds
-    for (int i = 0; i < pollFds.getSize(); i++) {
+    for (size_t i = 0; i < pollset.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
-        if (this->pollFds[i].revents & POLLIN) {
+        struct pollfd current = this->pollset.getPollFd(i);
+        if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-            std::cout << "Client with fd [" << this->pollFds[i].fd << "] connected" << std::endl;
-			if (this->pollFds[i].fd == this->socket_fd) {
-                // accept a new client
-                this->acceptClient();
-            }
-			else {
-                // receive data for client that is already registered
-                this->receiveData(i);
-            }
+			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
+            if (current.fd == this->socket_fd) 
+                this->connectClient(); // accept a new client
+			else
+                this->receiveData(i); // receive data for client that is already registered
         }
-        else if (this->pollFds[i].revents & POLLHUP || this->pollFds[i].revents & POLLERR) {
-            // i = index i in pollfds[i], not the fd
+        else if (current.revents & POLLHUP || current.revents & POLLERR) {
             this->disconnectClient(i);
             --i;
         }
-
     }
 }
 
@@ -138,96 +125,125 @@ void Server::monitorConnections(void) {
 void Server::setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0);
     if (flags == -1) {
-        perror("fcntl");
+        //("fcntl");
         if (socket != this->socket_fd)
             close(socket);
-        close(this->socket_fd);
-        throw std::runtime_error("Erro ao obter flags do socket");
+        throwSystemError("fcntl");
     }
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) == -1) {
-        perror("fcntl");
         if (socket != this->socket_fd)
             close(socket);
-        close(this->socket_fd);
-        throw std::runtime_error("Erro ao setar O_NONBLOCK");
+        throwSystemError("fcntl");
     }
 }
 
 /* ACCEPT A NEW CLIENT */
-void Server::acceptClient(void) {
+void Server::connectClient(void) {
     // accept a new client
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
     int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
     if (client_fd < 0) {
-        perror("accept");
-        std::cerr << "Can't connect to client" << std::endl;
+        int err = errno;
+        std::cerr << "accept: " << strerror(err) << std::endl;
         return;
     }
 
-    /* Setar O_NONBLOCK with fcntl() */
+    // Setar O_NONBLOCK with fcntl()
     this->setNonBlocking(client_fd);
 
     // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
-    this->pollFds.add(client_fd);
+    this->pollset.add(client_fd);
 
     Client client;
     client.setFd(client_fd);
-    this->clients_fd.push_back(client);
+    this->clients.push_back(client);
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
-void Server::receiveData(int &index) {
+void Server::receiveData(size_t &index) {
     char buffer[1024];
-    ssize_t bytes_read = recv(this->pollFds[index].fd, buffer, sizeof(buffer) - 1, 0);
+    struct pollfd current = this->pollset.getPollFd(index);
+    ssize_t bytes_read = recv(current.fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
-        perror("recv");
-        std::cerr << "Can't read, recv failed" << std::endl;
+        int err = errno;
+        std::cerr << "recv: " << strerror(err) << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after erase
+        --index; // fix index after disconnecting
         return;
     }
     else if (bytes_read == 0) {
         std::cerr << "client disconnected" << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after erase
+        --index; // fix index after disconnecting
         return;
     }
     else {
         buffer[bytes_read] = '\0';
-        int idx_cli = findClientByFd(this->pollFds[index].fd);
-        if (idx_cli == -1) {
+        // print data received and stored in buffer
+        Client *client = getClientByFd(current.fd);
+        if (!client) {
             throw std::invalid_argument("Client fd not found");
         }
-        time_t current_time = time(NULL); // Get current time in seconds
-        this->clients_fd[idx_cli].setLastActivity(current_time);
-        // print data received and stored in buffer
-        std::string buf = buffer;
-        this->clients_fd[idx_cli].appendData(buf);
-        std::cout << "Client fd [" << this->clients_fd[idx_cli].getFd() << "]"
-                  << " data: '" << this->clients_fd[idx_cli].getData() << "'" << std::endl;
+        if (client) {
+            std::string buf = buffer;
+            client->appendData(buf);
+            std::cout << "Client fd [" << client->getFd() << "]"
+                  << " data: '" << client->getData() << "'" << std::endl;
+        }
     }
 }
 
 /* DISCONNECT CLIENT */
-void Server::disconnectClient(int index) {
-    close(this->pollFds[index].fd);
-    this->pollFds.remove(index);
+void Server::disconnectClient(size_t index) {
+    // remove FD from pollset
+    struct pollfd current = this->pollset.getPollFd(index);
+    this->pollset.remove(index);
+
+    // remove FD from clients vector
+    std::vector<Client>::iterator it = clients.begin();
+    for (size_t i = 0; i < clients.size(); i++) {
+        if ((*it).getFd() == current.fd) {
+            clients.erase(it);
+            break;
+        }
+        it++;
+    }
+    // close FD
+    close(current.fd);
 }
 
 /* FIND CLIENT BY FD */
-int Server::findClientByFd(int fd_to_find) {
-
-    std::vector<Client>::iterator it = clients_fd.begin();
-    unsigned long i;
-    for (i = 0; i < clients_fd.size(); i++) {
+Client *Server::getClientByFd(int fd_to_find) {
+    std::vector<Client>::iterator it = this->clients.begin();
+    for (size_t i = 0; i < clients.size(); i++) {
         if ((*it).getFd() == fd_to_find)
-            return static_cast<int>(i);
+            return &clients[i];
         it++;
     }
-    return -1;
+    return NULL;
 }
+
+/* CLEAR RESOURCES */
+void Server::clearServer(void) {
+    // clear clients vector
+    std::vector<Client>::iterator it = this->clients.begin();
+    while (it != this->clients.end()) {
+        close(it->getFd());
+        it = this->clients.erase(it);
+    }
+    // close fds in struct pollfd
+    this->pollset.clear();
+}
+
+/* THROW + SYSTEM ERROR MESSAGE */
+void Server::throwSystemError(const std::string &msg){
+    this->clearServer();
+    int err = errno; // similar to perror(); returns the same error
+    throw std::runtime_error(msg + ": " + strerror(err));
+}
+
 
 /* SIGNAL HANDLER FUNCTION */
 void Server::signalHandler(int sig) {
