@@ -31,13 +31,13 @@ Server &Server::operator=(const Server &other) {
 Server::~Server(void) {}
 
 /* SETTERS */
-void Server::setPortNumber(int other) {
-    this->port = other;
-}
+//void Server::setPortNumber(int other) {
+//    this->port = other;
+//}
 
-void Server::setServerPassword(std::string other) {
-    this->password = other;
-}
+//void Server::setServerPassword(std::string other) {
+//    this->password = other;
+//}
 
 /* GETTERS */
 int Server::getPortNumber(void) const {
