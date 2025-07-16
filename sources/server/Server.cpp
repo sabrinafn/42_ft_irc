@@ -64,51 +64,37 @@ void Server::createSocket(void) {
     // create socket
     std::cout << "Creating server socket..." << std::endl;
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (this->socket_fd == -1) {
-        perror("socket");
-        throw std::runtime_error("Can't create a socket.");
-    }
+    if (this->socket_fd == -1)
+        throwSystemError("socket");
 
     // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
-    if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0) {
-        perror("setsockopt");
-        close(this->socket_fd);
-        throw std::runtime_error("setsockopt not allowing address reuse.");
-    }
+    if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
+        throwSystemError("setsockopt");
 
     /* Setar O_NONBLOCK com fcntl() */
     this->setNonBlocking(this->socket_fd);
 
     // bind socket to a IP/port
     std::cout << "Binding server socket to ip address" << std::endl;
-    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 ) {
-        perror("bind");
-        close(this->socket_fd);
-        throw std::runtime_error("Can't bind to IP/port.");
-    }
+    if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1 )
+        throwSystemError("bind");
 
     // mark socket to start listening
     std::cout << "Marking socket to start listening" << std::endl;
-    if (listen(this->socket_fd, SOMAXCONN) == -1) {
-        close(this->socket_fd);
-        perror("listen");
-        throw std::runtime_error("Can't mark socket to start listening.");
-   }
+    if (listen(this->socket_fd, SOMAXCONN) == -1)
+        throwSystemError("listen");
 
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
     this->pollset.add(this->socket_fd);
 }
 
-
 /* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
-    if (this->pollset.poll() == -1 && !Server::signals) {
-        perror("poll");
-        close(this->socket_fd);
-        throw std::runtime_error("poll() can't monitor fds");
-    }
+    if (this->pollset.poll() == -1 && !Server::signals)
+        throwSystemError("poll");
+
     std::cout << "poll waiting for an event to happen" << std::endl;
     // checking all fds
     for (size_t i = 0; i < pollset.getSize(); i++) {
@@ -117,17 +103,12 @@ void Server::monitorConnections(void) {
         if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
 			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
-            if (current.fd == this->socket_fd) {
-                // accept a new client
-                this->acceptClient();
-            }
-			else {
-                // receive data for client that is already registered
-                this->receiveData(i);
-            }
+            if (current.fd == this->socket_fd) 
+                this->acceptClient(); // accept a new client
+			else
+                this->receiveData(i); // receive data for client that is already registered
         }
         else if (current.revents & POLLHUP || current.revents & POLLERR) {
-            // i = index i in pollfds[i], not the fd
             this->disconnectClient(i);
             --i;
         }
@@ -139,19 +120,16 @@ void Server::monitorConnections(void) {
 void Server::setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0);
     if (flags == -1) {
-        perror("fcntl");
+        //("fcntl");
         if (socket != this->socket_fd)
             close(socket);
-        close(this->socket_fd);
-        throw std::runtime_error("Erro ao obter flags do socket");
+        throwSystemError("fcntl");
     }
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) == -1) {
-        perror("fcntl");
         if (socket != this->socket_fd)
             close(socket);
-        close(this->socket_fd);
-        throw std::runtime_error("Erro ao setar O_NONBLOCK");
+        throwSystemError("fcntl");
     }
 }
 
@@ -162,8 +140,8 @@ void Server::acceptClient(void) {
     socklen_t client_addr_len = sizeof(client_addr);
     int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
     if (client_fd < 0) {
-        perror("accept");
-        std::cerr << "Can't connect to client" << std::endl;
+        int err = errno;
+        std::cerr << "accept: " << strerror(err) << std::endl;
         return;
     }
 
@@ -184,22 +162,21 @@ void Server::receiveData(size_t &index) {
     struct pollfd current = this->pollset.getPollFd(index);
     ssize_t bytes_read = recv(current.fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
-        perror("recv");
-        std::cerr << "Can't read, recv failed" << std::endl;
+        int err = errno;
+        std::cerr << "recv: " << strerror(err) << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after erase
+        --index; // fix index after disconnecting
         return;
     }
     else if (bytes_read == 0) {
         std::cerr << "client disconnected" << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after erase
+        --index; // fix index after disconnecting
         return;
     }
     else {
         buffer[bytes_read] = '\0';
         // print data received and stored in buffer
-        //int idx_cli = findClientByFd(current.fd);
         Client *client = getClientByFd(current.fd);
         if (!client) {
             throw std::invalid_argument("Client fd not found");
@@ -243,6 +220,14 @@ Client *Server::getClientByFd(int fd_to_find) {
     }
     return NULL;
 }
+
+/* THROW + SYSTEM ERROR MESSAGE */
+void Server::throwSystemError(const std::string &msg) const {
+    close(this->socket_fd);
+    int err = errno; // similar to perror(); returns the same error
+    throw std::runtime_error(msg + ": " + strerror(err));
+}
+
 
 /* SIGNAL HANDLER FUNCTION */
 void Server::signalHandler(int sig) {
