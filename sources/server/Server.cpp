@@ -215,9 +215,20 @@ void Server::receiveData(int &index) {
 
 /* DISCONNECT CLIENT */
 void Server::disconnectClient(int index) {
+    // remove FD from pollset
     struct pollfd current = this->pollFds.getPollFd(index);
-    close(current.fd);
     this->pollFds.remove(index);
+
+    // remove FD from clients vector
+    std::vector<Client>::iterator it = clients_fd.begin();
+    for (int i = 0; i < static_cast<int>(clients_fd.size()); i++) {
+        if ((*it).getFd() == current.fd)
+            clients_fd.erase(it);
+        it++;
+    }
+
+    // close FD
+    close(current.fd);
 }
 
 /* FIND CLIENT BY FD */
