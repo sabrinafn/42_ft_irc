@@ -49,8 +49,8 @@ class Server {
         ~Server(void);
 
         /* SETTERS */
-        void setPortNumber(int other);
-        void setServerPassword(std::string other);
+        //void setPortNumber(int other);
+        //void setServerPassword(std::string other);
 
         /* GETTERS */
         int getPortNumber(void) const;
