@@ -14,10 +14,6 @@ Pollset &Pollset::operator=(const Pollset &other) {
     return *this;
 }
 
-//struct pollfd Pollset::operator[](int index) {
-//    return this->fd[index];
-//}
-
 /* DESTRUCTOR */
 Pollset::~Pollset(void) {}
 
@@ -44,8 +40,8 @@ int Pollset::poll(void) {
 }
 
 /* GETTERS */
-int Pollset::getSize(void) {
-    return static_cast<int>(this->fd.size());
+size_t Pollset::getSize(void) {
+    return this->fd.size();
 }
 
 struct pollfd &Pollset::getPollFd(int index) {

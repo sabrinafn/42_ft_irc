@@ -22,7 +22,7 @@ class Server {
         int socket_fd;
         std::string password;
         std::vector<Client> clients;
-        Pollset pollFds;
+        Pollset pollset;
         static bool signals;
 
     public:
@@ -62,10 +62,10 @@ class Server {
         void acceptClient(void);
 
         /* RECEIVE DATA FROM REGISTERED CLIENT */
-        void receiveData(int &index);
+        void receiveData(size_t &index);
 
         /* DISCONNECT CLIENT */
-        void disconnectClient(int index);
+        void disconnectClient(size_t index);
 
         /* FIND CLIENT BY FD */
         Client *getClientByFd(int fd_to_find);

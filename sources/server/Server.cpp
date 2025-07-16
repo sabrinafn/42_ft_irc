@@ -4,7 +4,7 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollFds() {}
+    clients(), pollset() {}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -16,7 +16,7 @@ Server &Server::operator=(const Server &other) {
         this->socket_fd = other.socket_fd;
         this->password = other.password;
         this->clients = other.clients;
-        this->pollFds = other.pollFds;
+        this->pollset = other.pollset;
     }
     return *this;
 }
@@ -97,23 +97,23 @@ void Server::createSocket(void) {
    }
 
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
-    this->pollFds.add(this->socket_fd);
+    this->pollset.add(this->socket_fd);
 }
 
 
 /* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
-    if (this->pollFds.poll() == -1 && !Server::signals) {
+    if (this->pollset.poll() == -1 && !Server::signals) {
         perror("poll");
         close(this->socket_fd);
         throw std::runtime_error("poll() can't monitor fds");
     }
     std::cout << "poll waiting for an event to happen" << std::endl;
     // checking all fds
-    for (int i = 0; i < pollFds.getSize(); i++) {
+    for (size_t i = 0; i < pollset.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
-        struct pollfd current = this->pollFds.getPollFd(i);
+        struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
 			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
@@ -171,7 +171,7 @@ void Server::acceptClient(void) {
     this->setNonBlocking(client_fd);
 
     // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
-    this->pollFds.add(client_fd);
+    this->pollset.add(client_fd);
 
     Client client;
     client.setFd(client_fd);
@@ -179,9 +179,9 @@ void Server::acceptClient(void) {
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
-void Server::receiveData(int &index) {
+void Server::receiveData(size_t &index) {
     char buffer[1024];
-    struct pollfd current = this->pollFds.getPollFd(index);
+    struct pollfd current = this->pollset.getPollFd(index);
     ssize_t bytes_read = recv(current.fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
         perror("recv");
@@ -214,14 +214,14 @@ void Server::receiveData(int &index) {
 }
 
 /* DISCONNECT CLIENT */
-void Server::disconnectClient(int index) {
+void Server::disconnectClient(size_t index) {
     // remove FD from pollset
-    struct pollfd current = this->pollFds.getPollFd(index);
-    this->pollFds.remove(index);
+    struct pollfd current = this->pollset.getPollFd(index);
+    this->pollset.remove(index);
 
     // remove FD from clients vector
     std::vector<Client>::iterator it = clients.begin();
-    for (int i = 0; i < static_cast<int>(clients.size()); i++) {
+    for (size_t i = 0; i < clients.size(); i++) {
         if ((*it).getFd() == current.fd) {
             clients.erase(it);
             break;
@@ -236,7 +236,7 @@ void Server::disconnectClient(int index) {
 /* FIND CLIENT BY FD */
 Client *Server::getClientByFd(int fd_to_find) {
     std::vector<Client>::iterator it = clients.begin();
-    for (int i = 0; i < static_cast<int>(clients.size()); i++) {
+    for (size_t i = 0; i < clients.size(); i++) {
         if ((*it).getFd() == fd_to_find)
             return &clients[i];
         it++;
