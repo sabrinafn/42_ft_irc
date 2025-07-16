@@ -70,7 +70,7 @@ class Server {
         void setNonBlocking(int socket);
 
         /* ACCEPT A NEW CLIENT */
-        void acceptClient(void);
+        void connectClient(void);
 
         /* RECEIVE DATA FROM REGISTERED CLIENT */
         void receiveData(size_t &index);
