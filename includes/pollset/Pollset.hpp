@@ -4,6 +4,7 @@
 #include <vector> // std::vector
 #include <poll.h> // poll
 #include <iostream> // std::cout std::cerr
+#include <unistd.h> // close
 
 class Pollset {
 
@@ -35,6 +36,9 @@ class Pollset {
         /* GETTTERS */
         size_t getSize(void) const;
         struct pollfd &getPollFd(int index);
+        
+        /* CLEAR POLLFD VECTOR */
+        void clear(void);
 
     };
 

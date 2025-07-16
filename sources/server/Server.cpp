@@ -51,6 +51,7 @@ void Server::initServer(void) {
     while (!Server::signals) {
         monitorConnections();
     }
+    this->clearServer();
 }
 
 /* CREATE SOCKET */
@@ -221,9 +222,23 @@ Client *Server::getClientByFd(int fd_to_find) {
     return NULL;
 }
 
+/* CLEAR RESOURCES */
+void Server::clearServer(void) {
+    // clear clients vector
+    std::vector<Client>::iterator it = this->clients.begin();
+    while (it != this->clients.end()) {
+        close(it->getFd());
+        it = this->clients.erase(it);
+    }
+
+    // close fds in struct pollfd
+    this->pollset.clear();
+}
+
 /* THROW + SYSTEM ERROR MESSAGE */
-void Server::throwSystemError(const std::string &msg) const {
-    close(this->socket_fd);
+void Server::throwSystemError(const std::string &msg){
+    //close(this->socket_fd);
+    this->clearServer();
     int err = errno; // similar to perror(); returns the same error
     throw std::runtime_error(msg + ": " + strerror(err));
 }

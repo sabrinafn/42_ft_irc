@@ -47,3 +47,12 @@ size_t Pollset::getSize(void) const {
 struct pollfd &Pollset::getPollFd(int index) {
     return this->fd[index];
 }
+
+/* CLEAR POLLFD VECTOR */
+void Pollset::clear(void) {
+    // close fds in struct pollfd
+    for (size_t i = 0; i < this->fd.size(); i++) {
+        close(this->fd[i].fd);
+        this->fd.erase(this->fd.begin() + i);
+    }
+}

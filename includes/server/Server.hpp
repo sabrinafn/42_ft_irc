@@ -2,7 +2,7 @@
 #define SERVER_HPP
 
 #include <iostream> // std::cout, std::cerr
-#include <unistd.h> // read
+#include <unistd.h> // read, close
 #include <arpa/inet.h> // htons, inet_pton
 #include <sys/socket.h> // socket, bind, listen, accept
 #include <fcntl.h> // fcntl
@@ -67,11 +67,14 @@ class Server {
         /* RECEIVE DATA FROM REGISTERED CLIENT */
         void receiveData(size_t &index);
 
+        /* CLEAR RESOURCES */
+        void clearServer(void);
+
         /* DISCONNECT CLIENT */
         void disconnectClient(size_t index);
 
         /* THROW + SYSTEM ERROR MESSAGE */
-        void throwSystemError(const std::string &msg) const;
+        void throwSystemError(const std::string &msg);
 
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);

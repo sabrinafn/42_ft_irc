@@ -35,7 +35,7 @@ int main(int ac, char **av) {
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
         return 1;
     }
-
+    Server server;
     try {
         // ctrl+c
         signal(SIGINT, Server::signalHandler);
@@ -43,7 +43,7 @@ int main(int ac, char **av) {
         signal(SIGQUIT, Server::signalHandler);
         // kill [pid]
         signal(SIGTERM, Server::signalHandler);
-        Server server;
+        //Server server;
         std::pair<int, std::string> pair = validatePortAndPassword(av);
         server.setPortNumber(pair.first);
         server.setServerPassword(pair.second);
@@ -54,6 +54,6 @@ int main(int ac, char **av) {
     } catch (const std::exception& e) {
         std::cerr << "Error! " << e.what() << std::endl;
     }
-
+    server.clearServer();
     return 0;
 }
