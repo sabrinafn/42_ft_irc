@@ -17,9 +17,10 @@
 #include <vector> // std::vector
 #include <string> // std::string
 #include <cstdio> // perror
- #include <errno.h> // errno
+#include <errno.h> // errno
 #include <csignal> // signal
 #include <string.h> //strerror
+#include <ctime> // std::time
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
@@ -33,6 +34,8 @@ class Server {
         std::vector<Client> clients;
         Pollset pollset;
         static bool signals;
+        int timeout_seconds;
+
 
     public:
         /* CONSTRUCTOR */
@@ -86,6 +89,8 @@ class Server {
 
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);
+
+        size_t getPollsetIdxByFd(int fd);
     };
 
 #endif

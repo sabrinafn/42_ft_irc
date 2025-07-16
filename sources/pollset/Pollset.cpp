@@ -28,8 +28,8 @@ void Pollset::add(int fd) {
 }
 
 /* REMOVE FD FROM THE POLL */
-void Pollset::remove(int fd) {
-    std::vector<pollfd>::iterator pos = this->fd.begin() + fd;
+void Pollset::remove(int index) {
+    std::vector<pollfd>::iterator pos = this->fd.begin() + index;
     this->fd.erase(pos);
 }
 
@@ -46,6 +46,10 @@ size_t Pollset::getSize(void) const {
 
 struct pollfd &Pollset::getPollFd(int index) {
     return this->fd[index];
+}
+
+const std::vector<pollfd>& Pollset::getPollfds() const {
+    return this->fd;
 }
 
 /* CLEAR POLLFD VECTOR */
