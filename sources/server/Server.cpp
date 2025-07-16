@@ -113,10 +113,11 @@ void Server::monitorConnections(void) {
     // checking all fds
     for (int i = 0; i < pollFds.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
-        if (this->pollFds[i].revents & POLLIN) {
+        struct pollfd current = this->pollFds.getPollFd(i);
+        if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-            std::cout << "Client with fd [" << this->pollFds[i].fd << "] connected" << std::endl;
-			if (this->pollFds[i].fd == this->socket_fd) {
+			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
+            if (current.fd == this->socket_fd) {
                 // accept a new client
                 this->acceptClient();
             }
@@ -125,7 +126,7 @@ void Server::monitorConnections(void) {
                 this->receiveData(i);
             }
         }
-        else if (this->pollFds[i].revents & POLLHUP || this->pollFds[i].revents & POLLERR) {
+        else if (current.revents & POLLHUP || current.revents & POLLERR) {
             // i = index i in pollfds[i], not the fd
             this->disconnectClient(i);
             --i;
@@ -180,7 +181,8 @@ void Server::acceptClient(void) {
 /* RECEIVE DATA FROM REGISTERED CLIENT */
 void Server::receiveData(int &index) {
     char buffer[1024];
-    ssize_t bytes_read = recv(this->pollFds[index].fd, buffer, sizeof(buffer) - 1, 0);
+    struct pollfd current = this->pollFds.getPollFd(index);
+    ssize_t bytes_read = recv(current.fd, buffer, sizeof(buffer) - 1, 0);
     if (bytes_read < 0) {
         perror("recv");
         std::cerr << "Can't read, recv failed" << std::endl;
@@ -197,7 +199,7 @@ void Server::receiveData(int &index) {
     else {
         buffer[bytes_read] = '\0';
         // print data received and stored in buffer
-        int idx_cli = findClientByFd(this->pollFds[index].fd);
+        int idx_cli = findClientByFd(current.fd);
         if (idx_cli == -1) {
             throw std::invalid_argument("Client fd not found");
         }
@@ -210,7 +212,8 @@ void Server::receiveData(int &index) {
 
 /* DISCONNECT CLIENT */
 void Server::disconnectClient(int index) {
-    close(this->pollFds[index].fd);
+    struct pollfd current = this->pollFds.getPollFd(index);
+    close(current.fd);
     this->pollFds.remove(index);
 }
 
