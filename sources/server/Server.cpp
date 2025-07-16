@@ -4,7 +4,7 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients_fd(), pollFds() {}
+    clients(), pollFds() {}
 
 /* COPY CONSTRUCTOR */
 Server::Server(const Server &other) { *this = other;}
@@ -15,7 +15,7 @@ Server &Server::operator=(const Server &other) {
         this->port = other.port;
         this->socket_fd = other.socket_fd;
         this->password = other.password;
-        this->clients_fd = other.clients_fd;
+        this->clients = other.clients;
         this->pollFds = other.pollFds;
     }
     return *this;
@@ -175,7 +175,7 @@ void Server::acceptClient(void) {
 
     Client client;
     client.setFd(client_fd);
-    this->clients_fd.push_back(client);
+    this->clients.push_back(client);
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -220,10 +220,12 @@ void Server::disconnectClient(int index) {
     this->pollFds.remove(index);
 
     // remove FD from clients vector
-    std::vector<Client>::iterator it = clients_fd.begin();
-    for (int i = 0; i < static_cast<int>(clients_fd.size()); i++) {
-        if ((*it).getFd() == current.fd)
-            clients_fd.erase(it);
+    std::vector<Client>::iterator it = clients.begin();
+    for (int i = 0; i < static_cast<int>(clients.size()); i++) {
+        if ((*it).getFd() == current.fd) {
+            clients.erase(it);
+            break;
+        }
         it++;
     }
 
@@ -233,10 +235,10 @@ void Server::disconnectClient(int index) {
 
 /* FIND CLIENT BY FD */
 Client *Server::getClientByFd(int fd_to_find) {
-    std::vector<Client>::iterator it = clients_fd.begin();
-    for (int i = 0; i < static_cast<int>(clients_fd.size()); i++) {
+    std::vector<Client>::iterator it = clients.begin();
+    for (int i = 0; i < static_cast<int>(clients.size()); i++) {
         if ((*it).getFd() == fd_to_find)
-            return &clients_fd[i];
+            return &clients[i];
         it++;
     }
     return NULL;

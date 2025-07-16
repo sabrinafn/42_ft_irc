@@ -21,7 +21,7 @@ class Server {
         int port;
         int socket_fd;
         std::string password;
-        std::vector<Client> clients_fd;
+        std::vector<Client> clients;
         Pollset pollFds;
         static bool signals;
 
