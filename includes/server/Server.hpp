@@ -90,7 +90,11 @@ class Server {
         /* SIGNAL HANDLER FUNCTION */
         static void signalHandler(int sig);
 
+        /* FIND FD INDEX IN POLLSET BY FD IN CLIENT */
         size_t getPollsetIdxByFd(int fd);
+
+        /* VERIFY CLIENTS ACTIVE TIME */
+        void handleInactiveClients(void);
     };
 
 #endif

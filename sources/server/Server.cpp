@@ -120,31 +120,14 @@ void Server::monitorConnections(void) {
             --i;
         }
     }
-    // check clients activity time
-    std::vector<Client>::iterator it = this->clients.begin();
-    time_t now = std::time(0);
-    while (it != this->clients.end()) {
-        if (now - (*it).getLastActivity() >= this->timeout_seconds) {
-            int poll_fd_idx = this->getPollsetIdxByFd((*it).getFd());
-            if (poll_fd_idx != -1) {
-                // remove FD from pollset
-                struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
-                this->pollset.remove(poll_fd_idx);
-                // close FD
-                close(current.fd);
-            }
-            it = this->clients.erase(it);
-        }
-        else
-            ++it;
-    }
+    this->handleInactiveClients();
 }
 
+/* FIND FD INDEX IN POLLSET BY FD IN CLIENT */
 size_t Server::getPollsetIdxByFd(int fd) {
     for (size_t i = 0; i < pollset.getPollfds().size(); i++) {
-        if (pollset.getPollfds()[i].fd == fd) {
+        if (pollset.getPollfds()[i].fd == fd)
             return i;
-        }
     }
     return -1;
 }
@@ -285,3 +268,23 @@ void Server::signalHandler(int sig) {
     Server::signals = true;
 }
 
+/* VERIFY CLIENTS ACTIVE TIME */
+void Server::handleInactiveClients(void) {
+    std::vector<Client>::iterator it = this->clients.begin();
+    time_t now = std::time(0);
+    while (it != this->clients.end()) {
+        if (now - (*it).getLastActivity() >= this->timeout_seconds) {
+            int poll_fd_idx = this->getPollsetIdxByFd((*it).getFd());
+            if (poll_fd_idx != -1) {
+                // remove FD from pollset
+                struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
+                this->pollset.remove(poll_fd_idx);
+                // close FD
+                close(current.fd);
+            }
+            it = this->clients.erase(it);
+        }
+        else
+            ++it;
+    }
+}

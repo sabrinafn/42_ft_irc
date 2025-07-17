@@ -17,6 +17,8 @@ class Client {
         int fd;
         std::string buffer;
         time_t last_activity;
+        bool ping_sent;
+        time_t last_ping_sent;
 
     public:
         /* CONSTRUCTOR */
@@ -35,11 +37,15 @@ class Client {
         void setFd(int other);
         void setData(std::string other);
         void setLastActivity(time_t t);
+        void setPingSent(bool set);
+        void setLastPingSent(time_t time);
 
         /* GETTERS */
         int getFd(void) const;
         std::string getData(void) const;
         time_t getLastActivity() const;
+        bool getPingSent(void);
+        time_t getLastPingSent(void);
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);
