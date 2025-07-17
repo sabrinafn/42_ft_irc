@@ -4,10 +4,10 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset(), timeout_seconds(15) {} // 300 for 5 min
+    clients(), pollset(), timeout_seconds(300) {} // 300 for 5 min
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
-        password(password), clients(), pollset(), timeout_seconds(15) {
+        password(password), clients(), pollset(), timeout_seconds(300) {
     std::cout << "Server starting on port " << this->port
               << " with password '" << this->password << "'" << std::endl;
 }
@@ -109,7 +109,7 @@ void Server::monitorConnections(void) {
         struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-			std::cout << "Client with fd [" << current.fd << "] connected" << std::endl;
+			std::cout << "Client fd [" << current.fd << "] connected" << std::endl;
             if (current.fd == this->socket_fd) 
                 this->connectClient(); // accept a new client
 			else
@@ -124,27 +124,16 @@ void Server::monitorConnections(void) {
     std::vector<Client>::iterator it = this->clients.begin();
     time_t now = std::time(0);
     while (it != this->clients.end()) {
-        std::cout << "result = " << now - (*it).getLastActivity() << std::endl;
-        std::cout << "now - (*it).getLastActivity() = " << now << " - " << (*it).getLastActivity()
-                  << "this->timeout_seconds = " << this->timeout_seconds << std::endl;
         if (now - (*it).getLastActivity() >= this->timeout_seconds) {
             int poll_fd_idx = this->getPollsetIdxByFd((*it).getFd());
-            std::cout << "poll_fd_idx = " << poll_fd_idx << std::endl;
             if (poll_fd_idx != -1) {
-                std::cout << "client with fd [" << (*it).getFd() << "] timeouted" << std::endl;
-                //this->disconnectClient(poll_fd_idx); // index of position of fd in pollset
-                //close((*it).getFd());
-
                 // remove FD from pollset
                 struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
                 this->pollset.remove(poll_fd_idx);
                 // close FD
                 close(current.fd);
-
-
             }
             it = this->clients.erase(it);
-            std::cout << "Clients left: " << clients.size() << ", pollset size: " << pollset.getSize() << std::endl;
         }
         else
             ++it;
@@ -197,9 +186,9 @@ void Server::connectClient(void) {
 
     Client client;
     client.setFd(client_fd);
-    this->clients.push_back(client);
     client.setLastActivity(std::time(0));
-    std::cout << "First connection time: " << client.getFirstConnectionTime() << std::endl;
+    this->clients.push_back(client);
+    std::cout << "Last activity time: " << client.getLastActivity() << std::endl;
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -235,7 +224,6 @@ void Server::receiveData(size_t &index) {
             std::cout << "Client fd [" << client->getFd() << "]"
                   << " data: '" << client->getData() << "'" << std::endl;
             client->setLastActivity(std::time(0));
-            std::cout << "Last activity time: " << client->getLastActivity() << std::endl;
         }
     }
 }

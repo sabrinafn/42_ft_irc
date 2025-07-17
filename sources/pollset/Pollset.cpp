@@ -36,7 +36,7 @@ void Pollset::remove(int index) {
 /* POLL METHOD TO WRAP POLL FUNCTION CALL */
 int Pollset::poll(void) {
     // MONITORING FDS AND WAITING FOR EVENTS TO HAPPEN
-    return ::poll(this->fd.data(), this->fd.size(), -1);
+    return ::poll(this->fd.data(), this->fd.size(), 1000);
 }
 
 /* GETTERS */

@@ -1,7 +1,7 @@
 #include "../includes/client/Client.hpp"
 
 /* CONSTRUCTOR */
-Client::Client(void) : fd(0), buffer(""), first_connection_time(std::time(0)), last_activity(std::time(0)) {}
+Client::Client(void) : fd(0), buffer(""), last_activity(-1) {}
 
 /* COPY CONSTRUCTOR */
 Client::Client(const Client &other) { *this = other; }
@@ -11,7 +11,6 @@ Client &Client::operator=(const Client &other) {
     if (this != &other) {
         this->fd = other.fd;
         this->buffer = other.buffer;
-        this->first_connection_time = other.first_connection_time;
         this->last_activity = other.last_activity;
     }
     return *this;
@@ -29,11 +28,6 @@ void Client::setData(std::string other) {
     this->buffer = other;
 }
 
-
-void Client::setFirstConnectionTime(time_t t) {
-    first_connection_time = t;
-}
-
 void Client::setLastActivity(time_t t) {
     last_activity = t;
 }
@@ -45,10 +39,6 @@ int Client::getFd(void) const {
 
 std::string Client::getData(void) const {
     return this->buffer;
-}
-
-time_t Client::getFirstConnectionTime() const {
-    return first_connection_time;
 }
 
 time_t Client::getLastActivity() const {
