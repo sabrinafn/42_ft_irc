@@ -16,7 +16,6 @@ class Client {
     private:
         int fd;
         std::string buffer;
-        time_t first_connection_time;
         time_t last_activity;
 
     public:
@@ -35,13 +34,11 @@ class Client {
         /* SETTERS */
         void setFd(int other);
         void setData(std::string other);
-        void setFirstConnectionTime(time_t t);
         void setLastActivity(time_t t);
 
         /* GETTERS */
         int getFd(void) const;
         std::string getData(void) const;
-        time_t getFirstConnectionTime() const;
         time_t getLastActivity() const;
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
