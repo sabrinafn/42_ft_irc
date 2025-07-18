@@ -4,10 +4,10 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset(), timeout_seconds(10), pong_timeout(15) {} // 300 for 5 min
+    clients(), pollset(), timeout_seconds(300), pong_timeout(15) {} // 300 for 5 min
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
-        password(password), clients(), pollset(), timeout_seconds(10), pong_timeout(15) {
+        password(password), clients(), pollset(), timeout_seconds(300), pong_timeout(15) {
     std::cout << "Server starting on port " << this->port
               << " with password '" << this->password << "'" << std::endl;
 }
