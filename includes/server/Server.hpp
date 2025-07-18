@@ -21,6 +21,8 @@
 #include <csignal> // signal
 #include <string.h> //strerror
 #include <ctime> // std::time
+#include <sstream> // stringstream
+
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
@@ -35,7 +37,7 @@ class Server {
         Pollset pollset;
         static bool signals;
         int timeout_seconds;
-
+        int pong_timeout;
 
     public:
         /* CONSTRUCTOR */
@@ -95,6 +97,10 @@ class Server {
 
         /* VERIFY CLIENTS ACTIVE TIME */
         void handleInactiveClients(void);
+
+        /* HANDLER FOR MESSAGE */
+        /* only created now to deal with PONG */
+        void handleClientMessage(Client &client, const std::string &msg);
     };
 
 #endif

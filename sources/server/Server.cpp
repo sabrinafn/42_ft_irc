@@ -4,10 +4,10 @@ bool Server::signals = false;
 
 /* CONSTRUCTOR */
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset(), timeout_seconds(300) {} // 300 for 5 min
+    clients(), pollset(), timeout_seconds(10), pong_timeout(15) {} // 300 for 5 min
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
-        password(password), clients(), pollset(), timeout_seconds(300) {
+        password(password), clients(), pollset(), timeout_seconds(10), pong_timeout(15) {
     std::cout << "Server starting on port " << this->port
               << " with password '" << this->password << "'" << std::endl;
 }
@@ -24,6 +24,7 @@ Server &Server::operator=(const Server &other) {
         this->clients = other.clients;
         this->pollset = other.pollset;
         this->timeout_seconds = other.timeout_seconds;
+        this->pong_timeout = other.pong_timeout;
     }
     return *this;
 }
@@ -203,10 +204,12 @@ void Server::receiveData(size_t &index) {
             std::string buf = buffer;
             if (buf.empty() || buffer[0] == '\0')
                 return; // ignora vazios
+            this->handleClientMessage(*client, buf);
             client->appendData(buf);
             std::cout << "Client fd [" << client->getFd() << "]"
                   << " data: '" << client->getData() << "'" << std::endl;
             client->setLastActivity(std::time(0));
+            client->setPingSent(false);
         }
     }
 }
@@ -272,19 +275,63 @@ void Server::signalHandler(int sig) {
 void Server::handleInactiveClients(void) {
     std::vector<Client>::iterator it = this->clients.begin();
     time_t now = std::time(0);
+
     while (it != this->clients.end()) {
-        if (now - (*it).getLastActivity() >= this->timeout_seconds) {
-            int poll_fd_idx = this->getPollsetIdxByFd((*it).getFd());
-            if (poll_fd_idx != -1) {
-                // remove FD from pollset
-                struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
-                this->pollset.remove(poll_fd_idx);
-                // close FD
-                close(current.fd);
+        time_t lastActivity = it->getLastActivity();
+
+        // if client inactive
+        if (now - lastActivity >= this->timeout_seconds) {
+            if (!it->pingSent()) { // if ping not sent
+                std::stringstream ss; // convert time_t to string
+                ss << now;
+                std::string msg = "PING :" + ss.str() + "\r\n";
+                send(it->getFd(), msg.c_str(), msg.length(), 0);
+
+                it->setPingSent(true);
+                it->setLastPingSent(now);
+
+                std::cout << "Sent PING to Client with fd [" << it->getFd() << "]" << std::endl;
+                ++it;
             }
-            it = this->clients.erase(it);
-        }
-        else
+            else if (now - it->getLastPingSent() >= this->pong_timeout) {
+                // if ping was sent and timeout for pong is over
+                std::cout << "Client with fd [" << it->getFd() << "] timeouted (no PONG received)" << std::endl;
+
+                int poll_fd_idx = this->getPollsetIdxByFd(it->getFd());
+                if (poll_fd_idx != -1) {
+                    struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
+                    this->pollset.remove(poll_fd_idx);
+                    close(current.fd);
+                }
+                it = this->clients.erase(it);
+            }
+            else { // if ping was sent an timeout for pong is still not over
+                ++it;
+            }
+        } else { // if client is still active
             ++it;
+        }
+    }
+}
+
+
+/* HANDLER FOR MESSAGE */
+/* only created now to deal with PONG */
+void Server::handleClientMessage(Client &client, const std::string &msg) {
+    // PONG: LALALA
+    // get only the PONG and ignores the rest of the message
+    std::istringstream iss(msg);
+    std::string command;
+    iss >> command;
+
+    // check if pong was received
+    if (command == "PONG") {
+        if (std::time(0) - client.getLastPingSent() < this->pong_timeout) {
+            client.setPingSent(false);
+            client.setLastActivity(std::time(0));
+            std::cout << "PONG received from Client with fd [" << client.getFd() << "]" << std::endl;
+        }
+        client.setLastActivity(std::time(0));
+        return;
     }
 }

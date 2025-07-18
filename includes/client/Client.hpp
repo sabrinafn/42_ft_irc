@@ -44,7 +44,7 @@ class Client {
         int getFd(void) const;
         std::string getData(void) const;
         time_t getLastActivity() const;
-        bool getPingSent(void);
+        bool pingSent(void);
         time_t getLastPingSent(void);
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
