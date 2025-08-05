@@ -26,6 +26,7 @@
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
+#include "../parser/Parser.hpp" // parser class
 
 class Server {
 
@@ -101,6 +102,27 @@ class Server {
         /* HANDLER FOR MESSAGE */
         /* only created now to deal with PONG */
         void handleClientMessage(Client &client, const std::string &msg);
+
+        /* PROCESS IRC COMMANDS */
+        void processIRCMessage(Client &client, const IRCMessage &msg);
+
+        /* IRC COMMAND HANDLERS */
+        void handlePass(Client &client, const IRCMessage &msg);
+        void handleNick(Client &client, const IRCMessage &msg);
+        void handleUser(Client &client, const IRCMessage &msg);
+        void handlePing(Client &client, const IRCMessage &msg);
+        void handlePong(Client &client, const IRCMessage &msg);
+        void handleQuit(Client &client, const IRCMessage &msg);
+
+        /* SEND IRC REPLY TO CLIENT */
+        void sendReply(int fd, int code, const std::string& nickname, const std::string& message);
+        void sendRawMessage(int fd, const std::string& message);
+
+        /* SEND WELCOME MESSAGES AFTER REGISTRATION */
+        void sendWelcomeMessages(Client &client);
+
+        /* CHECK IF NICKNAME IS ALREADY IN USE */
+        bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
     };
 
 #endif

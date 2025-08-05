@@ -11,6 +11,12 @@
 #include <string>
 #include <ctime>
 
+enum ClientState {
+    UNREGISTERED,    // Just connected, no authentication
+    PASS_OK,         // Password accepted
+    REGISTERED       // Fully authenticated (PASS + NICK + USER)
+};
+
 class Client {
 
     private:
@@ -19,6 +25,10 @@ class Client {
         time_t last_activity;
         bool ping_sent;
         time_t last_ping_sent;
+        ClientState state;
+        std::string nickname;
+        std::string username;
+        std::string realname;
 
     public:
         /* CONSTRUCTOR */
@@ -39,6 +49,10 @@ class Client {
         void setLastActivity(time_t t);
         void setPingSent(bool set);
         void setLastPingSent(time_t time);
+        void setState(ClientState state);
+        void setNickname(const std::string& nick);
+        void setUsername(const std::string& user);
+        void setRealname(const std::string& real);
 
         /* GETTERS */
         int getFd(void) const;
@@ -46,6 +60,10 @@ class Client {
         time_t getLastActivity() const;
         bool pingSent(void);
         time_t getLastPingSent(void);
+        ClientState getState() const;
+        const std::string& getNickname() const;
+        const std::string& getUsername() const;
+        const std::string& getRealname() const;
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);

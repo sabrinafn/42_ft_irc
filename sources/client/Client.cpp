@@ -1,7 +1,8 @@
 #include "../includes/client/Client.hpp"
 
 /* CONSTRUCTOR */
-Client::Client(void) : fd(0), buffer(""), last_activity(-1), ping_sent(false), last_ping_sent(-1) {}
+Client::Client(void) : fd(0), buffer(""), last_activity(-1), ping_sent(false), 
+    last_ping_sent(-1), state(UNREGISTERED), nickname(""), username(""), realname("") {}
 
 /* COPY CONSTRUCTOR */
 Client::Client(const Client &other) { *this = other; }
@@ -14,6 +15,10 @@ Client &Client::operator=(const Client &other) {
         this->last_activity = other.last_activity;
         this->ping_sent = other.ping_sent;
         this->last_ping_sent = other.last_ping_sent;
+        this->state = other.state;
+        this->nickname = other.nickname;
+        this->username = other.username;
+        this->realname = other.realname;
     }
     return *this;
 }
@@ -42,6 +47,22 @@ void Client::setLastPingSent(time_t time) {
     this->last_ping_sent = time;
 }
 
+void Client::setState(ClientState state) {
+    this->state = state;
+}
+
+void Client::setNickname(const std::string& nick) {
+    this->nickname = nick;
+}
+
+void Client::setUsername(const std::string& user) {
+    this->username = user;
+}
+
+void Client::setRealname(const std::string& real) {
+    this->realname = real;
+}
+
 /* GETTERS */
 int Client::getFd(void) const {
     return this->fd;
@@ -61,6 +82,22 @@ bool Client::pingSent(void) {
 
 time_t Client::getLastPingSent(void) {
     return this->last_ping_sent;
+}
+
+ClientState Client::getState() const {
+    return this->state;
+}
+
+const std::string& Client::getNickname() const {
+    return this->nickname;
+}
+
+const std::string& Client::getUsername() const {
+    return this->username;
+}
+
+const std::string& Client::getRealname() const {
+    return this->realname;
 }
 
 /* APPEND MORE DATA TO CURRENT BUFFER DATA */
