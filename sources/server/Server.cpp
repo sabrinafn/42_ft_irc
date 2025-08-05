@@ -205,9 +205,8 @@ void Server::receiveData(size_t &index) {
             if (buf.empty() || buffer[0] == '\0')
                 return; // ignora vazios
             this->handleClientMessage(*client, buf);
-            client->appendData(buf);
             std::cout << "Client fd [" << client->getFd() << "]"
-                  << " data: '" << client->getData() << "'" << std::endl;
+                  << " buffer: '" << client->getData() << "'" << std::endl;
             client->setLastActivity(std::time(0));
             client->setPingSent(false);
         }
@@ -317,11 +316,13 @@ void Server::handleInactiveClients(void) {
 
 /* HANDLER FOR MESSAGE */
 void Server::handleClientMessage(Client &client, const std::string &msg) {
-    // Extract complete lines from the message buffer
-    std::string buffer = msg;
+    client.appendData(msg);
+    
+    std::string buffer = client.getData();
     std::vector<std::string> lines = Parser::extractLines(buffer);
     
-    // Process each complete IRC message
+    client.setData(buffer);
+    
     for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
         std::cout << "Processing message from client [" << client.getFd() << "]: " << *it << std::endl;
         
