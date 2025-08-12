@@ -103,7 +103,7 @@ void Server::monitorConnections(void) {
     if (this->pollset.poll() == -1 && !Server::signals)
         throwSystemError("poll");
 
-    std::cout << "poll waiting for an event to happen" << std::endl;
+    //std::cout << "poll waiting for an event to happen" << std::endl;
     // checking all fds
     for (size_t i = 0; i < pollset.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT

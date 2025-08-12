@@ -1,4 +1,4 @@
-#include "channel.hpp"
+#include "../includes/channel/channel.hpp"
 
 Channel::Channel(const std::string& name) : name(name), limit(0), modes(0) {}
 
@@ -117,11 +117,11 @@ void Channel::removeInvite(Client* client) {
 }
 
 // Broadcast
-void Channel::broadcast(const std::string& message, Client* sender) {
-    for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it) {
-        if (*it != sender) {
-            // Aqui você enviaria a mensagem ao cliente via socket, por exemplo:
-            // (*it)->sendMessage(message); — você precisa implementar esse método em Client
-        }
-    }
-}
+//void Channel::broadcast(const std::string& message, Client* sender) {
+  //  for (std::set<Client*>::iterator it = members.begin(); it != members.end(); ++it) {
+    //    if (*it != sender) {
+      //      // Aqui você enviaria a mensagem ao cliente via socket, por exemplo:
+        //    // (*it)->sendMessage(message); — você precisa implementar esse método em Client
+        //}
+    //}
+//}

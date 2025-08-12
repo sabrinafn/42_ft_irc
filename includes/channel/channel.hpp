@@ -15,7 +15,7 @@
 
 #include <string>       // Para uso de std::string
 #include <set>          // Para uso de std::set (conjunto de ponteiros para Client)
-#include "Client.hpp"   // Declaração antecipada da classe Client (usuário conectado)
+#include "../client/Client.hpp"
 
 // Classe que representa um canal de comunicação (como #geral no IRC)
 class Channel {
@@ -80,7 +80,7 @@ public:
     void removeInvite(Client* client);           // Remove cliente da lista de convidados
 
     // Envio de mensagens
-    void broadcast(const std::string& message, Client* sender = nullptr); // Envia mensagem para todos
+    //void broadcast(const std::string& message, Client* sender = nullptr); // Envia mensagem para todos
 };
 
 #endif // CHANNEL_HPP  // Fim da proteção contra múltiplas inclusões
