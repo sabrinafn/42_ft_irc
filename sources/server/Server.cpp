@@ -205,9 +205,8 @@ void Server::receiveData(size_t &index) {
             if (buf.empty() || buffer[0] == '\0')
                 return; // ignora vazios
             this->handleClientMessage(*client, buf);
-            client->appendData(buf);
             std::cout << "Client fd [" << client->getFd() << "]"
-                  << " data: '" << client->getData() << "'" << std::endl;
+                  << " buffer: '" << client->getData() << "'" << std::endl;
             client->setLastActivity(std::time(0));
             client->setPingSent(false);
         }
@@ -316,22 +315,182 @@ void Server::handleInactiveClients(void) {
 
 
 /* HANDLER FOR MESSAGE */
-/* only created now to deal with PONG */
 void Server::handleClientMessage(Client &client, const std::string &msg) {
-    // PONG: LALALA
-    // get only the PONG and ignores the rest of the message
-    std::istringstream iss(msg);
-    std::string command;
-    iss >> command;
-
-    // check if pong was received
-    if (command == "PONG") {
-        if (std::time(0) - client.getLastPingSent() < this->pong_timeout) {
-            client.setPingSent(false);
-            client.setLastActivity(std::time(0));
-            std::cout << "PONG received from Client with fd [" << client.getFd() << "]" << std::endl;
+    client.appendData(msg);
+    
+    std::string buffer = client.getData();
+    std::vector<std::string> lines = Parser::extractLines(buffer);
+    
+    client.setData(buffer);
+    
+    for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
+        std::cout << "Processing message from client [" << client.getFd() << "]: " << *it << std::endl;
+        
+        IRCMessage ircMsg = Parser::parseMessage(*it);
+        if (!ircMsg.command.empty()) {
+            processIRCMessage(client, ircMsg);
         }
-        client.setLastActivity(std::time(0));
+    }
+}
+
+/* PROCESS IRC COMMANDS */
+void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
+    if (msg.command == "PASS") {
+        handlePass(client, msg);
+    } else if (msg.command == "NICK") {
+        handleNick(client, msg);
+    } else if (msg.command == "USER") {
+        handleUser(client, msg);
+    } else if (msg.command == "PING") {
+        handlePing(client, msg);
+    } else if (msg.command == "PONG") {
+        handlePong(client, msg);
+    } else if (msg.command == "QUIT") {
+        handleQuit(client, msg);
+    } else {
+        // Unknown command or not implemented yet
+        if (client.getState() == REGISTERED) {
+            sendReply(client.getFd(), 421, client.getNickname(), msg.command + " :Unknown command");
+        }
+    }
+}
+
+/* IRC COMMAND HANDLERS */
+void Server::handlePass(Client &client, const IRCMessage &msg) {
+    if (client.getState() != UNREGISTERED) {
+        sendReply(client.getFd(), 462, client.getNickname(), ":You may not reregister");
         return;
     }
+    
+    if (msg.params.empty()) {
+        sendReply(client.getFd(), 461, "*", "PASS :Not enough parameters");
+        return;
+    }
+    
+    if (msg.params[0] == this->password) {
+        client.setState(PASS_OK);
+        std::cout << "Client [" << client.getFd() << "] provided correct password" << std::endl;
+    } else {
+        sendReply(client.getFd(), 464, "*", ":Password incorrect");
+        std::cout << "Client [" << client.getFd() << "] provided incorrect password" << std::endl;
+    }
+}
+
+void Server::handleNick(Client &client, const IRCMessage &msg) {
+    if (msg.params.empty()) {
+        sendReply(client.getFd(), 431, "*", ":No nickname given");
+        return;
+    }
+    
+    std::string nickname = msg.params[0];
+    
+    if (!Parser::isValidNickname(nickname)) {
+        sendReply(client.getFd(), 432, "*", nickname + " :Erroneous nickname");
+        return;
+    }
+    
+    if (isNicknameInUse(nickname, client.getFd())) {
+        sendReply(client.getFd(), 433, "*", nickname + " :Nickname is already in use");
+        return;
+    }
+    
+    client.setNickname(nickname);
+    std::cout << "Client [" << client.getFd() << "] set nickname to: " << nickname << std::endl;
+    
+    // Check if client is now fully registered
+    if (client.getState() == PASS_OK && !client.getUsername().empty()) {
+        client.setState(REGISTERED);
+        sendWelcomeMessages(client);
+    }
+}
+
+void Server::handleUser(Client &client, const IRCMessage &msg) {
+    if (client.getState() == UNREGISTERED) {
+        sendReply(client.getFd(), 464, "*", ":Password required");
+        return;
+    }
+    
+    if (!client.getUsername().empty()) {
+        sendReply(client.getFd(), 462, client.getNickname(), ":You may not reregister");
+        return;
+    }
+    
+    if (msg.params.size() < 3 || msg.trailing.empty()) {
+        sendReply(client.getFd(), 461, "*", "USER :Not enough parameters");
+        return;
+    }
+    
+    client.setUsername(msg.params[0]);
+    client.setRealname(msg.trailing);
+    std::cout << "Client [" << client.getFd() << "] set username: " << msg.params[0] 
+              << ", realname: " << msg.trailing << std::endl;
+    
+    // Check if client is now fully registered
+    if (client.getState() == PASS_OK && !client.getNickname().empty()) {
+        client.setState(REGISTERED);
+        sendWelcomeMessages(client);
+    }
+}
+
+void Server::handlePing(Client &client, const IRCMessage &msg) {
+    std::string server = msg.trailing.empty() ? 
+        (msg.params.empty() ? "server" : msg.params[0]) : msg.trailing;
+    sendRawMessage(client.getFd(), "PONG :" + server + "\r\n");
+}
+
+void Server::handlePong(Client &client, const IRCMessage &msg) {
+    (void)msg; // Suppress unused parameter warning
+    if (std::time(0) - client.getLastPingSent() < this->pong_timeout) {
+        client.setPingSent(false);
+        client.setLastActivity(std::time(0));
+        std::cout << "PONG received from Client with fd [" << client.getFd() << "]" << std::endl;
+    }
+    client.setLastActivity(std::time(0));
+}
+
+void Server::handleQuit(Client &client, const IRCMessage &msg) {
+    std::string quitMessage = msg.trailing.empty() ? "Client Quit" : msg.trailing;
+    
+    // Send quit message to client (optional)
+    std::cout << "Client [" << client.getFd() << "] (" << client.getNickname() << ") quit: " << quitMessage << std::endl;
+    
+    // Find the client in pollset and disconnect
+    size_t pollIndex = getPollsetIdxByFd(client.getFd());
+    if (pollIndex != static_cast<size_t>(-1)) {
+        disconnectClient(pollIndex);
+    }
+}
+
+/* SEND IRC REPLY TO CLIENT */
+void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
+    std::stringstream ss;
+    ss << ":localhost " << code << " " << nickname << " " << message << "\r\n";
+    std::string reply = ss.str();
+    send(fd, reply.c_str(), reply.length(), 0);
+    std::cout << "Sent to client [" << fd << "]: " << reply.substr(0, reply.length() - 2) << std::endl;
+}
+
+void Server::sendRawMessage(int fd, const std::string& message) {
+    send(fd, message.c_str(), message.length(), 0);
+    std::cout << "Sent to client [" << fd << "]: " << message.substr(0, message.length() - 2) << std::endl;
+}
+
+/* CHECK IF NICKNAME IS ALREADY IN USE */
+bool Server::isNicknameInUse(const std::string& nickname, int excludeFd) {
+    std::vector<Client>::iterator it = this->clients.begin();
+    for (; it != this->clients.end(); ++it) {
+        if (it->getFd() != excludeFd && it->getNickname() == nickname) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Server::sendWelcomeMessages(Client &client) {
+    std::string nick = client.getNickname();
+    sendReply(client.getFd(), 001, nick, ":Welcome to the Internet Relay Network " + nick);
+    sendReply(client.getFd(), 002, nick, ":Your host is localhost, running version 1.0");
+    sendReply(client.getFd(), 003, nick, ":This server was created today");
+    sendReply(client.getFd(), 004, nick, "localhost 1.0 o o");
+    std::cout << "Client [" << client.getFd() << "] (" << nick << ") is now registered!" << std::endl;
 }
