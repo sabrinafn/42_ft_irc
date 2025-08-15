@@ -347,7 +347,10 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
         handlePong(client, msg);
     } else if (msg.command == "QUIT") {
         handleQuit(client, msg);
-    } else {
+    } else if (msg.command == "JOIN"){
+        handleJoin(client, msg);
+    }  
+    else {
         // Unknown command or not implemented yet
         if (client.getState() == REGISTERED) {
             sendReply(client.getFd(), 421, client.getNickname(), msg.command + " :Unknown command");
@@ -461,6 +464,24 @@ void Server::handleQuit(Client &client, const IRCMessage &msg) {
     }
 }
 
+void Server::handleJoin(Client &client, const IRCMessage &msg)
+{
+        if (msg.params.empty()) {
+        sendReply(client.getFd(), 461, "*", "JOIN :Not enough parameters");
+        return;
+        }
+        //if(nao esta autenticado)
+        //if(criar funçao de validar nome do canal, validar tbem multilos de canaia)
+        //if(canal existe,entrar no canal){
+        //    verificar dentro desse if os modos +i +k +l }
+        // if(cliente ja esta no canal) ignorar ou retornar erro
+        //
+        //else( se nao existe criar o canal)
+        //
+        //
+        //retornar topcp do canal ou retornar que nao tem topic
+        //retornar lista de usuarios e fim da lista 
+    }
 /* SEND IRC REPLY TO CLIENT */
 void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
     std::stringstream ss;

@@ -113,7 +113,7 @@ class Server {
         void handlePing(Client &client, const IRCMessage &msg);
         void handlePong(Client &client, const IRCMessage &msg);
         void handleQuit(Client &client, const IRCMessage &msg);
-
+        void handleJoin(Client &client, const IRCMessage &msg);
         /* SEND IRC REPLY TO CLIENT */
         void sendReply(int fd, int code, const std::string& nickname, const std::string& message);
         void sendRawMessage(int fd, const std::string& message);

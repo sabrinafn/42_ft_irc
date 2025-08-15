@@ -6,7 +6,7 @@
 /*   By: mgonzaga <mgonzaga@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/07/13 16:19:07 by mgonzaga          #+#    #+#             */
-/*   Updated: 2025/07/13 16:24:38 by mgonzaga         ###   ########.fr       */
+/*   Updated: 2025/08/14 20:21:51 by mgonzaga         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,9 +40,19 @@ private:
     std::set<Client*> invited;        // Usuários convidados (usado se canal for +i)
 
 public:
+
     // Construtor que inicializa o canal com um nome
     Channel(const std::string& name);
+    
+    /* COPY CONSTRUCTOR */
+    Channel(const Channel &other);
 
+    /* OPERATORS */
+    Channel &operator=(const Channel &other);
+
+    /* DESTRUCTOR */
+    ~Channel(void);
+    
     // Métodos "getters" — acessam dados do canal
     std::string getName() const;         // Retorna o nome do canal
     std::string getTopic() const;        // Retorna o tópico atual
