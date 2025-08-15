@@ -2,6 +2,27 @@
 
 Channel::Channel(const std::string& name) : name(name), limit(0), modes(0) {}
 
+    
+    /* COPY CONSTRUCTOR */
+    Channel::Channel(const Channel &other){
+        *this = other;
+    }
+
+    /* OPERATORS */
+    Channel &Channel::operator=(const Channel &other){
+        if(this != &other)
+        {
+            this->name = other.name;
+            this->topic = other.topic;
+            this->key = other.key;
+            this->modes  = other.modes;
+            this->limit = other.limit;
+        }
+        return *this;
+    }
+
+    /* DESTRUCTOR */
+    Channel::~Channel(void){}
 // Getters
 std::string Channel::getName() const {
     return name;
