@@ -50,6 +50,9 @@ std::string Server::getServerPassword(void) const {
     return this->password;
 }
 
+std::map<std::string, Channel*> &Server::get_channels() {
+  return channels;
+}
 /* INIT SERVER */
 void Server::initServer(void) {
 
@@ -466,6 +469,7 @@ void Server::handleQuit(Client &client, const IRCMessage &msg) {
 
 void Server::handleJoin(Client &client, const IRCMessage &msg)
 {
+        Channel *Channel;
         if (msg.params.empty()) {
         sendReply(client.getFd(), 461, "*", "JOIN :Not enough parameters");
         return;
@@ -489,13 +493,23 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
                 return;
 			keys.push_back(key);
 		}
-        
+        for (size_t i = 0; i < Channels.size(); ++i) {
+		const std::string& channelName = Channels[i];
+
+            if(!channelExists(channelName))
+            {
+              //  Channel *New_channel = new Channel(channelName);
+               // addChannel(New_channel);
+               // ver como vou add o cliente e o operador
+            }
+            else
+            {
+                if(channels[channelName]->getModes() == i)
+            }
+        }
+
 	}
 
-        //if(nao esta autenticado)
-
-        
-        //if(criar funçao de validar nome do canal, validar tbem multilos de canaia)
         //if(canal existe,entrar no canal){
         //    verificar dentro desse if os modos +i +k +l }
         // if(cliente ja esta no canal) ignorar ou retornar erro

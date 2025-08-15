@@ -29,3 +29,13 @@ bool Server::isValidkey(std::string key){
             return false;
 	   }
 }
+
+	void Server::addChannel(Channel* new_channel) {
+		channels[new_channel->getName()] = new_channel;
+	}
+
+	bool Server::channelExists(const std::string& channel_name) {
+		if (channels.find(channel_name) == channels.end())
+			return false;
+		return true;
+	}

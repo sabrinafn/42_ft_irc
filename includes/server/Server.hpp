@@ -22,7 +22,8 @@
 #include <string.h> //strerror
 #include <ctime> // std::time
 #include <sstream> // stringstream
-
+#include <map>
+#include "../channel/channel.hpp"
 
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
@@ -35,6 +36,7 @@ class Server {
         int socket_fd;
         std::string password;
         std::vector<Client> clients;
+        std::map<std::string, Channel*> channels;
         Pollset pollset;
         static bool signals;
         int timeout_seconds;
@@ -62,6 +64,7 @@ class Server {
         int getPortNumber(void) const;
         std::string getServerPassword(void) const;
         Client *getClientByFd(int fd_to_find);
+        std::map<std::string, Channel*> &get_channels();
 
         /* CREATE SOCKET */
         void createSocket(void);
@@ -127,7 +130,13 @@ class Server {
         /* CHECK IF  IS VALID CHANNEL NAME */
         bool Server::isValidChannelName(const std::string& name);
 
+        /* CHECK IF  IS VALID KEY */
         bool Server::isValidkey(std::string key);
+      
+        /*ADD CHANNEL*/
+        void addChannel(Channel* new_channel);
+        /* find channel */
+        bool channelExists(const std::string& channel_name);
     };
 
 #endif
