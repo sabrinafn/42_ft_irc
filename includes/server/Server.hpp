@@ -123,6 +123,11 @@ class Server {
 
         /* CHECK IF NICKNAME IS ALREADY IN USE */
         bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
+
+        /* CHECK IF  IS VALID CHANNEL NAME */
+        bool Server::isValidChannelName(const std::string& name);
+
+        bool Server::isValidkey(std::string key);
     };
 
 #endif

@@ -69,7 +69,7 @@ IRCMessage Parser::parseMessage(const std::string& line) {
     pos = cmd_end + 1;
     
     while (pos < trimmed.length()) {
-        while (pos < trimmed.length() && trimmed[pos] == ' ') {
+        while (pos < trimmed.length() && trimmed[pos] == ' '){
             pos++;
         }
         if (pos >= trimmed.length()) {

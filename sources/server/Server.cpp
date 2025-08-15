@@ -470,7 +470,31 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         sendReply(client.getFd(), 461, "*", "JOIN :Not enough parameters");
         return;
         }
+                //if(nao esta autenticado)
+        std::vector<std::string> Channels;
+	    std::vector<std::string> keys;
+	    std::stringstream ss(msg.params[0]);
+	    std::string channelName;
+        while (std::getline(ss, channelName, ',')) {
+            if(!isValidChannelName(channelName))
+                return;
+            if (!channelName.empty())
+                Channels.push_back(channelName);
+        }
+        if (msg.params.size() > 1) {
+		std::stringstream ss_keys(msg.params[1]);
+		std::string key;
+		while (std::getline(ss_keys, key, ',')) {
+            if(!isValidkey(key))
+                return;
+			keys.push_back(key);
+		}
+        
+	}
+
         //if(nao esta autenticado)
+
+        
         //if(criar funçao de validar nome do canal, validar tbem multilos de canaia)
         //if(canal existe,entrar no canal){
         //    verificar dentro desse if os modos +i +k +l }
