@@ -1,6 +1,10 @@
 #include "../includes/channel/channel.hpp"
 
-Channel::Channel(const std::string& name) : name(name), limit(0), modes(0) {}
+Channel::Channel(const std::string& name) : name(name), limit(0), modes(0) {
+
+
+
+}
 
     
     /* COPY CONSTRUCTOR */
