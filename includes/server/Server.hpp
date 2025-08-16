@@ -136,7 +136,7 @@ class Server {
         /*ADD CHANNEL*/
         void addChannel(Channel* new_channel);
         /* find channel */
-        bool channelExists(const std::string& channel_name);
+        bool channelnotExists(const std::string& channel_name);
     };
 
 #endif

@@ -1,4 +1,5 @@
 #include "../includes/server/Server.hpp"
+#include "../includes/channel/channel.hpp"
 
 bool Server::signals = false;
 
@@ -494,19 +495,35 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
 			keys.push_back(key);
 		}
         for (size_t i = 0; i < Channels.size(); ++i) {
-		const std::string& channelName = Channels[i];
+            const std::string& channelName = Channels[i];
 
-            if(!channelExists(channelName))
-            {
-              //  Channel *New_channel = new Channel(channelName);
-               // addChannel(New_channel);
-               // ver como vou add o cliente e o operador
+            if (channels.find(channelName) == channels.end())
+            {	
+                channels[channelName] = new Channel(channelName);
+                channels[channelName]->addOperator(clients);
             }
             else
             {
-                if(channels[channelName]->getModes() == i)
+                if (channel->getMembers().find(sender.get_fd()) != channel->getMembers().end()) {
+				server.send_message(sender.get_fd(), ERR_USERONCHANNEL(sender.get_nickname(), channel_name));
+				return ;
+			}
+			if (channel->mode('l') && channel->getCurrentMembersCount() >= channel->getUserLimit()) {
+				server.send_message(sender.get_fd(), ERR_CHANNELISFULL(channel_name));
+				return ;
+			}
+			if (channel->mode('i') && !channel->isInvited(&sender)) {
+				server.send_message(sender.get_fd(), ERR_INVITEONLYCHAN(channel_name));
+				return ;
+			}
+			if (channel->mode('k') && i < keys.size()) {
+				if (channel->getKey() != keys[i]) {
+					server.send_message(sender.get_fd(), ERR_BADCHANNELKEY(sender.get_username(), channel_name));
+					return ;
+				} 
             }
         }
+
 
 	}
 
@@ -520,6 +537,7 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         //retornar topcp do canal ou retornar que nao tem topic
         //retornar lista de usuarios e fim da lista 
     }
+
 /* SEND IRC REPLY TO CLIENT */
 void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
     std::stringstream ss;

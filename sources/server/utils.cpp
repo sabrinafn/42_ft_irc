@@ -34,8 +34,3 @@ bool Server::isValidkey(std::string key){
 		channels[new_channel->getName()] = new_channel;
 	}
 
-	bool Server::channelExists(const std::string& channel_name) {
-		if (channels.find(channel_name) == channels.end())
-			return false;
-		return true;
-	}
