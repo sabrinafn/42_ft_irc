@@ -1,4 +1,4 @@
-#include "../includes/channel/channel.hpp"
+#include "../includes/channel/Channel.hpp"
 
 Channel::Channel(const std::string& name) : name(name), limit(0), modes(0) {
 
