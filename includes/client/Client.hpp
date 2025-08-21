@@ -11,6 +11,7 @@
 #include <ctime>
 #include <sys/socket.h>
 #include <iostream>
+#include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 
 enum ClientState {
     UNREGISTERED,    // Just connected, no authentication
@@ -69,7 +70,12 @@ class Client {
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);
-        void sendRawMessage(const std::string& message);
+        
+        /* SEND IRC REPLY MESSAGE TO EACH CLIENT */
+        void sendReply(const std::string& message);
+
+        /* SEND WELCOME MESSAGES AFTER REGISTRATION */
+        void sendWelcomeMessages(void);
 
 };
 
