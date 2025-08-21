@@ -1,4 +1,3 @@
-
 /*
  * Client.hpp
  *
@@ -10,6 +9,8 @@
 
 #include <string>
 #include <ctime>
+#include <sys/socket.h>
+#include <iostream>
 
 enum ClientState {
     UNREGISTERED,    // Just connected, no authentication
@@ -64,9 +65,11 @@ class Client {
         const std::string& getNickname() const;
         const std::string& getUsername() const;
         const std::string& getRealname() const;
+        std::string getPrefix() const;
 
         /* APPEND MORE DATA TO CURRENT BUFFER DATA */
         void appendData(std::string other);
+        void sendRawMessage(const std::string& message);
 
 };
 
