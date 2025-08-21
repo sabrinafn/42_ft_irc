@@ -23,8 +23,7 @@
 #include <ctime> // std::time
 #include <sstream> // stringstream
 #include <map>
-#include "../channel/channel.hpp"
-
+#include "../channel/Channel.hpp" // channel class
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
 #include "../parser/Parser.hpp" // parser class
@@ -35,7 +34,7 @@ class Server {
         int port;
         int socket_fd;
         std::string password;
-        std::vector<Client> clients;
+        std::vector<Client *> clients;
         std::map<std::string, Channel*> channels;
         Pollset pollset;
         static bool signals;
@@ -128,10 +127,10 @@ class Server {
         bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
 
         /* CHECK IF  IS VALID CHANNEL NAME */
-        bool Server::isValidChannelName(const std::string& name);
+        bool isValidChannelName(const std::string& name);
 
         /* CHECK IF  IS VALID KEY */
-        bool Server::isValidkey(std::string key);
+        bool isValidkey(std::string key);
       
         /*ADD CHANNEL*/
         void addChannel(Channel* new_channel);

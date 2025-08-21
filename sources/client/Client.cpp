@@ -1,4 +1,6 @@
 #include "../includes/client/Client.hpp"
+#include <iostream>
+#include <unistd.h>
 
 /* CONSTRUCTOR */
 Client::Client(void) : fd(0), buffer(""), last_activity(-1), ping_sent(false), 
@@ -100,7 +102,27 @@ const std::string& Client::getRealname() const {
     return this->realname;
 }
 
+std::string Client::getPrefix() const {
+    std::string prefix = this->nickname + "!" + this->realname + "@";
+    return prefix;
+}
+
 /* APPEND MORE DATA TO CURRENT BUFFER DATA */
 void Client::appendData(std::string other) {
     this->buffer += other;
 }
+
+/* envia uma mensagem para cada cliente */
+void Client::sendRawMessage(const std::string& message) {
+    std::string msg = message + "\r\n";
+    ssize_t ret = write(fd, msg.c_str(), msg.size());
+    if (ret == -1) {
+        std::cerr << "ERROR: falha ao enviar para " << nickname
+                  << " (fd=" << this->fd << ")" << std::endl;
+    } else {
+        std::cout << "DEBUG: enviado para " << nickname
+                  << " (fd=" << this->fd << ")"
+                  << " -> " << msg << std::endl;
+    }
+}
+

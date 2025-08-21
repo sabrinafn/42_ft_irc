@@ -1,31 +1,19 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   channel.hpp                                        :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mgonzaga <mgonzaga@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/07/13 16:19:07 by mgonzaga          #+#    #+#             */
-/*   Updated: 2025/08/15 16:04:45 by mgonzaga         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#ifndef CHANNEL_HPP     // Evita múltiplas inclusões do mesmo cabeçalho
+#ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
-#include <string>       // Para uso de std::string
-#include <set>          // Para uso de std::set (conjunto de ponteiros para Client)
+#include <string>
+#include <vector>
+#include <algorithm>
 #include "../client/Client.hpp"
 
-// Classe que representa um canal de comunicação (como #geral no IRC)
 class Channel {
 public:
-    // Enumeração de modos do canal usando bits para representar flags
+    // Enum modos do canal
     enum ChannelMode {
-        INVITE_ONLY       = 1 << 0, // +i → Apenas usuários convidados podem entrar
-        TOPIC_RESTRICTED  = 1 << 1, // +t → Apenas operadores podem mudar o tópico
-        KEY_REQUIRED      = 1 << 2, // +k → Entrada exige senha
-        LIMIT_SET         = 1 << 3  // +l → Há limite de usuários no canal
+        INVITE_ONLY,      // +i → Apenas usuários convidados podem entrar
+        TOPIC_RESTRICTED, // +t → Apenas operadores podem mudar o tópico
+        KEY_REQUIRED,     // +k → Entrada exige senha
+        LIMIT_SET         // +l → Há limite de usuários no canal
     };
 
 private:
@@ -33,35 +21,36 @@ private:
     std::string key;                  // Senha do canal (se +k estiver ativo)
     std::string topic;                // Tópico atual do canal
     int limit;                        // Número máximo de usuários permitidos (se +l)
-    int modes;                        // Variável de controle com os modos ativados (flags bitwise)
-
-    std::set<Client*> members;        // Conjunto de todos os membros do canal
-    std::set<Client*> ops;            // Operadores do canal (modo +o)
-    std::set<Client*> invited;        // Usuários convidados (usado se canal for +i)
+    
+    //Client* = ponteiros pra clientes que ja foram criados no server
+    std::vector<ChannelMode> modes;       // Modos ativos
+    std::vector<Client*> members;         // Todos os membros do canal
+    std::vector<Client*> ops;             // Operadores do canal (modo +o)
+    std::vector<Client*> invited;         // Usuários convidados (usado se canal for +i)
 
 public:
 
-    // Construtor que inicializa o canal com um nome
+    /* CONSTRUCTOR */
     Channel(const std::string& name);
     
     /* COPY CONSTRUCTOR */
     Channel(const Channel &other);
 
-    /* OPERATORS */
+    /* OPERATOR = */
     Channel &operator=(const Channel &other);
 
     /* DESTRUCTOR */
     ~Channel(void);
     
-    // Métodos "getters" — acessam dados do canal
-    std::string getName() const;         // Retorna o nome do canal
-    std::string getTopic() const;        // Retorna o tópico atual
-    std::string getKey() const;          // Retorna a chave do canal
-    int getLimit() const;                // Retorna o limite de usuários
-    int getModes() const;                // Retorna os modos em formato de bitmask
-    std::string getModesString() const;  // Retorna os modos em string, ex: "+itkl"
+    // GETTERS
+    std::string getName() const;            // nome do canal
+    std::string getTopic() const;           // tópico atual
+    std::string getKey() const;             // chave do canal
+    int getLimit() const;                   // limite de usuários
+    std::vector<ChannelMode> getModes() const; // modos ativos
+    std::string getModesString() const;     // modos em string, ex: "+itkl"
 
-    // Métodos "setters" — modificam dados do canal
+    // SETTERS
     void setTopic(const std::string& newTopic);  // Define novo tópico
     void setKey(const std::string& newKey);      // Define nova senha (key)
     void removeKey();                            // Remove a senha
@@ -77,7 +66,7 @@ public:
     void addMember(Client* client);              // Adiciona membro ao canal
     void removeMember(Client* client);           // Remove membro do canal
     bool isMember(Client* client) const;         // Verifica se é membro
-    std::set<Client*> getMembers() const;        // Retorna todos os membros
+    std::vector<Client*> getMembers() const;        // Retorna todos os membros
 
     // Gerenciamento de operadores
     void addOperator(Client* client);            // Promove membro a operador
@@ -89,8 +78,8 @@ public:
     bool isInvited(Client* client) const;        // Verifica se o cliente foi convidado
     void removeInvite(Client* client);           // Remove cliente da lista de convidados
 
-    // Envio de mensagens
-    //void broadcast(const std::string& message, Client* sender = nullptr); // Envia mensagem para todos
+    // Envio de mensagens para todos os membros do canal
+    void broadcast(const std::string& message, Client* sender = NULL);
 };
 
-#endif // CHANNEL_HPP  // Fim da proteção contra múltiplas inclusões
+#endif
