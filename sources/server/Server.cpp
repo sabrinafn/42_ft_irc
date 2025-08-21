@@ -5,10 +5,10 @@ bool Server::signals = false;
 /* CONSTRUCTOR */
 // construtores
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset(), timeout_seconds(300), pong_timeout(15) {}
+    clients(), pollset(), timeout_seconds(300), pong_timeout(20) {}
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
-        password(password), clients(), pollset(), timeout_seconds(300), pong_timeout(15) {
+        password(password), clients(), pollset(), timeout_seconds(300), pong_timeout(20) {
     std::cout << "Server starting on port " << this->port
               << " with password '" << this->password << "'" << std::endl;
 }
@@ -353,21 +353,20 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
     else {
         // Unknown command or not implemented yet
         if (client.getState() == REGISTERED) {
-            sendReply(client.getFd(), 421, client.getNickname(), msg.command + " :Unknown command");
+            client.sendReply(ERR_UNKNOWNCMD(msg.command));
         }
     }
-    
 }
 
 /* IRC COMMAND HANDLERS */
 void Server::handlePass(Client &client, const IRCMessage &msg) {
     if (client.getState() != UNREGISTERED) {
-        sendReply(client.getFd(), 462, client.getNickname(), ":You may not reregister");
+        client.sendReply(ERR_ALREADYREGISTRED(client.getNickname()));
         return;
     }
     
     if (msg.params.empty()) {
-        sendReply(client.getFd(), 461, "*", "PASS :Not enough parameters");
+        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
     
@@ -375,26 +374,26 @@ void Server::handlePass(Client &client, const IRCMessage &msg) {
         client.setState(PASS_OK);
         std::cout << "Client [" << client.getFd() << "] provided correct password" << std::endl;
     } else {
-        sendReply(client.getFd(), 464, "*", ":Password incorrect");
+        client.sendReply(ERR_PASSWDMISMATCH());
         std::cout << "Client [" << client.getFd() << "] provided incorrect password" << std::endl;
     }
 }
 
 void Server::handleNick(Client &client, const IRCMessage &msg) {
     if (msg.params.empty()) {
-        sendReply(client.getFd(), 431, "*", ":No nickname given");
+        client.sendReply(ERR_NONICKNAMEGIVEN());
         return;
     }
     
     std::string nickname = msg.params[0];
     
     if (!Parser::isValidNickname(nickname)) {
-        sendReply(client.getFd(), 432, "*", nickname + " :Erroneous nickname");
+        client.sendReply(ERR_ERRONEUSNICKNAME(nickname));
         return;
     }
     
     if (isNicknameInUse(nickname, client.getFd())) {
-        sendReply(client.getFd(), 433, "*", nickname + " :Nickname is already in use");
+        client.sendReply(ERR_NICKNAMEINUSE(nickname));
         return;
     }
     
@@ -404,23 +403,24 @@ void Server::handleNick(Client &client, const IRCMessage &msg) {
     // Check if client is now fully registered
     if (client.getState() == PASS_OK && !client.getUsername().empty()) {
         client.setState(REGISTERED);
-        sendWelcomeMessages(client);
+        client.sendWelcomeMessages();
+        //sendWelcomeMessages(client);
     }
 }
 
 void Server::handleUser(Client &client, const IRCMessage &msg) {
     if (client.getState() == UNREGISTERED) {
-        sendReply(client.getFd(), 464, "*", ":Password required");
+        client.sendReply(ERR_PASSWDMISMATCH());
         return;
     }
     
     if (!client.getUsername().empty()) {
-        sendReply(client.getFd(), 462, client.getNickname(), ":You may not reregister");
+        client.sendReply(ERR_ALREADYREGISTRED(client.getNickname()));
         return;
     }
     
     if (msg.params.size() < 3 || msg.trailing.empty()) {
-        sendReply(client.getFd(), 461, "*", "USER :Not enough parameters");
+        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
     
@@ -432,14 +432,14 @@ void Server::handleUser(Client &client, const IRCMessage &msg) {
     // Check if client is now fully registered
     if (client.getState() == PASS_OK && !client.getNickname().empty()) {
         client.setState(REGISTERED);
-        sendWelcomeMessages(client);
+        //sendWelcomeMessages(client);
+        client.sendWelcomeMessages();
     }
 }
 
 void Server::handlePing(Client &client, const IRCMessage &msg) {
-    std::string server = msg.trailing.empty() ? 
-        (msg.params.empty() ? "server" : msg.params[0]) : msg.trailing;
-    sendRawMessage(client.getFd(), "PONG :" + server + "\r\n");
+    std::string server = msg.trailing.empty() ? (msg.params.empty() ? "server" : msg.params[0]) : msg.trailing;
+    client.sendReply("PONG :" + server + "\r\n");
 }
 
 void Server::handlePong(Client &client, const IRCMessage &msg) {
@@ -471,7 +471,7 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
     // verifica se tem parametros depois do JOIN
     if (msg.params.empty()) {
         std::cout << "DEBUG: JOIN sem parametros" << std::endl;
-        sendReply(client.getFd(), 461, "*", "JOIN :Not enough parameters");
+        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
 
@@ -527,21 +527,21 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         // verifica se o usuario ja eh membro desse canal
         if (channel->isMember(&client)) {
             std::cout << "DEBUG: cliente ja eh membro do canal " << name << std::endl;
-            sendReply(client.getFd(), 443, client.getNickname(), name + " :is already on channel");
+            client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
             continue;
         }
 
         // verifica limite de usuarios (+l)
         if (channel->hasMode(Channel::LIMIT_SET) && (int)channel->getMembers().size() >= channel->getLimit()) {
             std::cout << "DEBUG: canal " << name << " atingiu limite de usuarios" << std::endl;
-            sendReply(client.getFd(), 471, client.getNickname(), name + " :cannot join channel (+l)");
+            client.sendReply(ERR_CHANNELISFULL(channel->getName()));
             continue;
         }
 
         // verifica se o canal eh invite only (+i)
         if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
             std::cout << "DEBUG: cliente nao convidado para canal " << name << std::endl;
-            sendReply(client.getFd(), 473, client.getNickname(), name + " :cannot join channel (+i)");
+            client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
             continue;
         }
 
@@ -549,7 +549,7 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         if (channel->hasMode(Channel::KEY_REQUIRED)) {
             if (i >= modes.size() || channel->getKey() != modes[i]) {
                 std::cout << "DEBUG: key incorreta para canal " << name << std::endl;
-                sendReply(client.getFd(), 475, client.getNickname(), name + " :cannot join channel (+k)");
+               client.sendReply(ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
                 continue;
             }
         }
@@ -573,10 +573,10 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         std::string topic = channel->getTopic();
         if (topic.empty()) {
             std::cout << "DEBUG: canal " << name << " nao tem topico" << std::endl;
-            sendReply(client.getFd(), 331, client.getNickname(), name + " :no topic is set");
+            client.sendReply(RPL_NOTOPIC(client.getNickname(), channel->getName()));
         } else {
             std::cout << "DEBUG: topico do canal " << name << " -> " << topic << std::endl;
-            sendReply(client.getFd(), 332, client.getNickname(), name + " :" + topic);
+            client.sendReply(RPL_TOPIC(client.getNickname(), channel->getName(), channel->getTopic()));
         }
 
         // monta a lista de usuarios do canal
@@ -595,27 +595,12 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         std::cout << std::endl;
 
         // envia a lista de usuarios
-        sendReply(client.getFd(), 353, client.getNickname(), namesReply + " :" + name);
+        client.sendReply(RPL_NAMREPLY(client.getNickname(), channel->getName(), namesReply));
         // envia fim da lista de usuarios
-        sendReply(client.getFd(), 366, client.getNickname(), name + " :end of /NAMES list");
+        client.sendReply(RPL_ENDOFNAMES(client.getNickname(), channel->getName()));
 
         std::cout << "DEBUG: handleJoin finalizado para canal " << name << std::endl;
     }
-}
-
-
-/* SEND IRC REPLY TO CLIENT */
-void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
-    std::stringstream ss;
-    ss << ":localhost " << code << " " << nickname << " " << message << "\r\n";
-    std::string reply = ss.str();
-    send(fd, reply.c_str(), reply.length(), 0);
-    std::cout << "Sent to client [" << fd << "]: " << reply.substr(0, reply.length() - 2) << std::endl;
-}
-
-void Server::sendRawMessage(int fd, const std::string& message) {
-    send(fd, message.c_str(), message.length(), 0);
-    std::cout << "Sent to client [" << fd << "]: " << message.substr(0, message.length() - 2) << std::endl;
 }
 
 /* CHECK IF NICKNAME IS ALREADY IN USE */
@@ -628,12 +613,3 @@ bool Server::isNicknameInUse(const std::string& nickname, int excludeFd) {
     return false;
 }
 
-void Server::sendWelcomeMessages(Client &client) {
-    client.sendRawMessage(RPL_WELCOME(client.getNickname(), client.getRealname()));
-    client.sendRawMessage(RPL_YOURHOST(client.getNickname()));
-    std::string startup_time = "2001-01-01 01:01:01"; // criar funcao pra pegar data atual
-    client.sendRawMessage(RPL_CREATED(client.getNickname(), startup_time));
-    client.sendRawMessage(RPL_MYINFO(client.getNickname(), "o", "o"));
-
-    std::cout << "Client [" << client.getFd() << "] (" << nick << ") is now registered!" << std::endl;
-}
