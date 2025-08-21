@@ -28,6 +28,7 @@ bool Server::isValidkey(std::string key){
         if (std::iscntrl(c))         // caracteres de controle
             return false;
 	   }
+       return true;
 }
 
 	void Server::addChannel(Channel* new_channel) {
