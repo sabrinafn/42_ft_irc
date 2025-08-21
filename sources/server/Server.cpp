@@ -605,7 +605,22 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
     }
 }
 
+void Server::handlePrivmsg(Client &client, const IRCMessage &msg){ 
+    if (msg.params.empty()) { 
+        sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
+        return;
+    } 
+     if(msg.params.size() < 2){ 
+        sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
+        return; 
+    } 
+    if(msg.params[0][0] == '#') { 
+        if (channels.find(msg.params[0]) == channels.end()){ 
 
+        } 
+    } 
+        return;
+}
 /* SEND IRC REPLY TO CLIENT */
 void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
     std::stringstream ss;
