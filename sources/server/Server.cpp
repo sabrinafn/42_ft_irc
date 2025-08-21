@@ -1,5 +1,5 @@
 #include "../includes/server/Server.hpp"
-#include "../includes/channel/channel.hpp"
+#include "../includes/channel/Channel.hpp"
 
 bool Server::signals = false;
 
@@ -353,7 +353,9 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
         handleQuit(client, msg);
     } else if (msg.command == "JOIN"){
         handleJoin(client, msg);
-    }  
+    } else if (msg.command == "PRIVMSG"){
+        handlePrivmsg(client, msg);
+    }
     else {
         // Unknown command or not implemented yet
         if (client.getState() == REGISTERED) {
@@ -468,7 +470,7 @@ void Server::handleQuit(Client &client, const IRCMessage &msg) {
     }
 }
 
-void Server::handleJoin(Client &client, const IRCMessage &msg)
+/*void Server::handleJoin(Client &client, const IRCMessage &msg)
 {
         Channel *Channel;
         if (msg.params.empty()) {
@@ -504,21 +506,21 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
             }
             else
             {
-                if (channel->getMembers().find(sender.get_fd()) != channel->getMembers().end()) {
-				server.send_message(sender.get_fd(), ERR_USERONCHANNEL(sender.get_nickname(), channel_name));
+                if (channel->getMembers().find(clients.get_fd()) != channel->getMembers().end()) {
+				server.send_message(clients.get_fd(), ERR_USERONCHANNEL(clients.get_nickname(), channel_name));
 				return ;
 			}
 			if (channel->mode('l') && channel->getCurrentMembersCount() >= channel->getUserLimit()) {
-				server.send_message(sender.get_fd(), ERR_CHANNELISFULL(channel_name));
+				server.send_message(clients.get_fd(), ERR_CHANNELISFULL(channel_name));
 				return ;
 			}
-			if (channel->mode('i') && !channel->isInvited(&sender)) {
-				server.send_message(sender.get_fd(), ERR_INVITEONLYCHAN(channel_name));
+			if (channel->mode('i') && !channel->isInvited(&clients)) {
+				server.send_message(clients.get_fd(), ERR_INVITEONLYCHAN(channel_name));
 				return ;
 			}
 			if (channel->mode('k') && i < keys.size()) {
 				if (channel->getKey() != keys[i]) {
-					server.send_message(sender.get_fd(), ERR_BADCHANNELKEY(sender.get_username(), channel_name));
+					server.send_message(clients.get_fd(), ERR_BADCHANNELKEY(clients.get_username(), channel_name));
 					return ;
 				} 
             }
@@ -536,7 +538,26 @@ void Server::handleJoin(Client &client, const IRCMessage &msg)
         //
         //retornar topcp do canal ou retornar que nao tem topic
         //retornar lista de usuarios e fim da lista 
-    }
+    */
+
+
+    void Server::handlePrivmsg(Client &client, const IRCMessage &msg){
+        if (msg.params.empty()) {
+            sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
+            return;
+        }
+        if(msg.params.size() < 2){
+            sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
+            return;
+        }
+        if(msg.params[0][0] == '#')
+        {
+            if (channels.find(msg.params[0]) == channels.end()){
+
+            }  
+        }
+        return;
+}
 
 /* SEND IRC REPLY TO CLIENT */
 void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
