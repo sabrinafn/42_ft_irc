@@ -356,6 +356,7 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
             sendReply(client.getFd(), 421, client.getNickname(), msg.command + " :Unknown command");
         }
     }
+    
 }
 
 /* IRC COMMAND HANDLERS */
@@ -628,10 +629,11 @@ bool Server::isNicknameInUse(const std::string& nickname, int excludeFd) {
 }
 
 void Server::sendWelcomeMessages(Client &client) {
-    std::string nick = client.getNickname();
-    sendReply(client.getFd(), 001, nick, ":Welcome to the Internet Relay Network " + nick);
-    sendReply(client.getFd(), 002, nick, ":Your host is localhost, running version 1.0");
-    sendReply(client.getFd(), 003, nick, ":This server was created today");
-    sendReply(client.getFd(), 004, nick, "localhost 1.0 o o");
+    client.sendRawMessage(RPL_WELCOME(client.getNickname(), client.getRealname()));
+    client.sendRawMessage(RPL_YOURHOST(client.getNickname()));
+    std::string startup_time = "2001-01-01 01:01:01"; // criar funcao pra pegar data atual
+    client.sendRawMessage(RPL_CREATED(client.getNickname(), startup_time));
+    client.sendRawMessage(RPL_MYINFO(client.getNickname(), "o", "o"));
+
     std::cout << "Client [" << client.getFd() << "] (" << nick << ") is now registered!" << std::endl;
 }

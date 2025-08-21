@@ -27,6 +27,7 @@
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
 #include "../parser/Parser.hpp" // parser class
+#include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 
 class Server {
 
