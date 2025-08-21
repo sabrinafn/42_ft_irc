@@ -1,3 +1,10 @@
+/*
+ * Channel.hpp
+ *
+ * Defines the Channel class, responsible for managing IRC channels,
+ * including their members, modes, and message broadcasting.
+ */
+
 #ifndef CHANNEL_HPP
 #define CHANNEL_HPP
 
