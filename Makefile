@@ -6,8 +6,7 @@ SRCDIR := sources
 INCDIR := includes
 BUILDDIR := build
 
-INCLUDEFILES := server.hpp
-INCLUDES := $(addprefix $(INCDIR)/, $(INCLUDEFILES))
+INCLUDES := $(shell find $(INCDIR) -name "*.hpp")
 
 SRCS := $(shell find $(SRCDIR) -name "*.cpp")
 
