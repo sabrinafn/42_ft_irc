@@ -4,8 +4,9 @@
 bool Server::signals = false;
 
 /* CONSTRUCTOR */
+// construtores
 Server::Server(void) : port(-1), socket_fd(-1), password(""),
-    clients(), pollset(), timeout_seconds(300), pong_timeout(15) {} // 300 for 5 min
+    clients(), pollset(), timeout_seconds(300), pong_timeout(15) {}
 
 Server::Server(int port, const std::string &password) : port(port), socket_fd(-1),
         password(password), clients(), pollset(), timeout_seconds(300), pong_timeout(15) {
@@ -14,7 +15,7 @@ Server::Server(int port, const std::string &password) : port(port), socket_fd(-1
 }
 
 /* COPY CONSTRUCTOR */
-Server::Server(const Server &other) { *this = other;}
+Server::Server(const Server &other) { *this = other; }
 
 /* OPERATORS */
 Server &Server::operator=(const Server &other) {
@@ -22,6 +23,7 @@ Server &Server::operator=(const Server &other) {
         this->port = other.port;
         this->socket_fd = other.socket_fd;
         this->password = other.password;
+        // copia apenas ponteiros, não objetos
         this->clients = other.clients;
         this->pollset = other.pollset;
         this->timeout_seconds = other.timeout_seconds;
@@ -30,8 +32,14 @@ Server &Server::operator=(const Server &other) {
     return *this;
 }
 
-/* DESTRUCTOR */
-Server::~Server(void) {}
+// destrutor
+Server::~Server(void) {
+    // libera memoria dos clients
+    for (size_t i = 0; i < clients.size(); ++i) {
+        delete clients[i];
+    }
+    clients.clear();
+}
 
 /* SETTERS */
 //void Server::setPortNumber(int other) {
@@ -165,18 +173,14 @@ void Server::connectClient(void) {
         std::cerr << "accept: " << strerror(err) << std::endl;
         return;
     }
-
-    // Setar O_NONBLOCK with fcntl()
     this->setNonBlocking(client_fd);
-
-    // CREATING POLL STRUCT FOR CURRENT CLIENT AND ADDING TO THE POLLFD STRUCT
     this->pollset.add(client_fd);
 
-    Client client;
-    client.setFd(client_fd);
-    client.setLastActivity(std::time(0));
+    Client* client = new Client();
+    client->setFd(client_fd);
+    client->setLastActivity(std::time(0));
     this->clients.push_back(client);
-    std::cout << "Last activity time: " << client.getLastActivity() << std::endl;
+    std::cout << "Last activity time: " << client->getLastActivity() << std::endl;
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -188,74 +192,66 @@ void Server::receiveData(size_t &index) {
         int err = errno;
         std::cerr << "recv: " << strerror(err) << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after disconnecting
+        --index;
         return;
     }
     else if (bytes_read == 0) {
         std::cerr << "client disconnected" << std::endl;
         this->disconnectClient(index);
-        --index; // fix index after disconnecting
+        --index;
         return;
     }
     else if (bytes_read > 0){
         buffer[bytes_read] = '\0';
-        // print data received and stored in buffer
         Client *client = getClientByFd(current.fd);
         if (!client) {
             throw std::invalid_argument("Client fd not found");
         }
-        if (client) {
-            std::string buf = buffer;
-            if (buf.empty() || buffer[0] == '\0')
-                return; // ignora vazios
-            this->handleClientMessage(*client, buf);
-            std::cout << "Client fd [" << client->getFd() << "]"
-                  << " buffer: '" << client->getData() << "'" << std::endl;
-            client->setLastActivity(std::time(0));
-            client->setPingSent(false);
-        }
+        std::string buf = buffer;
+        if (buf.empty() || buffer[0] == '\0')
+            return;
+        this->handleClientMessage(*client, buf);
+        std::cout << "Client fd [" << client->getFd() << "]"
+              << " buffer: '" << client->getData() << "'" << std::endl;
+        client->setLastActivity(std::time(0));
+        client->setPingSent(false);
     }
 }
 
 /* DISCONNECT CLIENT */
 void Server::disconnectClient(size_t index) {
-    // remove FD from pollset
     struct pollfd current = this->pollset.getPollFd(index);
     this->pollset.remove(index);
 
-    // remove FD from clients vector
-    std::vector<Client>::iterator it = clients.begin();
+    // remove e deleta o ponteiro do client
+    std::vector<Client*>::iterator it = clients.begin();
     for (size_t i = 0; i < clients.size(); i++) {
-        if ((*it).getFd() == current.fd) {
+        if ((*it)->getFd() == current.fd) {
+            delete *it;
             clients.erase(it);
             break;
         }
         it++;
     }
-    // close FD
     close(current.fd);
 }
 
 /* FIND CLIENT BY FD */
 Client *Server::getClientByFd(int fd_to_find) {
-    std::vector<Client>::iterator it = this->clients.begin();
-    for (size_t i = 0; i < clients.size(); i++) {
-        if ((*it).getFd() == fd_to_find)
-            return &clients[i];
-        it++;
+    for (size_t i = 0; i < clients.size(); ++i) {
+        if (clients[i]->getFd() == fd_to_find)
+            return clients[i];
     }
     return NULL;
 }
 
 /* CLEAR RESOURCES */
 void Server::clearServer(void) {
-    // clear clients vector
-    std::vector<Client>::iterator it = this->clients.begin();
-    while (it != this->clients.end()) {
-        close(it->getFd());
-        it = this->clients.erase(it);
+    for (size_t i = 0; i < clients.size(); ++i) {
+        close(clients[i]->getFd());
+        delete clients[i];
     }
-    // close fds in struct pollfd
+    clients.clear();
     this->pollset.clear();
 }
 
@@ -276,36 +272,37 @@ void Server::signalHandler(int sig) {
 
 /* VERIFY CLIENTS ACTIVE TIME */
 void Server::handleInactiveClients(void) {
-    std::vector<Client>::iterator it = this->clients.begin();
+    std::vector<Client*>::iterator it = this->clients.begin();
     time_t now = std::time(0);
 
     while (it != this->clients.end()) {
-        time_t lastActivity = it->getLastActivity();
+        time_t lastActivity = (*it)->getLastActivity();
 
         // if client inactive
         if (now - lastActivity >= this->timeout_seconds) {
-            if (!it->pingSent()) { // if ping not sent
+            if (!(*it)->pingSent()) { // if ping not sent
                 std::stringstream ss; // convert time_t to string
                 ss << now;
                 std::string msg = "PING :" + ss.str() + "\r\n";
-                send(it->getFd(), msg.c_str(), msg.length(), 0);
+                send((*it)->getFd(), msg.c_str(), msg.length(), 0);
 
-                it->setPingSent(true);
-                it->setLastPingSent(now);
+                (*it)->setPingSent(true);
+                (*it)->setLastPingSent(now);
 
-                std::cout << "Sent PING to Client with fd [" << it->getFd() << "]" << std::endl;
+                std::cout << "Sent PING to Client with fd [" << (*it)->getFd() << "]" << std::endl;
                 ++it;
             }
-            else if (now - it->getLastPingSent() >= this->pong_timeout) {
+            else if (now - (*it)->getLastPingSent() >= this->pong_timeout) {
                 // if ping was sent and timeout for pong is over
-                std::cout << "Client with fd [" << it->getFd() << "] timeouted (no PONG received)" << std::endl;
+                std::cout << "Client with fd [" << (*it)->getFd() << "] timeouted (no PONG received)" << std::endl;
 
-                int poll_fd_idx = this->getPollsetIdxByFd(it->getFd());
+                int poll_fd_idx = this->getPollsetIdxByFd((*it)->getFd());
                 if (poll_fd_idx != -1) {
                     struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
                     this->pollset.remove(poll_fd_idx);
                     close(current.fd);
                 }
+                delete *it;
                 it = this->clients.erase(it);
             }
             else { // if ping was sent an timeout for pong is still not over
@@ -469,95 +466,145 @@ void Server::handleQuit(Client &client, const IRCMessage &msg) {
         disconnectClient(pollIndex);
     }
 }
-
-/*void Server::handleJoin(Client &client, const IRCMessage &msg)
+void Server::handleJoin(Client &client, const IRCMessage &msg)
 {
-        Channel *Channel;
-        if (msg.params.empty()) {
+    std::cout << "DEBUG: handleJoin chamado para cliente " << client.getNickname() << std::endl;
+
+    // verifica se tem parametros depois do JOIN
+    if (msg.params.empty()) {
+        std::cout << "DEBUG: JOIN sem parametros" << std::endl;
         sendReply(client.getFd(), 461, "*", "JOIN :Not enough parameters");
         return;
-        }
-                //if(nao esta autenticado)
-        std::vector<std::string> Channels;
-	    std::vector<std::string> keys;
-	    std::stringstream ss(msg.params[0]);
-	    std::string channelName;
-        while (std::getline(ss, channelName, ',')) {
-            if(!isValidChannelName(channelName))
-                return;
-            if (!channelName.empty())
-                Channels.push_back(channelName);
-        }
-        if (msg.params.size() > 1) {
-		std::stringstream ss_keys(msg.params[1]);
-		std::string key;
-		while (std::getline(ss_keys, key, ',')) {
-            if(!isValidkey(key))
-                return;
-			keys.push_back(key);
-		}
-        for (size_t i = 0; i < Channels.size(); ++i) {
-            const std::string& channelName = Channels[i];
+    }
 
-            if (channels.find(channelName) == channels.end())
-            {	
-                channels[channelName] = new Channel(channelName);
-                channels[channelName]->addOperator(clients);
-            }
-            else
-            {
-                if (channel->getMembers().find(clients.get_fd()) != channel->getMembers().end()) {
-				server.send_message(clients.get_fd(), ERR_USERONCHANNEL(clients.get_nickname(), channel_name));
-				return ;
-			}
-			if (channel->mode('l') && channel->getCurrentMembersCount() >= channel->getUserLimit()) {
-				server.send_message(clients.get_fd(), ERR_CHANNELISFULL(channel_name));
-				return ;
-			}
-			if (channel->mode('i') && !channel->isInvited(&clients)) {
-				server.send_message(clients.get_fd(), ERR_INVITEONLYCHAN(channel_name));
-				return ;
-			}
-			if (channel->mode('k') && i < keys.size()) {
-				if (channel->getKey() != keys[i]) {
-					server.send_message(clients.get_fd(), ERR_BADCHANNELKEY(clients.get_username(), channel_name));
-					return ;
-				} 
-            }
-        }
-
-
-	}
-
-        //if(canal existe,entrar no canal){
-        //    verificar dentro desse if os modos +i +k +l }
-        // if(cliente ja esta no canal) ignorar ou retornar erro
-        //
-        //else( se nao existe criar o canal)
-        //
-        //
-        //retornar topcp do canal ou retornar que nao tem topic
-        //retornar lista de usuarios e fim da lista 
-    */
-
-
-    void Server::handlePrivmsg(Client &client, const IRCMessage &msg){
-        if (msg.params.empty()) {
-            sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
+    // faz o parse dos nomes dos canais e dos modes
+    std::vector<std::string> channelNames;
+    std::vector<std::string> modes;
+    std::stringstream ss(msg.params[0]);
+    std::string channelName;
+    while (std::getline(ss, channelName, ',')) {
+        std::cout << "DEBUG: verificando nome de canal: " << channelName << std::endl;
+        if (!isValidChannelName(channelName)) {
+            std::cout << "DEBUG: nome de canal invalido: " << channelName << std::endl;
             return;
         }
-        if(msg.params.size() < 2){
-            sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
-            return;
-        }
-        if(msg.params[0][0] == '#')
-        {
-            if (channels.find(msg.params[0]) == channels.end()){
+        if (!channelName.empty())
+            channelNames.push_back(channelName);
+    }
 
-            }  
+    // faz o parse das keys se existirem
+    if (msg.params.size() > 1) {
+        std::stringstream ss_keys(msg.params[1]);
+        std::string key;
+        while (std::getline(ss_keys, key, ',')) {
+            std::cout << "DEBUG: verificando key do canal: " << key << std::endl;
+            if (!isValidkey(key)) {
+                std::cout << "DEBUG: key invalida: " << key << std::endl;
+                return;
+            }
+            modes.push_back(key);
         }
-        return;
+    }
+
+    std::cout << "DEBUG: total de canais para JOIN: " << channelNames.size() << std::endl;
+
+    // loop em todos os canais
+    for (size_t i = 0; i < channelNames.size(); ++i) {
+        const std::string& name = channelNames[i];
+        Channel *channel = NULL;
+
+        std::cout << "DEBUG: processando canal " << name << std::endl;
+
+        // cria o canal se ele nao existir
+        if (channels.find(name) == channels.end()) {
+            std::cout << "DEBUG: criando canal " << name << std::endl;
+            channel = new Channel(name);
+            channels[name] = channel;
+            channel->addOperator(&client);
+        } else {
+            channel = channels[name];
+            std::cout << "DEBUG: canal ja existe " << name << std::endl;
+        }
+
+        // verifica se o usuario ja eh membro desse canal
+        if (channel->isMember(&client)) {
+            std::cout << "DEBUG: cliente ja eh membro do canal " << name << std::endl;
+            sendReply(client.getFd(), 443, client.getNickname(), name + " :is already on channel");
+            continue;
+        }
+
+        // verifica limite de usuarios (+l)
+        if (channel->hasMode(Channel::LIMIT_SET) && (int)channel->getMembers().size() >= channel->getLimit()) {
+            std::cout << "DEBUG: canal " << name << " atingiu limite de usuarios" << std::endl;
+            sendReply(client.getFd(), 471, client.getNickname(), name + " :cannot join channel (+l)");
+            continue;
+        }
+
+        // verifica se o canal eh invite only (+i)
+        if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
+            std::cout << "DEBUG: cliente nao convidado para canal " << name << std::endl;
+            sendReply(client.getFd(), 473, client.getNickname(), name + " :cannot join channel (+i)");
+            continue;
+        }
+
+        // verifica se precisa de senha (+k)
+        if (channel->hasMode(Channel::KEY_REQUIRED)) {
+            if (i >= modes.size() || channel->getKey() != modes[i]) {
+                std::cout << "DEBUG: key incorreta para canal " << name << std::endl;
+                sendReply(client.getFd(), 475, client.getNickname(), name + " :cannot join channel (+k)");
+                continue;
+            }
+        }
+
+        // adiciona o usuario como membro do canal
+        channel->addMember(&client);
+        std::cout << "DEBUG: cliente adicionado ao canal " << name << std::endl;
+
+        // broadcast do JOIN para todos membros
+        std::string joinMsg = ":" + client.getPrefix() + " JOIN :" + name;
+        std::cout << "DEBUG: broadcast JOIN -> " << joinMsg << std::endl;
+        channel->broadcast(joinMsg);
+
+        // remove o convite desse usuario da lista de convidados
+        if (channel->isInvited(&client)) {
+            std::cout << "DEBUG: removendo convite do cliente " << client.getNickname() << std::endl;
+            channel->removeInvite(&client);
+        }
+
+        // envia informacoes do topico do canal
+        std::string topic = channel->getTopic();
+        if (topic.empty()) {
+            std::cout << "DEBUG: canal " << name << " nao tem topico" << std::endl;
+            sendReply(client.getFd(), 331, client.getNickname(), name + " :no topic is set");
+        } else {
+            std::cout << "DEBUG: topico do canal " << name << " -> " << topic << std::endl;
+            sendReply(client.getFd(), 332, client.getNickname(), name + " :" + topic);
+        }
+
+        // monta a lista de usuarios do canal
+        std::string namesReply = "=";
+        std::vector<Client*> members = channel->getMembers();
+        std::cout << "DEBUG: membros do canal " << name << ":";
+        for (size_t j = 0; j < members.size(); ++j) {
+            if (channel->isOperator(members[j])) {
+                namesReply += " @" + members[j]->getNickname();
+                std::cout << " @" << members[j]->getNickname();
+            } else {
+                namesReply += " " + members[j]->getNickname();
+                std::cout << " " << members[j]->getNickname();
+            }
+        }
+        std::cout << std::endl;
+
+        // envia a lista de usuarios
+        sendReply(client.getFd(), 353, client.getNickname(), namesReply + " :" + name);
+        // envia fim da lista de usuarios
+        sendReply(client.getFd(), 366, client.getNickname(), name + " :end of /NAMES list");
+
+        std::cout << "DEBUG: handleJoin finalizado para canal " << name << std::endl;
+    }
 }
+
 
 /* SEND IRC REPLY TO CLIENT */
 void Server::sendReply(int fd, int code, const std::string& nickname, const std::string& message) {
@@ -575,9 +622,8 @@ void Server::sendRawMessage(int fd, const std::string& message) {
 
 /* CHECK IF NICKNAME IS ALREADY IN USE */
 bool Server::isNicknameInUse(const std::string& nickname, int excludeFd) {
-    std::vector<Client>::iterator it = this->clients.begin();
-    for (; it != this->clients.end(); ++it) {
-        if (it->getFd() != excludeFd && it->getNickname() == nickname) {
+    for (size_t i = 0; i < clients.size(); ++i) {
+        if (clients[i]->getFd() != excludeFd && clients[i]->getNickname() == nickname) {
             return true;
         }
     }
