@@ -181,7 +181,7 @@ std::cout << "DEBUG: broadcast para " << members.size() << " membros, sender: "
 for (size_t i = 0; i < members.size(); ++i) {
     std::cout << "DEBUG: membro[" << i << "] = " << members[i]->getNickname() << std::endl;
     if (sender == NULL || members[i] != sender) {
-        members[i]->sendRawMessage(message);
+        members[i]->sendReply(message);
     }
 }
 }

@@ -27,6 +27,7 @@
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
 #include "../parser/Parser.hpp" // parser class
+#include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 
 class Server {
 
@@ -117,12 +118,6 @@ class Server {
         void handleQuit(Client &client, const IRCMessage &msg);
         void handleJoin(Client &client, const IRCMessage &msg);
         void handlePrivmsg(Client &client, const IRCMessage &msg);
-        /* SEND IRC REPLY TO CLIENT */
-        void sendReply(int fd, int code, const std::string& nickname, const std::string& message);
-        void sendRawMessage(int fd, const std::string& message);
-
-        /* SEND WELCOME MESSAGES AFTER REGISTRATION */
-        void sendWelcomeMessages(Client &client);
 
         /* CHECK IF NICKNAME IS ALREADY IN USE */
         bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
