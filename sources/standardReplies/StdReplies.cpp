@@ -77,3 +77,7 @@ std::string ERR_INVITEONLYCHAN(const std::string& channel) {
 std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& channel) {
   return ":" + SERVER + " 475 * " + username + " " + channel + " :Cannot join channel (+k)" + "\r\n";
 }
+
+std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other, const std::string& message) {
+  return ":" + nickname + " PRIVMSG " + other + " :" + message + "\r\n";
+}

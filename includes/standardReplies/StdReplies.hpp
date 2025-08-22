@@ -61,4 +61,7 @@ std::string ERR_INVITEONLYCHAN(const std::string& channel);
 //475
 std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& channel);
 
+// PRIVMSG
+std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other, const std::string& message);
+
 #endif
