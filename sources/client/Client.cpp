@@ -112,10 +112,10 @@ void Client::appendData(std::string other) {
     this->buffer += other;
 }
 
-/* envia uma mensagem para cada cliente */
-void Client::sendRawMessage(const std::string& message) {
+/* SEND IRC REPLY MESSAGE TO EACH CLIENT */
+void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
-    ssize_t ret = write(fd, msg.c_str(), msg.size());
+    ssize_t ret = send(fd, msg.c_str(), msg.size(), 0);
     if (ret == -1) {
         std::cerr << "ERROR: falha ao enviar para " << nickname
                   << " (fd=" << this->fd << ")" << std::endl;
@@ -126,3 +126,13 @@ void Client::sendRawMessage(const std::string& message) {
     }
 }
 
+/* SEND WELCOME MESSAGES AFTER REGISTRATION */
+void Client::sendWelcomeMessages(void) {
+    this->sendReply(RPL_WELCOME(this->nickname, this->realname));
+    this->sendReply(RPL_YOURHOST(this->nickname));
+    std::string startup_time = "2001-01-01 01:01:01"; // criar funcao pra pegar data atual
+    this->sendReply(RPL_CREATED(this->nickname, startup_time));
+    this->sendReply(RPL_MYINFO(this->nickname, "o", "o"));
+
+    std::cout << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!" << std::endl;
+}
