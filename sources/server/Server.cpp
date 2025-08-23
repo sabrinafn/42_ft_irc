@@ -351,8 +351,10 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
     } else if (msg.command == "JOIN"){
         handleJoin(client, msg);
     } else if (msg.command == "PRIVMSG"){
-        handlePrivmsg(client, msg);
-    }
+        handlePrivmsg(client, msg);}
+     else if (msg.command == "TOPIC"){
+         handleTopic(client, msg);
+     }
     else {
         // Unknown command or not implemented yet
         if (client.getState() == REGISTERED) {
@@ -360,6 +362,7 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
         }
     }
 }
+
 
 /* IRC COMMAND HANDLERS */
 void Server::handlePass(Client &client, const IRCMessage &msg) {

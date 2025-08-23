@@ -2,10 +2,9 @@
 #include "../includes/channel/Channel.hpp"
 #include "../includes/standardReplies/StdReplies.hpp"
 
-std::string buildMessageFromParams(const std::vector<std::string>& params);
 bool check_params(Client &client, const IRCMessage &msg);
 
-std::string buildMessageFromParams(const std::vector<std::string>& params) {
+std::string Server::buildMessageFromParams(const std::vector<std::string>& params) {
     std::string message;
 
     for (size_t i = 1; i < params.size(); ++i) {
@@ -26,9 +25,7 @@ bool check_params(Client &client, const IRCMessage &msg){
         return false;
     }
     	if (msg.params[1][0] != ':') {
-		//client.sendReply(ERR_NOTEXTTOSEND(msg.command));
-        std::string errorMsg = "412 " + client.getNickname() + " :No message to send"  + " :\r\n";
-        client.sendReply(errorMsg);
+		client.sendReply(ERR_NOTEXTTOSEND(msg.command));
 		return false;
 	}
     return true;
@@ -42,8 +39,7 @@ bool Server::sendMsgToChannel(Client &client, const IRCMessage &msg)
     if(dest[0] == '#' && channels.find(dest) != channels.end()) {  
         channel = channels[dest];
         if (!channel->isMember(&client)) {
-        std::string errorMsg = "403 " + client.getNickname() + " :Not a channel member!" + " :\r\n";
-        client.sendReply(errorMsg);
+        client.sendReply(ERR_NOTONCHANNEL(dest));
             return false;
         }
             ///ver se é necessario fazer a validação de onlyinvited
@@ -52,9 +48,7 @@ bool Server::sendMsgToChannel(Client &client, const IRCMessage &msg)
         channel->broadcast(response, &client);
     }
     else{
-        //client.sendReply(ERR_NOSUCHCHANNEL(dest));
-        std::string errorMsg = "403 " + client.getNickname() + " :Invalid channel name!" + dest   + " :\r\n";
-        client.sendReply(errorMsg);
+        client.sendReply(ERR_NOSUCHCHANNEL(dest));
         return false;
     }
 
@@ -74,9 +68,9 @@ bool  Server::sendMsgToClient(Client &client, const IRCMessage &msg) {
         }
     }
     // se não encontrar o cliente:
-    std::string errorMsg = "401 " + client.getNickname() + " " + dest   + " :No such nick\r\n";
-    client.sendReply(errorMsg);
-    return true;
+    client.sendReply(ERR_NOSUCHNICK(dest));
+    //verificar se o erro esta correto
+    return false;
 }
 
 void Server::handlePrivmsg(Client &client, const IRCMessage &msg){ 
