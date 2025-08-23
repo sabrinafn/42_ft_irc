@@ -89,3 +89,12 @@ std::string ERR_NOTEXTTOSEND(const std::string& nickname) {
 std::string ERR_NOSUCHCHANNEL(const std::string& channel) {
   return ":" + SERVER + " 403 * " + channel + " :Invalid channel name!" + "\r\n";
 }
+
+std::string ERR_NOTONCHANNEL(const std::string& channel) {
+  return ":" + SERVER + " 442 * " + channel + " :Client not on channel!" + "\r\n";
+}
+
+std::string ERR_NOSUCHNICK(const std::string& dest) {
+  return ":" + SERVER + " 406 * " + dest + " :No such nick" + "\r\n";
+}
+
