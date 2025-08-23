@@ -3,6 +3,7 @@
 #include "../includes/standardReplies/StdReplies.hpp"
 
 std::string buildMessageFromParams(const std::vector<std::string>& params);
+bool check_params(Client &client, const IRCMessage &msg);
 
 std::string buildMessageFromParams(const std::vector<std::string>& params) {
     std::string message;

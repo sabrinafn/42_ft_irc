@@ -132,10 +132,10 @@ class Server {
         void addChannel(Channel* new_channel);
         /* find channel */
 
-        std::string buildMessageFromParams(const std::vector<std::string>& params);
         bool sendMsgToChannel(Client &client, const IRCMessage &msg);
         bool  sendMsgToClient(Client &client, const IRCMessage &msg);
-        bool check_params(Client &client, const IRCMessage &msg);
+
+        
     };
 
 #endif
