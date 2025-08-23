@@ -79,6 +79,13 @@ std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& ch
 }
 
 std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other, const std::string& message) {
-  return ":" + nickname + " PRIVMSG " + other + " :" + message + "\r\n";
+  return ":" + SERVER + nickname + " PRIVMSG " + other + " :" + message + "\r\n";
 }
 
+std::string ERR_NOTEXTTOSEND(const std::string& nickname) {
+  return ":" + SERVER + " 412 * " + nickname + " :No message to send" + "\r\n";
+}
+
+std::string ERR_NOSUCHCHANNEL(const std::string& channel) {
+  return ":" + SERVER + " 403 * " + channel + " :Invalid channel name!" + "\r\n";
+}
