@@ -131,7 +131,8 @@ class Server {
         /*ADD CHANNEL*/
         void addChannel(Channel* new_channel);
         /* find channel */
-        bool channelnotExists(const std::string& channel_name);
+
+        bool Server::sendMsgToChannel(Client &client, const IRCMessage &msg)
     };
 
 #endif
