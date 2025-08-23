@@ -81,3 +81,4 @@ std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& ch
 std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other, const std::string& message) {
   return ":" + nickname + " PRIVMSG " + other + " :" + message + "\r\n";
 }
+

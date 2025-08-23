@@ -612,8 +612,6 @@ void Server::handlePrivmsg(Client &client, const IRCMessage &msg){
 
     //colocar if de autenticação
     if (msg.params.empty() || msg.params.size() < 2) { 
-        // sendReply(client.getFd(), 461, "*", "PRIVMSG :Not enough parameters");
-        // substituido por =>
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     } 
@@ -625,9 +623,6 @@ void Server::handlePrivmsg(Client &client, const IRCMessage &msg){
         }
             ///ver se é necessario fazer a validação de onlyinvited
 
-
-        //std::string response = RPL_PRIVMSG(client.getNickname(), msg.params[0], msg.params[1]);
-        // substituido por =>
         std::string response = RPL_PRIVMSG(client.getNickname(), msg.params[0], msg.params[1]);
         channel->broadcast(response, &client);
     }
