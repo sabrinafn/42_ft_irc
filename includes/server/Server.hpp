@@ -27,6 +27,7 @@
 #include "../client/Client.hpp" // client class
 #include "../pollset/Pollset.hpp" // pollset class
 #include "../parser/Parser.hpp" // parser class
+#include "../commands/Commands.hpp"
 #include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 
 class Server {
@@ -59,12 +60,15 @@ class Server {
         /* SETTERS */
         //void setPortNumber(int other);
         //void setServerPassword(std::string other);
+        void setChannel(Channel *new_channel);
 
         /* GETTERS */
         int getPortNumber(void) const;
         std::string getServerPassword(void) const;
         Client *getClientByFd(int fd_to_find);
+        const std::vector<Client*>& getClients() const;
         std::map<std::string, Channel*> &get_channels();
+        int getPongTimeout(void) const;
 
         /* CREATE SOCKET */
         void createSocket(void);
@@ -109,28 +113,6 @@ class Server {
         /* PROCESS IRC COMMANDS */
         void processIRCMessage(Client &client, const IRCMessage &msg);
 
-        /* IRC COMMAND HANDLERS */
-        void handlePass(Client &client, const IRCMessage &msg);
-        void handleNick(Client &client, const IRCMessage &msg);
-        void handleUser(Client &client, const IRCMessage &msg);
-        void handlePing(Client &client, const IRCMessage &msg);
-        void handlePong(Client &client, const IRCMessage &msg);
-        void handleQuit(Client &client, const IRCMessage &msg);
-        void handleJoin(Client &client, const IRCMessage &msg);
-
-        /* CHECK IF NICKNAME IS ALREADY IN USE */
-        bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
-
-        /* CHECK IF  IS VALID CHANNEL NAME */
-        bool isValidChannelName(const std::string& name);
-
-        /* CHECK IF  IS VALID KEY */
-        bool isValidkey(std::string key);
-      
-        /*ADD CHANNEL*/
-        void addChannel(Channel* new_channel);
-        /* find channel */
-        bool channelnotExists(const std::string& channel_name);
     };
 
 #endif
