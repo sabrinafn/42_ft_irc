@@ -119,6 +119,7 @@ class Server {
         void handleJoin(Client &client, const IRCMessage &msg);
         void handlePrivmsg(Client &client, const IRCMessage &msg);
         void handleTopic(Client &client, const IRCMessage &msg);
+        void handleKick(Client &client, const IRCMessage &msg);
 
         /* CHECK IF NICKNAME IS ALREADY IN USE */
         bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
@@ -131,12 +132,13 @@ class Server {
       
         /*ADD CHANNEL*/
         void addChannel(Channel* new_channel);
-        /* find channel */
+        
+        std::vector<std::string> Server::split(const std::string& str, char limit);
 
         bool sendMsgToChannel(Client &client, const IRCMessage &msg);
         bool  sendMsgToClient(Client &client, const IRCMessage &msg);
         std::string buildMessageFromParams(const std::vector<std::string>& params);
-
+        Client* Server::serverGetClientByNick(const std::string& nick);
         
     };
 

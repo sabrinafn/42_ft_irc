@@ -64,8 +64,10 @@ std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& ch
 // PRIVMSG
 std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other, const std::string& message);
 
+//412
 std::string ERR_NOTEXTTOSEND(const std::string& nickname);
 
+//403
 std::string ERR_NOSUCHCHANNEL(const std::string& channel);
 
 //442
@@ -73,4 +75,10 @@ std::string ERR_NOTONCHANNEL(const std::string& channel);
 
 //406
 std::string ERR_NOSUCHNICK(const std::string& dest);
+
+//482
+std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& channel);
+
+//441
+std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname, const std::string& channel);
 #endif
