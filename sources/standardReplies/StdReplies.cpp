@@ -87,7 +87,7 @@ std::string ERR_NOTEXTTOSEND(const std::string& nickname) {
 }
 
 std::string ERR_NOSUCHCHANNEL(const std::string& channel) {
-  return ":" + SERVER + " 403 * " + channel + " :Invalid channel name!" + "\r\n";
+  return ":" + SERVER + " 403 * " + channel + " :No such channel" + "\r\n";
 }
 
 std::string ERR_NOTONCHANNEL(const std::string& channel) {
@@ -96,5 +96,13 @@ std::string ERR_NOTONCHANNEL(const std::string& channel) {
 
 std::string ERR_NOSUCHNICK(const std::string& dest) {
   return ":" + SERVER + " 406 * " + dest + " :No such nick" + "\r\n";
+}
+
+std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& channel) {
+  return ":" + SERVER + " 482 * " + nickname + channel + " :You're not a channel operator!" + "\r\n";
+}
+
+std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname, const std::string& channel) {
+  return ":" + SERVER + " 441 * " + targetNick + " " + nickname + " " + channel +  + " :They aren't on that channel" + "\r\n";
 }
 

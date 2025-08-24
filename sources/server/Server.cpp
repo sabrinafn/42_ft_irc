@@ -354,6 +354,8 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
         handlePrivmsg(client, msg);}
      else if (msg.command == "TOPIC"){
          handleTopic(client, msg);
+     }else if (msg.command == "KICK"){
+        handleKick(client, msg);
      }
     else {
         // Unknown command or not implemented yet
