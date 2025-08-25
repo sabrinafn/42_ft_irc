@@ -91,7 +91,7 @@ std::string ERR_NOSUCHCHANNEL(const std::string& channel) {
 }
 
 std::string ERR_NOTONCHANNEL(const std::string& channel) {
-  return ":" + SERVER + " 442 * " + channel + " :Client not on channel!" + "\r\n";
+  return ":" + SERVER + " 442 * "  + channel + " :Client not on channel!" + "\r\n";
 }
 
 std::string ERR_NOSUCHNICK(const std::string& dest) {
@@ -103,6 +103,13 @@ std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& 
 }
 
 std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname, const std::string& channel) {
-  return ":" + SERVER + " 441 * " + targetNick + " " + nickname + " " + channel +  + " :They aren't on that channel" + "\r\n";
+  return ":" + SERVER + " 441 * " + targetNick + " " + nickname + " " + channel +  " :They aren't on that channel" + "\r\n";
 }
 
+std::string RPL_INVITING(const std::string& targetNick, const std::string& nickname, const std::string& channel) {
+  return ":" + SERVER + " 341 * "   + nickname + " " + targetNick + " " + channel +  "\r\n";
+}
+
+std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname, const std::string& channel) {
+  return ":" + SERVER + nickname + " INVITE " + targetNick + " " + channel + "\r\n";
+}

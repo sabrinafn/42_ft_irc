@@ -356,6 +356,8 @@ void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
          handleTopic(client, msg);
      }else if (msg.command == "KICK"){
         handleKick(client, msg);
+     }else if(msg.command == "INVITE"){
+        handleInvite(client, msg);
      }
     else {
         // Unknown command or not implemented yet
