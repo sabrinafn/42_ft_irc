@@ -5,3 +5,4 @@ void Commands::handlePing(Client &client, Server &server, const IRCMessage &msg)
     std::string servername = msg.trailing.empty() ? (msg.params.empty() ? "server" : msg.params[0]) : msg.trailing;
     client.sendReply("PONG :" + servername + "\r\n");
 }
+
