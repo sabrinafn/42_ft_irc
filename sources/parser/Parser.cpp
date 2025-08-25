@@ -1,4 +1,4 @@
-#include "../../includes/parser/Parser.hpp"
+#include "../includes/ft_irc.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>
@@ -98,7 +98,7 @@ bool Parser::isValidCommand(const std::string& command) {
     }
     //TODO ADD ALL Commands
     const std::string validCommands[] = {
-        "PASS", "NICK", "USER", "QUIT", "JOIN","KICK","INFO"
+        "PASS", "NICK", "USER", "QUIT", "JOIN","KICK","INFO", "PING", "PONG", "PRIVMSG", "TOPIC", "KICK", "INVITE", "MODE" 
     };
     
     const int numCommands = sizeof(validCommands) / sizeof(validCommands[0]);

@@ -1,4 +1,4 @@
-#include "../includes/client/Client.hpp"
+#include "../includes/ft_irc.hpp"
 #include <iostream>
 #include <unistd.h>
 

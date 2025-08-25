@@ -25,10 +25,10 @@ class Commands {
         void handlePong(Client &client, Server &server, const IRCMessage &msg);
         void handleQuit(Client &client, Server &server, const IRCMessage &msg);
         void handleJoin(Client &client, Server &server, const IRCMessage &msg);
-        //void handlePrivmsg(Client &client, Server &server, const IRCMessage &msg);
-        //void handleTopic(Client &client, Server &server, const IRCMessage &msg);
-        //void handleKick(Client &client, Server &server, const IRCMessage &msg);
-        //void handleInvite(Client &client, Server &server, const IRCMessage &msg);
+        void handlePrivmsg(Client &client, Server &server, const IRCMessage &msg);
+        void handleTopic(Client &client, Server &server, const IRCMessage &msg);
+        void handleKick(Client &client, Server &server, const IRCMessage &msg);
+        void handleInvite(Client &client, Server &server, const IRCMessage &msg);
         //void handleMode(Client &client, Server &server, const IRCMessage &msg);
         
         
@@ -43,6 +43,13 @@ class Commands {
         /* CHECK IF IT IS A VALID KEY */
         bool isValidkey(std::string key);
 
+
+        std::string buildMessageFromParams(const std::vector<std::string>& params);
+        bool  sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
+        bool check_params(Client &client, const IRCMessage &msg);
+        bool sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
+
+        std::vector<std::string> split(const std::string& str, char limit);
 
     public:
         /* CONSTRUCTOR */

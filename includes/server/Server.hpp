@@ -56,12 +56,12 @@ class Server {
 
         /* DESTRUCTOR */
         ~Server(void);
-
+        
         /* SETTERS */
         //void setPortNumber(int other);
         //void setServerPassword(std::string other);
         void setChannel(Channel *new_channel);
-
+        
         /* GETTERS */
         int getPortNumber(void) const;
         std::string getServerPassword(void) const;
@@ -69,6 +69,7 @@ class Server {
         const std::vector<Client*>& getClients() const;
         std::map<std::string, Channel*> &get_channels();
         int getPongTimeout(void) const;
+        Client* serverGetClientByNick(const std::string& nick);
 
         /* CREATE SOCKET */
         void createSocket(void);
@@ -107,43 +108,8 @@ class Server {
         void handleInactiveClients(void);
 
         /* HANDLER FOR MESSAGE */
-        /* only created now to deal with PONG */
         void handleClientMessage(Client &client, const std::string &msg);
-
-        /* PROCESS IRC COMMANDS */
-        void processIRCMessage(Client &client, const IRCMessage &msg);
-
-        /* IRC COMMAND HANDLERS */
-        // void handlePass(Client &client, const IRCMessage &msg);
-        // void handleNick(Client &client, const IRCMessage &msg);
-        // void handleUser(Client &client, const IRCMessage &msg);
-        // void handlePing(Client &client, const IRCMessage &msg);
-        // void handlePong(Client &client, const IRCMessage &msg);
-        // void handleQuit(Client &client, const IRCMessage &msg);
-        // void handleJoin(Client &client, const IRCMessage &msg);
-        void handlePrivmsg(Client &client, const IRCMessage &msg);
-        void handleTopic(Client &client, const IRCMessage &msg);
-        void handleKick(Client &client, const IRCMessage &msg);
-        void handleInvite(Client &client, const IRCMessage &msg);
-
-        // /* CHECK IF NICKNAME IS ALREADY IN USE */
-        // bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);
-
-        // /* CHECK IF  IS VALID CHANNEL NAME */
-        // bool isValidChannelName(const std::string& name);
-
-        // /* CHECK IF  IS VALID KEY */
-        // bool isValidkey(std::string key);
-      
-        // /*ADD CHANNEL*/
-        // void addChannel(Channel* new_channel);
         
-        std::vector<std::string> Server::split(const std::string& str, char limit);
-
-        bool sendMsgToChannel(Client &client, const IRCMessage &msg);
-        bool  sendMsgToClient(Client &client, const IRCMessage &msg);
-        std::string buildMessageFromParams(const std::vector<std::string>& params);
-        Client* Server::serverGetClientByNick(const std::string& nick);        
 };
 
 #endif

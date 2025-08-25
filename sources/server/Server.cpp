@@ -73,6 +73,14 @@ int Server::getPongTimeout(void) const {
     return this->pong_timeout;
 }
 
+Client* Server::serverGetClientByNick(const std::string& nick) {
+    for (size_t i = 0; i < clients.size(); ++i) {
+        if (clients[i]->getNickname() == nick)
+            return clients[i];
+    }
+    return NULL; // cliente não encontrado
+}
+
 /* INIT SERVER */
 void Server::initServer(void) {
 
@@ -329,7 +337,7 @@ void Server::handleInactiveClients(void) {
 /* HANDLER FOR MESSAGE */
 void Server::handleClientMessage(Client &client, const std::string &msg) {
     client.appendData(msg);
-    //Commands commands;
+    Commands commands;
     
     std::string buffer = client.getData();
     std::vector<std::string> lines = Parser::extractLines(buffer);
@@ -341,40 +349,9 @@ void Server::handleClientMessage(Client &client, const std::string &msg) {
         
         IRCMessage ircMsg = Parser::parseMessage(*it);
         if (!ircMsg.command.empty()) {
-            //commands.handler(msg.command, client, *this, msg.params);
-            processIRCMessage(client, ircMsg);
+            commands.handler(client, *this, ircMsg);
+            std::cout << "DEBUG: commands.handler called and out" << std::endl;
            
         }
-    }
-}
-
-/* PROCESS IRC COMMANDS */
-void Server::processIRCMessage(Client &client, const IRCMessage &msg) {
-    Commands commands = Commands();
-
-    if (msg.command == "PASS") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "NICK") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "USER") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "PING") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "PONG") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "QUIT") {
-        commands.handler(client, *this, msg);
-    } else if (msg.command == "JOIN") {
-        handleJoin(client, msg);
-    } else if (msg.command == "PRIVMSG") {
-        handlePrivmsg(client, msg);
-    } else if (msg.command == "TOPIC") {
-         handleTopic(client, msg);
-    }else if (msg.command == "KICK") {
-        handleKick(client, msg);
-    }else if(msg.command == "INVITE") {
-        handleInvite(client, msg);
-    } else {
-        commands.handler(client, *this, msg);
     }
 }
