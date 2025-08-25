@@ -1,9 +1,8 @@
-#include "../includes/server/Server.hpp"
-#include "../includes/channel/Channel.hpp"
-#include "../includes/standardReplies/StdReplies.hpp"
+#include "../includes/ft_irc.hpp"
 
-void Server::handleInvite(Client &client, const IRCMessage &msg) {
-    // INVITE <nickname> <channel>
+/* HANDLEINVITE */
+// INVITE <nickname> <channel>
+void Commands::handleInvite(Client &client, Server &server, const IRCMessage &msg) {
 	if (msg.params.empty() || msg.params.size() < 2) { 
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
@@ -13,11 +12,12 @@ void Server::handleInvite(Client &client, const IRCMessage &msg) {
     std::string channelName = msg.params[1];
 
     // 1. Checar se o canal existe
-    if (channels.find(channelName) == channels.end()) {
+     std::map<std::string, Channel*> all_channels = server.get_channels();
+    if (all_channels.find(channelName) != all_channels.end()) {
 		client.sendReply(ERR_NOSUCHCHANNEL(channelName));
         return;
     }
-	Channel* channel = channels[channelName];
+	Channel* channel = all_channels[channelName];
 
     // 2. Checar se quem manda está no canal
     if (!channel->isMember(&client)) {
@@ -26,7 +26,7 @@ void Server::handleInvite(Client &client, const IRCMessage &msg) {
     }
 
     // 3. Buscar o convidado no servidor
-    Client* target = serverGetClientByNick(targetNick);
+    Client* target = server.serverGetClientByNick(targetNick);
     if (!target) {
         client.sendReply(ERR_NOSUCHNICK(targetNick));
         return;

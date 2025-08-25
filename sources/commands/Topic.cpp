@@ -1,19 +1,19 @@
-#include "../includes/server/Server.hpp"
-#include "../includes/channel/Channel.hpp"
-#include "../includes/standardReplies/StdReplies.hpp"
+#include "../includes/ft_irc.hpp"
 
-void Server::handleTopic(Client &client, const IRCMessage &msg) {
+/* HANDLETOPIC */
+void Commands::handleTopic(Client &client, Server &server, const IRCMessage &msg) {
    
 	if (msg.params.empty() || msg.params.size() < 2) { 
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
     std::string channelName = msg.params[0];
-    if (channels.find(channelName) != channels.end()) {
-		client.sendReply(ERR_NOSUCHCHANNEL(channelName));
-		return; 
+    std::map<std::string, Channel*> all_channels = server.get_channels();
+    if(all_channels.find(channelName) != all_channels.end()) {
+        client.sendReply(ERR_NOSUCHCHANNEL(channelName));
+        return;
     }
-	Channel* channel = channels[channelName];
+    Channel* channel = all_channels[channelName];
     // Sem parâmetro de tópico → mostrar tópico atual
     if (msg.params.size() == 1) {
         std::string topic = channel->getTopic();
@@ -39,7 +39,7 @@ void Server::handleTopic(Client &client, const IRCMessage &msg) {
 
     // Checar permissões
     if (channel->hasMode(Channel::TOPIC_RESTRICTED) && !channel->isOperator(&client)) {
-        return "482 " + client.getNickname() + " " + channelName + " :You're not channel operator"; // ERR_CHANOPRIVSNEEDED
+        //return "482 " + client.getNickname() + " " + channelName + " :You're not channel operator"; // ERR_CHANOPRIVSNEEDED
     }
 
     // Atualiza o tópico

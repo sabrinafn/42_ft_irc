@@ -1,4 +1,4 @@
-#include "../../includes/pollset/Pollset.hpp"
+#include "../includes/ft_irc.hpp"
 
 /* CONSTRUCTOR */
 Pollset::Pollset(void) : fd(0) {}

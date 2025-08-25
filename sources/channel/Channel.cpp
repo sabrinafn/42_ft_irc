@@ -1,4 +1,4 @@
-#include "../includes/channel/Channel.hpp"
+#include "../includes/ft_irc.hpp"
 
 /* CONSTRUCTOR */
 Channel::Channel(const std::string& name) : name(name), limit(0) {}

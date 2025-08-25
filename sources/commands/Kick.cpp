@@ -1,17 +1,16 @@
-#include "../includes/server/Server.hpp"
-#include "../includes/channel/Channel.hpp"
-#include "../includes/standardReplies/StdReplies.hpp"
+#include "../includes/ft_irc.hpp"
 
+/* HANDLEKICK */
 // /KICK <#canal> <nick> [motivo]
 
-void Server::handleKick(Client &client, const IRCMessage &msg) {
+void Commands::handleKick(Client &client, Server &server, const IRCMessage &msg) {
     
 	if (msg.params.empty() || msg.params.size() < 2) { 
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
 
-     std::vector<std::string> _channels = split(msg.params[0], ',');
+    std::vector<std::string> _channels = split(msg.params[0], ',');
     std::vector<std::string> targets  = split(msg.params[1], ',');
 
     // Motivo (se houver)
@@ -30,12 +29,14 @@ void Server::handleKick(Client &client, const IRCMessage &msg) {
     // Para cada canal
     for (size_t i = 0; i < _channels.size(); ++i) {
         std::string channelName = _channels[i];
-        if (channels.find(channelName) == channels.end()) {
+        std::map<std::string, Channel*> all_channels = server.get_channels();
+
+        if (all_channels.find(channelName) != all_channels.end()) {
             client.sendReply(ERR_NOSUCHCHANNEL(channelName));
             continue;
         }
         
-        Channel* channel = channels[channelName];
+        Channel* channel = all_channels[channelName];
         if (!channel->isMember(&client)){
             client.sendReply(ERR_NOTONCHANNEL(channelName));
             continue;
@@ -49,7 +50,7 @@ void Server::handleKick(Client &client, const IRCMessage &msg) {
         // Para cada alvo
         for (size_t ti = 0; ti < targets.size(); ++ti) {
             std::string targetNick = targets[ti];
-            Client* target = serverGetClientByNick(targetNick);
+            Client* target = server.serverGetClientByNick(targetNick);
             if (!target) {
                 client.sendReply(ERR_NOSUCHNICK(targetNick));
                 continue;
@@ -71,4 +72,17 @@ void Server::handleKick(Client &client, const IRCMessage &msg) {
     }
 
     return;
+}
+
+
+std::vector<std::string> Commands::split(const std::string& str, char limit) {
+    std::vector<std::string> result;
+    std::stringstream ss(str);
+    std::string item;
+
+    while (std::getline(ss, item, limit)) {
+        if (!item.empty())
+            result.push_back(item);
+    }
+    return result;
 }
