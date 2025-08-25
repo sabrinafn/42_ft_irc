@@ -30,12 +30,12 @@ void Server::handleKick(Client &client, const IRCMessage &msg) {
     // Para cada canal
     for (size_t i = 0; i < _channels.size(); ++i) {
         std::string channelName = _channels[i];
-        Channel* channel = channels[channelName];
-        if (!channel) {
+        if (channels.find(channelName) == channels.end()) {
             client.sendReply(ERR_NOSUCHCHANNEL(channelName));
             continue;
         }
-
+        
+        Channel* channel = channels[channelName];
         if (!channel->isMember(&client)){
             client.sendReply(ERR_NOTONCHANNEL(channelName));
             continue;

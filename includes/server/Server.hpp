@@ -120,6 +120,7 @@ class Server {
         void handlePrivmsg(Client &client, const IRCMessage &msg);
         void handleTopic(Client &client, const IRCMessage &msg);
         void handleKick(Client &client, const IRCMessage &msg);
+        void handleInvite(Client &client, const IRCMessage &msg);
 
         /* CHECK IF NICKNAME IS ALREADY IN USE */
         bool isNicknameInUse(const std::string& nickname, int excludeFd = -1);

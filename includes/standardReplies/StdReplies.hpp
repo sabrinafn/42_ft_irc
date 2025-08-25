@@ -81,4 +81,10 @@ std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& 
 
 //441
 std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname, const std::string& channel);
+
+//invite
+std::string RPL_INVITING(const std::string& targetNick, const std::string& nickname, const std::string& channel);
+
+std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname, const std::string& channel);
+
 #endif
