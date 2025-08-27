@@ -29,8 +29,8 @@ std::string RPL_CREATED(const std::string& nickname, std::string& startup_time) 
 std::string RPL_MYINFO(const std::string& nickname, const std::string& usermodes,
                        const std::string& channelmodes) {
     std::ostringstream oss;
-    oss << COLON << SERVER << SPACE << "00" << RPL_MYINFO_CODE << SPACE << nickname << SPACE << SERVER
-        << " 1.0 " << usermodes << SPACE << channelmodes << CRLF;
+    oss << COLON << SERVER << SPACE << "00" << RPL_MYINFO_CODE << SPACE << nickname << SPACE
+        << SERVER << " 1.0 " << usermodes << SPACE << channelmodes << CRLF;
     return oss.str();
 }
 

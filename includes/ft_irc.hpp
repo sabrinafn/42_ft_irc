@@ -9,5 +9,6 @@
 #include "server/Server.hpp"
 #include "standardReplies/StdReplies.hpp"
 #include "utils/Utils.hpp"
+#include "logger/Logger.hpp"
 
 #endif

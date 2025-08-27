@@ -21,8 +21,11 @@ Server::Server(int port, const std::string &password)
       pollset(),
       timeout_seconds(300),
       pong_timeout(20) {
-    std::cout << "Server starting on port " << this->port << " with password '"
-              << this->password << "'" << std::endl;
+    Logger logger;
+    std::stringstream ss;
+    ss << "Server starting on port " << this->port << " with password '"
+    << this->password << "'";
+    logger.info(ss.str());
 }
 
 /* COPY CONSTRUCTOR */
@@ -32,15 +35,7 @@ Server::Server(const Server &other) {
 
 /* OPERATORS */
 Server &Server::operator=(const Server &other) {
-    if (this != &other) {
-        this->port            = other.port;
-        this->socket_fd       = other.socket_fd;
-        this->password        = other.password;
-        this->clients         = other.clients;
-        this->pollset         = other.pollset;
-        this->timeout_seconds = other.timeout_seconds;
-        this->pong_timeout    = other.pong_timeout;
-    }
+    (void)other;
     return *this;
 }
 
@@ -111,9 +106,13 @@ void Server::createSocket(void) {
     hint.sin_family      = AF_INET;           // IPV4
     hint.sin_port        = htons(this->port); // convert number to network byte order
     hint.sin_addr.s_addr = INADDR_ANY;        // set the address to any local machine address
-
+    Logger logger;
+    std::stringstream ss;
     // create socket
-    std::cout << "Creating server socket..." << std::endl;
+    ss << "Creating server socket...";
+    logger.debug(ss.str());
+    ss.str("");
+    ss.clear();
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd == -1)
         throwSystemError("socket");
@@ -127,12 +126,18 @@ void Server::createSocket(void) {
     this->setNonBlocking(this->socket_fd);
 
     // bind socket to a IP/port
-    std::cout << "Binding server socket to ip address" << std::endl;
+    ss << "Binding server socket to ip address";
+    logger.debug(ss.str());
+    ss.str("");
+    ss.clear();
     if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1)
         throwSystemError("bind");
 
     // mark socket to start listening
-    std::cout << "Marking socket to start listening" << std::endl;
+    ss << "Marking socket to start listening";
+    logger.debug(ss.str());
+    ss.str("");
+    ss.clear();
     if (listen(this->socket_fd, SOMAXCONN) == -1)
         throwSystemError("listen");
 
@@ -146,14 +151,16 @@ void Server::monitorConnections(void) {
     if (this->pollset.poll() == -1 && !Server::signals)
         throwSystemError("poll");
 
-    // std::cout << "poll waiting for an event to happen" << std::endl;
     //  checking all fds
     for (size_t i = 0; i < pollset.getSize(); i++) {
         // CHECK IF THIS CURRENT SOCKET RECEIVED INPUT
         struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
             // CHECK IF ANY EVENTS HAPPENED ON SERVER SOCKET
-            std::cout << "Client fd [" << current.fd << "] connected" << std::endl;
+            Logger logger;
+            std::stringstream ss;
+            ss << "Client [" << current.fd << "] connected";
+            logger.info(ss.str());
             if (current.fd == this->socket_fd)
                 this->connectClient(); // accept a new client
             else
