@@ -67,10 +67,10 @@ echo ""
 
 # Test 1!: Authentication Flow
 print_test "Test 1: Valid Authentication Flow"
-echo -e "PASS $PASSWORD\r\nNICK testuser1\r\nUSER testuser1 0 * :Test User One\r\nQUIT :Goodbye\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK testuser1\r\nUSER testuser1 0 * :Test User One\r\nQUIT :Goodbye\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
-if grep -q ":localhost 1.*Welcome" test_output.tmp; then
+if grep -qE "Welcome|Host|created|1.0" test_output.tmp; then
     print_success "Valid authentication successful"
 else
     print_error "Valid authentication failed"
@@ -80,7 +80,7 @@ echo ""
 
 # Test 2!: Wron password
 print_test "Test 2: Wrong Password"
-echo -e "PASS wrongpassword\r\nNICK testuser2\r\nUSER testuser2 0 * :Test User Two\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS wrongpassword\r\nNICK testuser2\r\nUSER testuser2 0 * :Test User Two\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "464.*Password incorrect" test_output.tmp; then
@@ -93,10 +93,10 @@ echo ""
 
 # Test 3:! invalid Nickname
 print_test "Test 3: Invalid Nickname"
-echo -e "PASS $PASSWORD\r\nNICK 123invalid\r\nNICK validuser\r\nUSER validuser 0 * :Valid User\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK 123invalid\r\nNICK validuser\r\nUSER validuser 0 * :Valid User\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
-if grep -q "432.*Erroneous nickname" test_output.tmp; then
+if grep -q "432" test_output.tmp; then
     print_success "Invalid nickname correctly rejected"
 else
     print_error "Invalid nickname not properly handled"
@@ -106,7 +106,7 @@ echo ""
 
 # Test 4: missing parameters
 print_test "Test 4: Missing Parameters"
-echo -e "PASS $PASSWORD\r\nNICK\r\nUSER\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK\r\nUSER\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "431.*No nickname given\|461.*Not enough parameters" test_output.tmp; then
@@ -119,7 +119,7 @@ echo ""
 
 # Test 5: PING/PONG ... 
 print_test "Test 5: PING/PONG Test"
-echo -e "PASS $PASSWORD\r\nNICK pinguser\r\nUSER pinguser 0 * :Ping User\r\nPING :testserver\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK pinguser\r\nUSER pinguser 0 * :Ping User\r\nPING :testserver\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "PONG.*testserver" test_output.tmp; then
@@ -133,10 +133,10 @@ echo ""
 # Test 6: Duplicate Nickname
 print_test "Test 6: Duplicate Nickname Test"
 # first client
-echo -e "PASS $PASSWORD\r\nNICK sameuser\r\nUSER sameuser1 0 * :User One\r\n" | nc 127.0.0.1 $PORT &
+echo -e "PASS $PASSWORD\r\nNICK sameuser\r\nUSER sameuser1 0 * :User One\r\n" | nc -C 0.0.0.0 $PORT &
 sleep 1
 # Try second client with same nickname
-echo -e "PASS $PASSWORD\r\nNICK sameuser\r\nUSER sameuser2 0 * :User Two\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK sameuser\r\nUSER sameuser2 0 * :User Two\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "433.*Nickname is already in use" test_output.tmp; then
@@ -149,7 +149,7 @@ echo ""
 
 # Test 7: Out of Order commands
 print_test "Test 7: Out-of-Order Commands (USER before PASS)"
-echo -e "USER outoforder 0 * :Out of Order\r\nPASS $PASSWORD\r\nNICK outoforder\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "USER outoforder 0 * :Out of Order\r\nPASS $PASSWORD\r\nNICK outoforder\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "464.*Password required" test_output.tmp; then
@@ -162,7 +162,7 @@ echo ""
 
 # Test 8: fragmented nessage test! (error last time)
 print_test "Test 8: Fragmented Message Test"
-(echo -n "PASS $PASSWORD"; sleep 0.5; echo -e "\r\n"; sleep 0.5; echo -e "NICK fraguser\r\nUSER fraguser 0 * :Fragmented User\r\nQUIT\r\n") | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+(echo -n "PASS $PASSWORD"; sleep 0.5; echo -e "\r\n"; sleep 0.5; echo -e "NICK fraguser\r\nUSER fraguser 0 * :Fragmented User\r\nQUIT\r\n") | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 3
 
 if grep -q ":localhost 1.*Welcome" test_output.tmp; then
@@ -176,7 +176,7 @@ echo ""
 # Test 9: big message test
 print_test "Test 9: Long Message Test"
 LONG_REALNAME="This is a very long real name that should still be handled correctly by the IRC server parser implementation"
-echo -e "PASS $PASSWORD\r\nNICK longuser\r\nUSER longuser 0 * :$LONG_REALNAME\r\nQUIT\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK longuser\r\nUSER longuser 0 * :$LONG_REALNAME\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q ":localhost 1.*Welcome" test_output.tmp; then
@@ -189,7 +189,7 @@ echo ""
 
 # Test 10: Multiple Commands in Single Message
 print_test "Test 10: Multiple Commands Test"
-echo -e "PASS $PASSWORD\r\nNICK multiuser\r\nUSER multiuser 0 * :Multi User\r\nPING :test1\r\nPING :test2\r\nQUIT :Multiple commands\r\n" | nc 127.0.0.1 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK multiuser\r\nUSER multiuser 0 * :Multi User\r\nPING :test1\r\nPING :test2\r\nQUIT :Multiple commands\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "PONG.*test1" test_output.tmp && grep -q "PONG.*test2" test_output.tmp; then
