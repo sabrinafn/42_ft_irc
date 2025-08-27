@@ -1,8 +1,6 @@
-#include "../includes/server/Server.hpp"
-#include "../includes/utils/Utils.hpp"
+#include "../includes/ft_irc.hpp"
 
-int main(int ac, char **av) {
-
+int main(int ac, char** av) {
     if (ac != 3) {
         std::cerr << "Error! Wrong number of arguments" << std::endl;
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
@@ -12,7 +10,7 @@ int main(int ac, char **av) {
     try {
         setupSignals(Server::signalHandler);
         std::pair<int, std::string> pair = parsePortAndPassword(av);
-        server = Server(pair.first, pair.second);
+        server                           = Server(pair.first, pair.second);
         server.initServer();
     } catch (const std::exception& e) {
         std::cerr << "Error! " << e.what() << std::endl;

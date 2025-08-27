@@ -8,46 +8,44 @@
 #ifndef POLLSET_HPP
 #define POLLSET_HPP
 
-#include <vector> // std::vector
-#include <poll.h> // poll
+#include <vector>   // std::vector
+#include <poll.h>   // poll
 #include <iostream> // std::cout std::cerr
 #include <unistd.h> // close
 
 class Pollset {
+   private:
+    std::vector<pollfd> fd;
 
-    private:
-        std::vector<pollfd> fd;
+   public:
+    /* CONSTRUCTOR */
+    Pollset(void);
 
-    public:
-        /* CONSTRUCTOR */
-        Pollset(void);
+    /* COPY CONSTRUCTOR */
+    Pollset(const Pollset &other);
 
-        /* COPY CONSTRUCTOR */
-        Pollset(const Pollset &other);
+    /* OPERATORS */
+    Pollset &operator=(const Pollset &other);
 
-        /* OPERATORS */
-        Pollset &operator=(const Pollset &other);
+    /* DESTRUCTOR */
+    ~Pollset(void);
 
-        /* DESTRUCTOR */
-        ~Pollset(void);
+    /* ADD FD TO THE POLL*/
+    void add(int fd);
 
-        /* ADD FD TO THE POLL*/
-        void add(int fd);
+    /* REMOVE FD FROM THE POLL */
+    void remove(int fd);
 
-        /* REMOVE FD FROM THE POLL */
-        void remove(int fd);
+    /* POLL METHOD TO WRAP POLL FUNCTION CALL */
+    int poll(void);
 
-        /* POLL METHOD TO WRAP POLL FUNCTION CALL */
-        int poll(void);
+    /* GETTERS */
+    size_t                     getSize(void) const;
+    struct pollfd             &getPollFd(int index);
+    const std::vector<pollfd> &getPollfds() const;
 
-        /* GETTERS */
-        size_t getSize(void) const;
-        struct pollfd &getPollFd(int index);
-        const std::vector<pollfd>& getPollfds() const;
-        
-        /* CLEAR POLLFD VECTOR */
-        void clear(void);
-
-    };
+    /* CLEAR POLLFD VECTOR */
+    void clear(void);
+};
 
 #endif

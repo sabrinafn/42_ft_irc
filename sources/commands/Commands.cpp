@@ -28,10 +28,11 @@ Commands& Commands::operator=(const Commands& other) {
 }
 
 /* DESTRUCTOR */
-Commands::~Commands(void) {}
+Commands::~Commands(void) {
+}
 
 /* COMMAND HANDLER THAT WILL CALL EACH COMMAND */
-void Commands::handler(Client &client, Server &server, const IRCMessage &msg) {
+void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
     std::map<std::string, CommandFunc>::iterator it = this->commandsMap.find(msg.command);
     std::cout << "DEBUG: Commands::handler called" << std::endl;
     if (it != commandsMap.end()) {

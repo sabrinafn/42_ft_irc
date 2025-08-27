@@ -2,7 +2,7 @@
 
 /* HANDLEPRIVMSG */
 
-std::string Commands::buildMessageFromParams(const std::vector<std::string>& params) {
+std::string Commands::buildMessageFromParams(const std::vector<std::string> &params) {
     std::string message;
 
     for (size_t i = 1; i < params.size(); ++i) {
@@ -16,38 +16,38 @@ std::string Commands::buildMessageFromParams(const std::vector<std::string>& par
     return message;
 }
 
-bool Commands::check_params(Client &client, const IRCMessage &msg){
-    //colocar if de autenticação
+bool Commands::check_params(Client &client, const IRCMessage &msg) {
+    // colocar if de autenticação
 
-    if (msg.params.empty() || msg.params.size() < 2) { 
+    if (msg.params.empty() || msg.params.size() < 2) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or msg.params.size() < 2" << std::endl;
+        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or "
+                     "msg.params.size() < 2"
+                  << std::endl;
         return false;
     }
     if (msg.params[1][0] != ':') {
-		client.sendReply(ERR_NOTEXTTOSEND(msg.command));
-		return false;
-	}
+        client.sendReply(ERR_NOTEXTTOSEND(msg.command));
+        return false;
+    }
     return true;
 }
 
-bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg)
-{
-    Channel *channel;
-    std::string dest = msg.params[0];
-    std::map<std::string, Channel*> all_channels = server.get_channels();
-    if(dest[0] == '#' && all_channels.find(dest) != all_channels.end()) {  
+bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg) {
+    Channel                         *channel;
+    std::string                      dest         = msg.params[0];
+    std::map<std::string, Channel *> all_channels = server.get_channels();
+    if (dest[0] == '#' && all_channels.find(dest) != all_channels.end()) {
         channel = all_channels[dest];
         if (!channel->isMember(&client)) {
-        client.sendReply(ERR_NOTONCHANNEL(dest));
+            client.sendReply(ERR_NOTONCHANNEL(dest));
             return false;
         }
-        ///ver se é necessario fazer a validação de onlyinvited
-        std::string message =  buildMessageFromParams(msg.params);
+        /// ver se é necessario fazer a validação de onlyinvited
+        std::string message  = buildMessageFromParams(msg.params);
         std::string response = RPL_PRIVMSG(client.getNickname(), dest, message);
         channel->broadcast(response, &client);
-    }
-    else{
+    } else {
         client.sendReply(ERR_NOSUCHCHANNEL(dest));
         return false;
     }
@@ -55,12 +55,12 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
     return true;
 }
 
-bool  Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
+bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
+    std::string dest    = msg.params[0];
+    std::string message = buildMessageFromParams(msg.params);
 
-    std::string dest = msg.params[0];
-    std::string message =  buildMessageFromParams(msg.params);
-
-    const std::vector<Client*>& serverClients = server.getClients(); // pega a lista de clientes do server
+    const std::vector<Client *> &serverClients =
+        server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
             std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, message);
@@ -68,14 +68,13 @@ bool  Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage
             return true; // encontrou, não precisa continuar
         }
     }
-    //se não encontrar o cliente:
+    // se não encontrar o cliente:
     client.sendReply(ERR_NOSUCHNICK(dest));
-    //verificar se o erro esta correto
+    // verificar se o erro esta correto
     return false;
 }
 
-void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg){ 
-
+void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
     // std::string prefix;      // usually server name or nick!user@host
     std::cout << "DEBUG: msg.prefix: " + msg.prefix << std::endl;
     // std::string command;     // Command (NICK, USER, PRIVMSG, etc....)
@@ -85,12 +84,12 @@ void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &m
     // std::string trailing;    // Optional parameter (after :)
     std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
 
-    if(!check_params(client, msg))
+    if (!check_params(client, msg))
         return;
-    if(sendMsgToChannel(client, server, msg))
+    if (sendMsgToChannel(client, server, msg))
         return;
-    if(sendMsgToClient(client, server, msg))
+    if (sendMsgToClient(client, server, msg))
         return;
-    
+
     return;
 }

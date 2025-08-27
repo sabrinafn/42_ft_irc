@@ -10,5 +10,4 @@
 #include "standardReplies/StdReplies.hpp"
 #include "utils/Utils.hpp"
 
-
 #endif

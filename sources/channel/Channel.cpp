@@ -1,31 +1,32 @@
 #include "../includes/ft_irc.hpp"
 
 /* CONSTRUCTOR */
-Channel::Channel(const std::string& name) : name(name), limit(0) {}
+Channel::Channel(const std::string& name) : name(name), limit(0) {
+}
 
 /* COPY CONSTRUCTOR */
-Channel::Channel(const Channel &other) {
+Channel::Channel(const Channel& other) {
     *this = other;
 }
 
 /* OPERATOR = */
-Channel &Channel::operator=(const Channel &other){
-    if(this != &other)
-    {
-        this->name = other.name;
-        this->topic = other.topic;
-        this->key = other.key;
-        this->limit = other.limit;
-        this->modes = other.modes;
+Channel& Channel::operator=(const Channel& other) {
+    if (this != &other) {
+        this->name    = other.name;
+        this->topic   = other.topic;
+        this->key     = other.key;
+        this->limit   = other.limit;
+        this->modes   = other.modes;
         this->members = other.members;
-        this->ops = other.ops;
+        this->ops     = other.ops;
         this->invited = other.invited;
     }
     return *this;
 }
 
 /* DESTRUCTOR */
-Channel::~Channel(void){}
+Channel::~Channel(void) {
+}
 
 /* GETTER FOR NAME */
 std::string Channel::getName() const {
@@ -55,10 +56,14 @@ std::vector<Channel::ChannelMode> Channel::getModes() const {
 /* GETTER FOR MODES STRING */
 std::string Channel::getModesString() const {
     std::string modeStr = "+";
-    if (hasMode(INVITE_ONLY)) modeStr += "i";
-    if (hasMode(TOPIC_RESTRICTED)) modeStr += "t";
-    if (hasMode(KEY_REQUIRED)) modeStr += "k";
-    if (hasMode(LIMIT_SET)) modeStr += "l";
+    if (hasMode(INVITE_ONLY))
+        modeStr += "i";
+    if (hasMode(TOPIC_RESTRICTED))
+        modeStr += "t";
+    if (hasMode(KEY_REQUIRED))
+        modeStr += "k";
+    if (hasMode(LIMIT_SET))
+        modeStr += "l";
     return (modeStr.length() > 1) ? modeStr : "";
 }
 
@@ -154,7 +159,7 @@ bool Channel::isOperator(Client* client) const {
     return std::find(ops.begin(), ops.end(), client) != ops.end();
 }
 
-// Convites 
+// Convites
 
 /* INVITE A CLIENT */
 void Channel::invite(Client* client) {
@@ -175,13 +180,14 @@ void Channel::removeInvite(Client* client) {
 // Broadcast
 // Envio de mensagens para todos os membros do canal
 void Channel::broadcast(const std::string& message, Client* client) {
-std::cout << "DEBUG: broadcast para " << members.size() << " membros, client: " 
-          << (client ? client->getNickname() : "NULL") << std::endl;
+    std::cout << "DEBUG: broadcast para " << members.size()
+              << " membros, client: " << (client ? client->getNickname() : "NULL")
+              << std::endl;
 
-for (size_t i = 0; i < members.size(); ++i) {
-    std::cout << "DEBUG: membro[" << i << "] = " << members[i]->getNickname() << std::endl;
-    if (client == NULL || members[i] != client) {
-        members[i]->sendReply(message);
+    for (size_t i = 0; i < members.size(); ++i) {
+        std::cout << "DEBUG: membro[" << i << "] = " << members[i]->getNickname() << std::endl;
+        if (client == NULL || members[i] != client) {
+            members[i]->sendReply(message);
+        }
     }
-}
 }

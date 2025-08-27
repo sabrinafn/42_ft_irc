@@ -1,10 +1,13 @@
 #include "../includes/ft_irc.hpp"
 
 /* CONSTRUCTOR */
-Pollset::Pollset(void) : fd(0) {}
+Pollset::Pollset(void) : fd(0) {
+}
 
 /* COPY CONSTRUCTOR */
-Pollset::Pollset(const Pollset &other) { *this = other; }
+Pollset::Pollset(const Pollset &other) {
+    *this = other;
+}
 
 /* OPERATORS */
 Pollset &Pollset::operator=(const Pollset &other) {
@@ -15,14 +18,15 @@ Pollset &Pollset::operator=(const Pollset &other) {
 }
 
 /* DESTRUCTOR */
-Pollset::~Pollset(void) {}
+Pollset::~Pollset(void) {
+}
 
 /* ADD FD TO THE POLL*/
 void Pollset::add(int fd) {
     struct pollfd poll_fd;
-    poll_fd.fd = fd; //-> add the server socket to the pollfd
-    poll_fd.events = POLLIN; //-> set the event to POLLIN for reading data
-    poll_fd.revents = 0; //-> set the revents to 0
+    poll_fd.fd      = fd;     //-> add the server socket to the pollfd
+    poll_fd.events  = POLLIN; //-> set the event to POLLIN for reading data
+    poll_fd.revents = 0;      //-> set the revents to 0
 
     this->fd.push_back(poll_fd); //-> add the server socket to the pollfd
 }
@@ -48,7 +52,7 @@ struct pollfd &Pollset::getPollFd(int index) {
     return this->fd[index];
 }
 
-const std::vector<pollfd>& Pollset::getPollfds() const {
+const std::vector<pollfd> &Pollset::getPollfds() const {
     return this->fd;
 }
 

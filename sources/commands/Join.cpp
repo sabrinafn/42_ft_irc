@@ -2,9 +2,9 @@
 
 /* HANDLEJOIN */
 
-void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
-{
-    std::cout << "DEBUG: handleJoin chamado para cliente " << client.getNickname() << std::endl;
+void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg) {
+    std::cout << "DEBUG: handleJoin chamado para cliente " << client.getNickname()
+              << std::endl;
 
     // verifica se tem parametros depois do JOIN
     if (msg.params.empty()) {
@@ -16,8 +16,8 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     // faz o parse dos nomes dos canais e dos modes
     std::vector<std::string> channelNames;
     std::vector<std::string> modes;
-    std::stringstream ss(msg.params[0]);
-    std::string channelName;
+    std::stringstream        ss(msg.params[0]);
+    std::string              channelName;
     while (std::getline(ss, channelName, ',')) {
         std::cout << "DEBUG: verificando nome de canal: " << channelName << std::endl;
         if (!isValidChannelName(channelName)) {
@@ -31,7 +31,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     // faz o parse das keys se existirem
     if (msg.params.size() > 1) {
         std::stringstream ss_keys(msg.params[1]);
-        std::string key;
+        std::string       key;
         while (std::getline(ss_keys, key, ',')) {
             std::cout << "DEBUG: verificando key do canal: " << key << std::endl;
             if (!isValidkey(key)) {
@@ -46,8 +46,8 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
 
     // loop em todos os canais
     for (size_t i = 0; i < channelNames.size(); ++i) {
-        const std::string& name = channelNames[i];
-        Channel *channel = NULL;
+        const std::string &name    = channelNames[i];
+        Channel           *channel = NULL;
 
         std::cout << "DEBUG: processando canal " << name << std::endl;
 
@@ -55,11 +55,11 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         if (server.get_channels().find(name) == server.get_channels().end()) {
             std::cout << "DEBUG: criando canal " << name << std::endl;
             channel = new Channel(name);
-            //channels[name] = channel;
+            // channels[name] = channel;
             server.setChannel(channel);
             channel->addOperator(&client);
         } else {
-            //channel = channels[name];
+            // channel = channels[name];
             std::cout << "ERROR: canal ja existe " << name << std::endl;
         }
 
@@ -71,7 +71,8 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         }
 
         // verifica limite de usuarios (+l)
-        if (channel->hasMode(Channel::LIMIT_SET) && (int)channel->getMembers().size() >= channel->getLimit()) {
+        if (channel->hasMode(Channel::LIMIT_SET) &&
+            (int)channel->getMembers().size() >= channel->getLimit()) {
             std::cout << "DEBUG: canal " << name << " atingiu limite de usuarios" << std::endl;
             client.sendReply(ERR_CHANNELISFULL(channel->getName()));
             continue;
@@ -88,7 +89,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         if (channel->hasMode(Channel::KEY_REQUIRED)) {
             if (i >= modes.size() || channel->getKey() != modes[i]) {
                 std::cout << "DEBUG: key incorreta para canal " << name << std::endl;
-               client.sendReply(ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
+                client.sendReply(ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
                 continue;
             }
         }
@@ -104,7 +105,8 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
 
         // remove o convite desse usuario da lista de convidados
         if (channel->isInvited(&client)) {
-            std::cout << "DEBUG: removendo convite do cliente " << client.getNickname() << std::endl;
+            std::cout << "DEBUG: removendo convite do cliente " << client.getNickname()
+                      << std::endl;
             channel->removeInvite(&client);
         }
 
@@ -115,12 +117,13 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             client.sendReply(RPL_NOTOPIC(client.getNickname(), channel->getName()));
         } else {
             std::cout << "DEBUG: topico do canal " << name << " -> " << topic << std::endl;
-            client.sendReply(RPL_TOPIC(client.getNickname(), channel->getName(), channel->getTopic()));
+            client.sendReply(
+                RPL_TOPIC(client.getNickname(), channel->getName(), channel->getTopic()));
         }
 
         // monta a lista de usuarios do canal
-        std::string namesReply = "=";
-        std::vector<Client*> members = channel->getMembers();
+        std::string           namesReply = "=";
+        std::vector<Client *> members    = channel->getMembers();
         std::cout << "DEBUG: membros do canal " << name << ":";
         for (size_t j = 0; j < members.size(); ++j) {
             if (channel->isOperator(members[j])) {
@@ -142,33 +145,31 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     }
 }
 
-bool Commands::isValidChannelName(const std::string& name) {
-
+bool Commands::isValidChannelName(const std::string &name) {
     if (name[0] != '#' && name[0] != '&')
         return false;
 
     for (size_t i = 1; i < name.size(); ++i) {
         unsigned char c = name[i];
-        if (std::isspace(c))         // espaço
+        if (std::isspace(c)) // espaço
             return false;
-        if (c == ':')                // caractere especial proibido
+        if (c == ':') // caractere especial proibido
             return false;
-        if (std::iscntrl(c))         // caracteres de controle
+        if (std::iscntrl(c)) // caracteres de controle
             return false;
     }
-	return true;
+    return true;
 }
 
-bool Commands::isValidkey(std::string key){
-
-	   for (size_t i = 1; i < key.size(); ++i) {
+bool Commands::isValidkey(std::string key) {
+    for (size_t i = 1; i < key.size(); ++i) {
         unsigned char c = key[i];
-        if (std::isspace(c))         // espaço
+        if (std::isspace(c)) // espaço
             return false;
-        if (c == ':')                // caractere especial proibido
+        if (c == ':') // caractere especial proibido
             return false;
-        if (std::iscntrl(c))         // caracteres de controle
+        if (std::iscntrl(c)) // caracteres de controle
             return false;
-	   }
-       return true;
+    }
+    return true;
 }

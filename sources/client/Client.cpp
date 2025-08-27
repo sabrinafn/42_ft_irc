@@ -1,32 +1,42 @@
 #include "../includes/ft_irc.hpp"
-#include <iostream>
-#include <unistd.h>
 
 /* CONSTRUCTOR */
-Client::Client(void) : fd(0), buffer(""), last_activity(-1), ping_sent(false), 
-    last_ping_sent(-1), state(UNREGISTERED), nickname(""), username(""), realname("") {}
+Client::Client(void)
+    : fd(0),
+      buffer(""),
+      last_activity(-1),
+      ping_sent(false),
+      last_ping_sent(-1),
+      state(UNREGISTERED),
+      nickname(""),
+      username(""),
+      realname("") {
+}
 
 /* COPY CONSTRUCTOR */
-Client::Client(const Client &other) { *this = other; }
+Client::Client(const Client& other) {
+    *this = other;
+}
 
 /* OPERATORS */
-Client &Client::operator=(const Client &other) {
+Client& Client::operator=(const Client& other) {
     if (this != &other) {
-        this->fd = other.fd;
-        this->buffer = other.buffer;
-        this->last_activity = other.last_activity;
-        this->ping_sent = other.ping_sent;
+        this->fd             = other.fd;
+        this->buffer         = other.buffer;
+        this->last_activity  = other.last_activity;
+        this->ping_sent      = other.ping_sent;
         this->last_ping_sent = other.last_ping_sent;
-        this->state = other.state;
-        this->nickname = other.nickname;
-        this->username = other.username;
-        this->realname = other.realname;
+        this->state          = other.state;
+        this->nickname       = other.nickname;
+        this->username       = other.username;
+        this->realname       = other.realname;
     }
     return *this;
 }
 
 /* DESTRUCTOR */
-Client::~Client(void) {}
+Client::~Client(void) {
+}
 
 /* SETTERS */
 void Client::setFd(int other) {
@@ -115,13 +125,12 @@ void Client::appendData(std::string other) {
 /* SEND IRC REPLY MESSAGE TO EACH CLIENT */
 void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
-    ssize_t ret = send(fd, msg.c_str(), msg.size(), 0);
+    ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
     if (ret == -1) {
-        std::cerr << "ERROR: falha ao enviar para " << nickname
-                  << " (fd=" << this->fd << ")" << std::endl;
+        std::cerr << "ERROR: falha ao enviar para " << nickname << " (fd=" << this->fd << ")"
+                  << std::endl;
     } else {
-        std::cout << "DEBUG: enviado para " << nickname
-                  << " (fd=" << this->fd << ")"
+        std::cout << "DEBUG: enviado para " << nickname << " (fd=" << this->fd << ")"
                   << " -> " << msg << std::endl;
     }
 }
@@ -134,5 +143,6 @@ void Client::sendWelcomeMessages(void) {
     this->sendReply(RPL_CREATED(this->nickname, startup_time));
     this->sendReply(RPL_MYINFO(this->nickname, "o", "o"));
 
-    std::cout << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!" << std::endl;
+    std::cout << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!"
+              << std::endl;
 }

@@ -3,15 +3,14 @@
 /* HANDLEKICK */
 // /KICK <#canal> <nick> [motivo]
 
-void Commands::handleKick(Client &client, Server &server, const IRCMessage &msg) {
-    
-	if (msg.params.empty() || msg.params.size() < 2) { 
+void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg) {
+    if (msg.params.empty() || msg.params.size() < 2) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
 
     std::vector<std::string> _channels = split(msg.params[0], ',');
-    std::vector<std::string> targets  = split(msg.params[1], ',');
+    std::vector<std::string> targets   = split(msg.params[1], ',');
 
     // Motivo (se houver)
     std::string reason;
@@ -25,19 +24,19 @@ void Commands::handleKick(Client &client, Server &server, const IRCMessage &msg)
         reason = client.getNickname();
     }
 
-        ///// verificar o erro 442 e 441 em todos os comandos
+    ///// verificar o erro 442 e 441 em todos os comandos
     // Para cada canal
     for (size_t i = 0; i < _channels.size(); ++i) {
-        std::string channelName = _channels[i];
+        std::string                     channelName  = _channels[i];
         std::map<std::string, Channel*> all_channels = server.get_channels();
 
         if (all_channels.find(channelName) != all_channels.end()) {
             client.sendReply(ERR_NOSUCHCHANNEL(channelName));
             continue;
         }
-        
+
         Channel* channel = all_channels[channelName];
-        if (!channel->isMember(&client)){
+        if (!channel->isMember(&client)) {
             client.sendReply(ERR_NOTONCHANNEL(channelName));
             continue;
         }
@@ -50,19 +49,21 @@ void Commands::handleKick(Client &client, Server &server, const IRCMessage &msg)
         // Para cada alvo
         for (size_t ti = 0; ti < targets.size(); ++ti) {
             std::string targetNick = targets[ti];
-            Client* target = server.serverGetClientByNick(targetNick);
+            Client*     target     = server.serverGetClientByNick(targetNick);
             if (!target) {
                 client.sendReply(ERR_NOSUCHNICK(targetNick));
                 continue;
             }
 
             if (!channel->isMember(target)) {
-                client.sendReply(ERR_USERNOTINCHANNEL(targetNick, client.getNickname(), channelName));
+                client.sendReply(
+                    ERR_USERNOTINCHANNEL(targetNick, client.getNickname(), channelName));
                 continue;
             }
 
             // Mensagem de KICK
-            std::string kickMsg = ":" + client.getPrefix() + " KICK " + channelName + " " + targetNick + " :" + reason;
+            std::string kickMsg = ":" + client.getPrefix() + " KICK " + channelName + " " +
+                                  targetNick + " :" + reason;
 
             // Notificar todos do canal
             channel->broadcast(kickMsg, &client);
@@ -74,11 +75,10 @@ void Commands::handleKick(Client &client, Server &server, const IRCMessage &msg)
     return;
 }
 
-
 std::vector<std::string> Commands::split(const std::string& str, char limit) {
     std::vector<std::string> result;
-    std::stringstream ss(str);
-    std::string item;
+    std::stringstream        ss(str);
+    std::string              item;
 
     while (std::getline(ss, item, limit)) {
         if (!item.empty())
