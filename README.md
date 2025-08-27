@@ -236,7 +236,7 @@ feature/<nome>: branches para cada nova feature ou módulo.
 
 - [ ] **Utilitários e Protocol Helpers**  
   - [ ] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
-  - [ ] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
+  - [x] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
   - [x] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
 
 - [ ] **Testes e Robustez**  
