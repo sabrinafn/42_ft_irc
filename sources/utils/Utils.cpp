@@ -34,3 +34,13 @@ void setupSignals(void (*handler)(int)) {
     // kill [pid]
     signal(SIGTERM, handler);
 }
+
+std::vector<std::string> split(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::stringstream        ss(str);
+    std::string              item;
+    while (std::getline(ss, item, delimiter)) {
+        if (!item.empty()) tokens.push_back(item);
+    }
+    return tokens;
+}

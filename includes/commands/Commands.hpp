@@ -46,7 +46,6 @@ class Commands {
     bool        check_params(Client &client, const IRCMessage &msg);
     bool        sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
 
-    std::vector<std::string> split(const std::string &str, char limit);
 
    public:
     /* CONSTRUCTOR */
