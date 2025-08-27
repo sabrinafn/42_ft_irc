@@ -2,7 +2,40 @@
 #define STDREPLIES_HPP
 
 #include <string>
+#include <sstream>
 extern const std::string SERVER;
+extern const char        SPACE;
+extern const char        COLON;
+extern const std::string CRLF;
+
+enum IRCReplyCode {
+    RPL_WELCOME_CODE          = 001,
+    RPL_YOURHOST_CODE         = 002,
+    RPL_CREATED_CODE          = 003,
+    RPL_MYINFO_CODE           = 004,
+    RPL_NOTOPIC_CODE          = 331,
+    RPL_TOPIC_CODE            = 332,
+    RPL_NAMREPLY_CODE         = 353,
+    RPL_ENDOFNAMES_CODE       = 366,
+    ERR_UNKNOWNCMD_CODE       = 421,
+    ERR_NONICKNAMEGIVEN_CODE  = 431,
+    ERR_ERRONEUSNICKNAME_CODE = 432,
+    ERR_NICKNAMEINUSE_CODE    = 433,
+    ERR_USERONCHANNEL_CODE    = 443,
+    ERR_NEEDMOREPARAMS_CODE   = 461,
+    ERR_ALREADYREGISTRED_CODE = 462,
+    ERR_PASSWDMISMATCH_CODE   = 464,
+    ERR_CHANNELISFULL_CODE    = 471,
+    ERR_INVITEONLYCHAN_CODE   = 473,
+    ERR_BADCHANNELKEY_CODE    = 475,
+    ERR_NOTEXTTOSEND_CODE     = 412,
+    ERR_NOSUCHCHANNEL_CODE    = 403,
+    ERR_NOTONCHANNEL_CODE     = 442,
+    ERR_NOSUCHNICK_CODE       = 406,
+    ERR_CHANOPRISNEEDED_CODE  = 482,
+    ERR_USERNOTINCHANNEL_CODE = 441,
+    RPL_INVITING_CODE         = 341
+};
 
 // 001
 std::string RPL_WELCOME(const std::string& nickname, const std::string& username);
