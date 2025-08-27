@@ -21,6 +21,10 @@ std::vector<std::string> Parser::extractLines(std::string& buffer) {
 
     while ((pos = buffer.find("\r\n")) != std::string::npos) {
         std::string line = buffer.substr(0, pos);
+        // RFC 1459: message length is 512!!! including (\r\n)
+        if (line.size() > 510) {
+            line = line.substr(0, 510);
+        }
         if (!line.empty()) {
             lines.push_back(line);
         }
@@ -147,12 +151,12 @@ std::string Parser::trim(const std::string& str) {
     std::string::size_type end   = str.length();
 
     // Find first non-whitespace character
-    while (start < end && std::isspace(str[start])) {
+    while (start < end && std::isspace(static_cast<unsigned char>(str[start]))) {
         start++;
     }
 
     // Find last non-whitespace character
-    while (end > start && std::isspace(str[end - 1])) {
+    while (end > start && std::isspace(static_cast<unsigned char>(str[end - 1]))) {
         end--;
     }
 
