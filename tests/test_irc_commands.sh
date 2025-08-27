@@ -165,7 +165,7 @@ print_test "Test 8: Fragmented Message Test"
 (echo -n "PASS $PASSWORD"; sleep 0.5; echo -e "\r\n"; sleep 0.5; echo -e "NICK fraguser\r\nUSER fraguser 0 * :Fragmented User\r\nQUIT\r\n") | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 3
 
-if grep -q ":localhost 1.*Welcome" test_output.tmp; then
+if grep -q ":<3_irc_server_<3 1.*Welcome" test_output.tmp; then
     print_success "Fragmented messages handled correctly"
 else
     print_error "Fragmented messages not properly handled"
@@ -179,7 +179,7 @@ LONG_REALNAME="This is a very long real name that should still be handled correc
 echo -e "PASS $PASSWORD\r\nNICK longuser\r\nUSER longuser 0 * :$LONG_REALNAME\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
-if grep -q ":localhost 1.*Welcome" test_output.tmp; then
+if grep -q ":<3_irc_server_<3 1.*Welcome" test_output.tmp; then
     print_success "Long messages handled correctly"
 else
     print_error "Long messages not properly handled"
