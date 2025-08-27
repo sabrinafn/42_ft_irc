@@ -57,13 +57,15 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             channel = new Channel(name);
             //channels[name] = channel;
             server.setChannel(channel);
-            channel->addOperator(&client);
-        } else {
-            //channel = channels[name];
-            std::cout << "ERROR: canal ja existe " << name << std::endl;
-        }
+            channel->addOperator(&client);}
+        // } else {
+        //     //channel = channels[name];
+        //     std::cout << "ERROR: canal ja existe " << name << std::endl;
+        // }
 
         // verifica se o usuario ja eh membro desse canal
+        std::vector<Client*> members = channel->getMembers();
+ 
         if (channel->isMember(&client)) {
             std::cout << "DEBUG: cliente ja eh membro do canal " << name << std::endl;
             client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
@@ -172,3 +174,6 @@ bool Commands::isValidkey(std::string key){
 	   }
        return true;
 }
+
+
+

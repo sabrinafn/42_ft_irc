@@ -115,10 +115,15 @@ bool Channel::hasMode(ChannelMode mode) const {
 
 /* ADD MEMBER */
 void Channel::addMember(Client* client) {
-    if (!isMember(client))
-        members.push_back(client);
-}
+    if (!client) return; // segurança contra nullptr
 
+    const std::string& nick = client->getNickname();
+
+    // insere só se ainda não existir
+    if (members.find(nick) == members.end()) {
+        members[nick] = client;
+    }
+}
 /* REMOVE MEMBER */
 void Channel::removeMember(Client* client) {
     members.erase(std::remove(members.begin(), members.end(), client), members.end());
@@ -132,7 +137,7 @@ bool Channel::isMember(Client* client) const {
 }
 
 /* GET ALL MEMBERS */
-std::vector<Client*> Channel::getMembers() const {
+std::map<std::string, Client*> Channel::getMembers() const {
     return members;
 }
 

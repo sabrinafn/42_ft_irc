@@ -18,13 +18,12 @@ std::string Commands::buildMessageFromParams(const std::vector<std::string>& par
 
 bool Commands::check_params(Client &client, const IRCMessage &msg){
     //colocar if de autenticação
-
-    if (msg.params.empty() || msg.params.size() < 2) { 
+    if (msg.params.empty()) { 
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or msg.params.size() < 2" << std::endl;
+        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for privmsh" << std::endl;
         return false;
     }
-    if (msg.params[1][0] != ':') {
+    if (msg.trailing.empty()) {
 		client.sendReply(ERR_NOTEXTTOSEND(msg.command));
 		return false;
 	}
@@ -43,12 +42,12 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
             return false;
         }
         ///ver se é necessario fazer a validação de onlyinvited
-        std::string message =  buildMessageFromParams(msg.params);
-        std::string response = RPL_PRIVMSG(client.getNickname(), dest, message);
+       //std::string message =  buildMessageFromParams(msg.params);
+        std::string response = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
         channel->broadcast(response, &client);
     }
     else{
-        client.sendReply(ERR_NOSUCHCHANNEL(dest));
+        //client.sendReply(ERR_NOSUCHCHANNEL(dest));
         return false;
     }
 
@@ -63,7 +62,7 @@ bool  Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage
     const std::vector<Client*>& serverClients = server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, message);
+            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
             serverClients[i]->sendReply(fullMessage);
             return true; // encontrou, não precisa continuar
         }

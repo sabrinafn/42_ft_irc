@@ -31,7 +31,7 @@ private:
     
     //Client* = ponteiros pra clientes que ja foram criados no server
     std::vector<ChannelMode> modes;       // Modos ativos
-    std::vector<Client*> members;         // Todos os membros do canal
+    std::map<std::string, Client*> members;        // Todos os membros do canal
     std::vector<Client*> ops;             // Operadores do canal (modo +o)
     std::vector<Client*> invited;         // Usuários convidados (usado se canal for +i)
 
@@ -73,7 +73,7 @@ public:
     void addMember(Client* client);              // Adiciona membro ao canal
     void removeMember(Client* client);           // Remove membro do canal
     bool isMember(Client* client) const;         // Verifica se é membro
-    std::vector<Client*> getMembers() const;        // Retorna todos os membros
+    std::map<std::string, Client*> getMembers() const;        // Retorna todos os membros
 
     // Gerenciamento de operadores
     void addOperator(Client* client);            // Promove membro a operador
