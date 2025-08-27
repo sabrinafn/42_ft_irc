@@ -4,7 +4,7 @@
 void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     if (client.getState() == UNREGISTERED) {
-        client.sendReply(ERR_PASSWDMISMATCH());
+        client.sendReply(ERR_PASSREQUIRED());
         return;
     }
 

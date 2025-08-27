@@ -7,21 +7,21 @@ const std::string CRLF   = "\r\n";
 
 std::string RPL_WELCOME(const std::string& nickname, const std::string& username) {
     std::ostringstream oss;
-    oss << COLON << SERVER << SPACE << "00" << RPL_WELCOME_CODE << SPACE << nickname
+    oss << COLON << SERVER << SPACE << RPL_WELCOME_CODE << SPACE << nickname
         << " :Welcome to the Internet Relay Chat, " << username << CRLF;
     return oss.str();
 }
 
 std::string RPL_YOURHOST(const std::string& nickname) {
     std::ostringstream oss;
-    oss << COLON << SERVER << SPACE << "00" << RPL_YOURHOST_CODE << SPACE << nickname
+    oss << COLON << SERVER << SPACE << RPL_YOURHOST_CODE << SPACE << nickname
         << " :Your host is " << SERVER << ", running version 1.0" << CRLF;
     return oss.str();
 }
 
 std::string RPL_CREATED(const std::string& nickname, std::string& startup_time) {
     std::ostringstream oss;
-    oss << COLON << SERVER << SPACE << "00" << RPL_CREATED_CODE << SPACE << nickname
+    oss << COLON << SERVER << SPACE << RPL_CREATED_CODE << SPACE << nickname
         << " :This server was created on " << startup_time << CRLF;
     return oss.str();
 }
@@ -29,7 +29,7 @@ std::string RPL_CREATED(const std::string& nickname, std::string& startup_time) 
 std::string RPL_MYINFO(const std::string& nickname, const std::string& usermodes,
                        const std::string& channelmodes) {
     std::ostringstream oss;
-    oss << COLON << SERVER << SPACE << "00" << RPL_MYINFO_CODE << SPACE << nickname << SPACE << SERVER
+    oss << COLON << SERVER << SPACE << RPL_MYINFO_CODE << SPACE << nickname << SPACE << SERVER
         << " 1.0 " << usermodes << SPACE << channelmodes << CRLF;
     return oss.str();
 }
@@ -116,6 +116,13 @@ std::string ERR_ALREADYREGISTRED(const std::string& nickname) {
 std::string ERR_PASSWDMISMATCH(void) {
     std::ostringstream oss;
     oss << COLON << SERVER << SPACE << ERR_PASSWDMISMATCH_CODE << " * :Password incorrect"
+        << CRLF;
+    return oss.str();
+}
+
+std::string ERR_PASSREQUIRED(void) {
+    std::ostringstream oss;
+    oss << COLON << SERVER << SPACE << ERR_PASSWDMISMATCH_CODE << " * :Password required"
         << CRLF;
     return oss.str();
 }

@@ -94,31 +94,22 @@ IRCMessage Parser::parseMessage(const std::string& line) {
 }
 
 bool Parser::isValidCommand(const std::string& command) {
-    if (command.empty()) {
-        return false;
-    }
-    // TODO ADD ALL Commands
-    const std::string validCommands[] = {"PASS",  "NICK", "USER",   "QUIT", "JOIN",
-                                         "KICK",  "INFO", "PING",   "PONG", "PRIVMSG",
-                                         "TOPIC", "KICK", "INVITE", "MODE"};
+    if (command.empty()) return false;
 
-    const int numCommands = sizeof(validCommands) / sizeof(validCommands[0]);
-
-    for (int i = 0; i < numCommands; i++) {
-        if (command == validCommands[i]) {
-            return true;
-        }
+    // Known, supported command tokens (keep in sync with Commands map)
+    static const char* kKnown[] = {"PASS",   "NICK",   "USER",   "QUIT",  "JOIN",
+                                   "KICK",   "PING",   "PONG",   "PRIVMSG","TOPIC",
+                                   "INVITE", "MODE"};
+    for (size_t i = 0; i < sizeof(kKnown) / sizeof(kKnown[0]); ++i) {
+        if (command == kKnown[i]) return true;
     }
 
-    if (command.length() == 3) {
-        for (std::string::size_type i = 0; i < command.length(); i++) {
-            if (!std::isdigit(command[i])) {
-                return false;
-            }
-        }
+    // Accept 3-digit numeric replies
+    if (command.length() == 3 && std::isdigit(static_cast<unsigned char>(command[0])) &&
+        std::isdigit(static_cast<unsigned char>(command[1])) &&
+        std::isdigit(static_cast<unsigned char>(command[2]))) {
         return true;
     }
-
     return false;
 }
 
@@ -163,17 +154,4 @@ std::string Parser::trim(const std::string& str) {
     return str.substr(start, end - start);
 }
 
-/* SPLIT STRING BY DELIMITER */
-std::vector<std::string> Parser::split(const std::string& str, char delimiter) {
-    std::vector<std::string> tokens;
-    std::stringstream        ss(str);
-    std::string              token;
-
-    while (std::getline(ss, token, delimiter)) {
-        if (!token.empty()) {
-            tokens.push_back(token);
-        }
-    }
-
-    return tokens;
-}
+/* Removed duplicate split helper; use global split() in Utils instead. */

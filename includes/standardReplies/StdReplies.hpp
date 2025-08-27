@@ -88,6 +88,9 @@ std::string ERR_ALREADYREGISTRED(const std::string& nickname);
 // 464
 std::string ERR_PASSWDMISMATCH(void);
 
+// 464 alternate text for ordering: Password required
+std::string ERR_PASSREQUIRED(void);
+
 // 471
 std::string ERR_CHANNELISFULL(const std::string& channel);
 
