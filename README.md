@@ -7,14 +7,12 @@ Um servidor IRC em C++98, construído do zero sem bibliotecas externas, usando `
 ## 📋 Sumário
 
 1. [Visão Geral](#visão-geral)
-2. [Pré-requisitos](#pré-requisitos)
-3. [Compilação e Build](#compilação-e-build)
-4. [Estrutura do Projeto](#estrutura-do-projeto)
-5. [Como Executar](#como-executar)
-6. [Fluxo de Desenvolvimento](#fluxo-de-desenvolvimento)
-7. [Roadmap de Implementação](#roadmap-de-implementação)
-8. [Testes e Robustez](#testes-e-robustez)
-9. [Passos Lógicos para Conclusão](#passos-lógicos-para-conclusão)
+2. [Estrutura do Projeto](#estrutura-do-projeto)
+3. [Como Executar](#como-executar)
+4. [Fluxo de Desenvolvimento](#fluxo-de-desenvolvimento)
+5. [Roadmap de Implementação](#roadmap-de-implementação)
+6. [Testes e Robustez](#testes-e-robustez)
+7. [Passos Lógicos para Conclusão](#passos-lógicos-para-conclusão)
 
 ---
 
@@ -25,38 +23,6 @@ O **ft\_irc** é um servidor de Internet Relay Chat (IRC) compatível com o prot
 * Gerenciar múltiplos clientes em uma única thread, usando `poll()`.
 * Implementar comandos básicos e de operador (NICK, USER, PASS, JOIN, PRIVMSG, KICK, INVITE, TOPIC, MODE).
 * Seguir o padrão e normas da 42 School (C++98, sem libs externas, flags `-Wall -Wextra -Werror -std=c++98`).
-
----
-
-## Pré-requisitos
-
-* GNU/Linux ou macOS
-* g++ que suporte C++98
-* Make
-* (Opcional) `cppcheck` e `clang-tidy` para análise estática
-
----
-
-## Compilação e Build
-
-1. Clone o repositório:
-
-   ```bash
-   git clone https://github.com/seu-usuario/ft_irc-42sp.git
-   cd ft_irc-42sp
-   ```
-2. Faça build com Make:
-
-   ```bash
-   make
-   ```
-3. Targets disponíveis:
-
-   * `make all` (default): compila tudo
-   * `make clean`: remove objetos
-   * `make fclean`: remove objetos e binário
-   * `make re`: `fclean` + `all`
-   * `make style`: roda `cppcheck` e `clang-tidy`
 
 ---
 
@@ -171,9 +137,7 @@ PRIVMSG #canal :Olá!
 
 ---
 
-### 👥 Trabalho em Equipe
-
-# 1. Convenções de Branch
+# Convenções de Branch
 
 main: branch estável, usada para releases.
 
@@ -181,105 +145,99 @@ dev: branch de integração contínua.
 
 feature/<nome>: branches para cada nova feature ou módulo.
 
-# 2. Papéis e Responsabilidades
 
-Part A: Infraestrutura e Loop de Eventos (Makefile, Server, poll()).
+## Infraestrutura e Loop de Eventos
 
-Part B: Parser e CommandHandler (Parser.hpp/cpp, CommandHandler).
+- [x] **Makefile padrão**  
+  - [x] Definir variáveis `NAME`, `SRCDIR`, `INCDIR`, `OBJDIR`, `CXXFLAGS` (`-Wall -Wextra -Werror -std=c++98 -pedantic`)  
+  - [x] Criar target `all` (compile e link)  
+  - [x] Criar target `clean` (remove objetos)  
+  - [x] Criar target `fclean` (remove objetos e binário)  
+  - [x] Criar target `re` (fclean + all)  
+  - [x] Criar regra `make format` (roda arquivo de formatacao clang-format)
+  - [x] Criar regra `make lint` (roda arquivo de formatacao clang-tidy)
 
-Part C: Canal, Módulos de Canal, Utilitários e Testes.
+- [x] **Parse dos argumentos `<port> <password>`**  
+  - [x] Verificar número de argumentos (`argc == 3`)  
+  - [x] Converter e validar porta (inteiro entre 1024–65535)  
+  - [x] Validar tamanho e caracteres da senha (mínimo 1, máximo 32)  
+  - [x] Exibir mensagem de uso em caso de erro  
 
+- [x] **Classe `Server` com socket não‐bloqueante**  
+  - [x] Criar socket TCP (`socket(AF_INET, SOCK_STREAM, 0)`)  
+  - [x] Setar `O_NONBLOCK` com `fcntl()`  
+  - [x] `bind()` na porta passada  
+  - [x] `listen()` com backlog definido (e.g. 10)  
+  - [x] Tratar erros em cada chamada com `perror()` + exit status  
 
-## Part A: Infraestrutura e Loop de Eventos
+- [x] **Configuração do `poll()`**  
+  - [x] Encapsular `std::vector<pollfd>` em classe `PollSet`  
+  - [x] Método `add(fd)`, `remove(fd)`, `poll(timeout)`  
+  - [x] Tratar retorno de `poll()` — distinguir `POLLIN`, `POLLHUP`, `POLLERR`  
+  - [x] Implementar timeout global (PING/PONG, autenticação)  
 
-- [ ] **Makefile padrão**  
-  - [ ] Definir variáveis `NAME`, `SRCDIR`, `INCDIR`, `OBJDIR`, `CXXFLAGS` (`-Wall -Wextra -Werror -std=c++98 -pedantic`)  
-  - [ ] Criar target `all` (compile e link)  
-  - [ ] Criar target `clean` (remove objetos)  
-  - [ ] Criar target `fclean` (remove objetos e binário)  
-  - [ ] Criar target `re` (fclean + all)  
-  - [ ] Criar target `style` que roda `cppcheck`/`clang-tidy`  
-
-- [ ] **Parse dos argumentos `<port> <password>`**  
-  - [ ] Verificar número de argumentos (`argc == 3`)  
-  - [ ] Converter e validar porta (inteiro entre 1024–65535)  
-  - [ ] Validar tamanho e caracteres da senha (mínimo 1, máximo 32)  
-  - [ ] Exibir mensagem de uso em caso de erro  
-
-- [ ] **Classe `Server` com socket não‐bloqueante**  
-  - [ ] Criar socket TCP (`socket(AF_INET, SOCK_STREAM, 0)`)  
-  - [ ] Setar `O_NONBLOCK` com `fcntl()`  
-  - [ ] `bind()` na porta passada  
-  - [ ] `listen()` com backlog definido (e.g. 10)  
-  - [ ] Tratar erros em cada chamada com `perror()` + exit status  
-
-- [ ] **Configuração do `poll()`**  
-  - [ ] Encapsular `std::vector<pollfd>` em classe `PollSet`  
-  - [ ] Método `add(fd)`, `remove(fd)`, `poll(timeout)`  
-  - [ ] Tratar retorno de `poll()` — distinguir `POLLIN`, `POLLHUP`, `POLLERR`  
-  - [ ] Implementar timeout global (PING/PONG, autenticação)  
-
-- [ ] **Gerenciamento de Conexões**  
-  - [ ] Ao detectar `POLLIN` no socket de escuta → `accept()`  
-  - [ ] Criar objeto `Client` e adicionar ao `PollSet`  
-  - [ ] Ao `POLLIN` em cliente → ler bytes para buffer interno  
-  - [ ] Ao `POLLHUP`/`POLLERR` → remover cliente, fechar fd, liberar recursos  
+- [x] **Gerenciamento de Conexões**  
+  - [x] Ao detectar `POLLIN` no socket de escuta → `accept()`  
+  - [x] Criar objeto `Client` e adicionar ao `PollSet`  
+  - [x] Ao `POLLIN` em cliente → ler bytes para buffer interno  
+  - [x] Ao `POLLHUP`/`POLLERR` → remover cliente, fechar fd, liberar recursos  
 
 ---
 
-## Part B: Parser e CommandHandler
+## Parser e CommandHandler
 
-- [ ] **Parser de mensagens IRC**  
-  - [ ] Manter buffer por cliente
-  - [ ] Acumular dados lidos até encontrar `\r\n`
-  - [ ] Extrair linha completa e deixar resto no buffer
-  - [ ] Tokenizar: separar comando e parâmetros (até `:` final)  
-  - [ ] Tratar com espaço após `:` como único parâmetro
+- [x] **Parser de mensagens IRC**  
+  - [x] Manter buffer por cliente
+  - [x] Acumular dados lidos até encontrar `\r\n`
+  - [x] Extrair linha completa e deixar resto no buffer
+  - [x] Tokenizar: separar comando e parâmetros (até `:` final)  
+  - [x] Tratar com espaço após `:` como único parâmetro
 
-- [ ] **Implementar comando PASS**
-  - [ ] Validar senha recebida contra a senha do servidor
-  - [ ] Atualizar estado de autenticação do `Client` (enum)
-  - [ ] Enviar erro 464 “Password incorrect” se falhar
+- [x] **Implementar comando PASS**
+  - [x] Validar senha recebida contra a senha do servidor
+  - [x] Atualizar estado de autenticação do `Client` (enum)
+  - [x] Enviar erro 464 “Password incorrect” se falhar
 
-- [ ] **Implementar comando NICK**
-  - [ ] Validar formato de nickname (regex `[A-Za-z][A-Za-z0-9\-\[\]\\\`^{}]*`)
-  - [ ] Rejeitar nick duplicado (broadcast 433)
-  - [ ] Atualizar atributo `nick` do `Client`
+- [x] **Implementar comando NICK**
+  - [x] Validar formato de nickname (regex `[A-Za-z][A-Za-z0-9\-\[\]\\\`^{}]*`)
+  - [x] Rejeitar nick duplicado (broadcast 433)
+  - [x] Atualizar atributo `nick` do `Client`
 
-- [ ] **Implementar comando USER**  
-  - [ ] Verificar recebimento completo de 4 parâmetros (`username`, `mode`, `unused`, `realname`)  
-  - [ ] Atualizar atributos `username` e `realname`  
-  - [ ] Após PASS+NICK+USER válidos, marcar cliente como “registered” e enviar mensagens 001–004  
+- [x] **Implementar comando USER**  
+  - [x] Verificar recebimento completo de 4 parâmetros (`username`, `mode`, `unused`, `realname`)  
+  - [x] Atualizar atributos `username` e `realname`  
+  - [x] Após PASS+NICK+USER válidos, marcar cliente como “registered” e enviar mensagens 001–004
 
-- [ ] **Dispatcher de comandos**  
-  - [ ] Criar interface base `ICommand { virtual void execute(Client&, Server&) = 0; }`  
-  - [ ] Mapear strings → objetos `ICommand` em `std::map<std::string, std::unique_ptr<ICommand>>`  
-  - [ ] No loop principal, para cada linha parseada → buscar e chamar `execute()`  
+- [x] **Dispatcher de comandos**
+  - [x] Criar classe `Commands`
+  - [x] Armazenar em `std::map<std::string, CommandFunc>` (ex: `"NICK" → &Commands::handleNick`)
+  - [x] No método `handler(Client&, Server&, IRCMessage&)`, buscar no map e chamar `(this->*func)(...)`
+  - [x] Enviar `ERR_UNKNOWNCOMMAND` se o comando não existir
 
 ---
 
-## Part C: Canal, Módulos de Canal, Utilitários e Testes
+## Canal, Módulos de Canal, Utilitários e Testes
 
-- [ ] **Channel: modelos e operações básicas**  
-  - [ ] Classe `Channel` com nome, senha (`key`), tópico, limite (`limit`)  
-  - [ ] Containers `std::set<Client*> members`, `ops`, `invited`  
-  - [ ] Métodos `addMember()`, `removeMember()`, `broadcast()`  
-  - [ ] Gerenciar modos (`i, t, k, l, o`) com flags bitwise  
+- [x] **Channel: modelos e operações básicas**  
+  - [x] Classe `Channel` com nome, senha (`key`), tópico, limite (`limit`)  
+  - [x] Containers `std::set<Client*> members`, `ops`, `invited`  
+  - [x] Métodos `addMember()`, `removeMember()`, `broadcast()`  
+  - [x] Gerenciar modos (`i, t, k, l, o`) com flags bitwise  
 
-- [ ] **JOIN / PRIVMSG / TOPIC**  
-  - [ ] **JOIN**: verificar modo `i` (invite), `k` (key), `l` (limit) antes de adicionar  
-  - [ ] **PRIVMSG**: destino usuário ou canal; falhar com erro 401/404 conforme necessário  
-  - [ ] **TOPIC**: se sem parâmetros → mostrar tópico; com parâmetros → somente operadores ou modo `t`  
+- [x] **JOIN / PRIVMSG / TOPIC**  
+  - [x] **JOIN**: verificar modo `i` (invite), `k` (key), `l` (limit) antes de adicionar  
+  - [x] **PRIVMSG**: destino usuário ou canal; falhar com erro 401/404 conforme necessário  
+  - [x] **TOPIC**: se sem parâmetros → mostrar tópico; com parâmetros → somente operadores ou modo `t`  
 
 - [ ] **Comandos de Operador: KICK / INVITE / MODE**  
-  - [ ] **KICK**: remover membro, notificar canal; checar operador  
-  - [ ] **INVITE**: adicionar em `invited`, notificar convidado; checar modo `i`  
+  - [x] **KICK**: remover membro, notificar canal; checar operador  
+  - [x] **INVITE**: adicionar em `invited`, notificar convidado; checar modo `i`  
   - [ ] **MODE**: alterar flags do canal ou do usuário; parâmetros variáveis  
 
 - [ ] **Utilitários e Protocol Helpers**  
   - [ ] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
   - [ ] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
-  - [ ] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
+  - [x] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
 
 - [ ] **Testes e Robustez**  
   - [ ] Escrever scripts Bash em `tests/` para:  
@@ -291,6 +249,7 @@ Part C: Canal, Módulos de Canal, Utilitários e Testes.
 
 - [ ] **Extras Futuramente**  
   - [ ] Mensagem de boas‐vindas via arquivo MOTD  
-  - [ ] Implementar QUIT, WHO, NAMES, LIST  
+  - [ ] Implementar QUIT, WHO, NAMES, LIST
+  - [ ] Implementar arquivo de configuracao irc
 
 ---
