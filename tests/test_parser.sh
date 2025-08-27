@@ -86,6 +86,21 @@ int main() {
         testExtractLines();
         testParseMessage();
         testValidators();
+        
+        // RFC 1459 length limit test: ensure lines longer than 510 chars (before CRLF)
+        // are truncated by extractLines to 510.
+        {
+            std::string longParam(600, 'A'); // 600 A's
+            std::string buffer = "PRIVMSG #c :" + longParam + "\r\n";
+            std::vector<std::string> lines = Parser::extractLines(buffer);
+            assert(lines.size() == 1);
+            assert(lines[0].size() <= 510);
+            // Ensure trailing content is present but capped
+            IRCMessage m = Parser::parseMessage(lines[0]);
+            assert(m.command == "PRIVMSG");
+            assert(m.params.size() == 1 && m.params[0] == "#c");
+            assert(m.trailing.size() > 0);
+        }
         std::cout << "\nAll parser tests passed!" << std::endl;
         return 0;
     } catch (const std::exception& e) {
