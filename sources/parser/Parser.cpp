@@ -95,6 +95,7 @@ IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& op
     }
 
     // Normalize parameters
+    normalizeParamsForCommand(msg, options);
     return msg;
 }
 
