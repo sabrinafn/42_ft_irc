@@ -75,14 +75,4 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
     return;
 }
 
-std::vector<std::string> Commands::split(const std::string& str, char limit) {
-    std::vector<std::string> result;
-    std::stringstream        ss(str);
-    std::string              item;
-
-    while (std::getline(ss, item, limit)) {
-        if (!item.empty())
-            result.push_back(item);
-    }
-    return result;
-}
+// split helper is now provided in utils (global split)

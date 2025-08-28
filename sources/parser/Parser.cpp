@@ -21,6 +21,10 @@ std::vector<std::string> Parser::extractLines(std::string& buffer) {
 
     while ((pos = buffer.find("\r\n")) != std::string::npos) {
         std::string line = buffer.substr(0, pos);
+        // RFC 1459: message length is 512!!! including (\r\n)
+        if (line.size() > 510) {
+            line = line.substr(0, 510);
+        }
         if (!line.empty()) {
             lines.push_back(line);
         }
@@ -31,6 +35,11 @@ std::vector<std::string> Parser::extractLines(std::string& buffer) {
 }
 
 IRCMessage Parser::parseMessage(const std::string& line) {
+    ParserOptions options; // default: RFC1459 enabled
+    return parseMessage(line, options);
+}
+
+IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& options) {
     IRCMessage  msg;
     std::string trimmed = trim(line);
 
@@ -56,13 +65,12 @@ IRCMessage Parser::parseMessage(const std::string& line) {
 
     std::string::size_type cmd_end = trimmed.find(' ', pos);
     if (cmd_end == std::string::npos) {
-        msg.command = trimmed.substr(pos);
-        std::transform(msg.command.begin(), msg.command.end(), msg.command.begin(), ::toupper);
+        msg.command = toUpperASCII(trimmed.substr(pos));
+        normalizeParamsForCommand(msg, options);
         return msg;
     }
 
-    msg.command = trimmed.substr(pos, cmd_end - pos);
-    std::transform(msg.command.begin(), msg.command.end(), msg.command.begin(), ::toupper);
+    msg.command = toUpperASCII(trimmed.substr(pos, cmd_end - pos));
     pos = cmd_end + 1;
 
     while (pos < trimmed.length()) {
@@ -86,58 +94,47 @@ IRCMessage Parser::parseMessage(const std::string& line) {
         }
     }
 
+    // Normalize parameters
+    normalizeParamsForCommand(msg, options);
     return msg;
 }
 
 bool Parser::isValidCommand(const std::string& command) {
-    if (command.empty()) {
-        return false;
-    }
-    // TODO ADD ALL Commands
-    const std::string validCommands[] = {"PASS",  "NICK", "USER",   "QUIT", "JOIN",
-                                         "KICK",  "INFO", "PING",   "PONG", "PRIVMSG",
-                                         "TOPIC", "KICK", "INVITE", "MODE"};
+    if (command.empty()) return false;
 
-    const int numCommands = sizeof(validCommands) / sizeof(validCommands[0]);
-
-    for (int i = 0; i < numCommands; i++) {
-        if (command == validCommands[i]) {
-            return true;
-        }
+    // Known, supported command tokens (keep in sync with Commands map)
+    static const char* kKnown[] = {"PASS",   "NICK",   "USER",   "QUIT",  "JOIN",
+                                   "KICK",   "PING",   "PONG",   "PRIVMSG","TOPIC",
+                                   "INVITE", "MODE"};
+    for (size_t i = 0; i < sizeof(kKnown) / sizeof(kKnown[0]); ++i) {
+        if (command == kKnown[i]) return true;
     }
 
-    if (command.length() == 3) {
-        for (std::string::size_type i = 0; i < command.length(); i++) {
-            if (!std::isdigit(command[i])) {
-                return false;
-            }
-        }
+    // Accept 3-digit numeric replies
+    if (command.length() == 3 && std::isdigit(static_cast<unsigned char>(command[0])) &&
+        std::isdigit(static_cast<unsigned char>(command[1])) &&
+        std::isdigit(static_cast<unsigned char>(command[2]))) {
         return true;
     }
-
     return false;
 }
 
-/* VALIDATE IRC NICKNAME */
 bool Parser::isValidNickname(const std::string& nickname) {
     if (nickname.empty() || nickname.length() > 30) {
         return false;
     }
-
     // First character must be a letter
-    if (!std::isalpha(nickname[0])) {
+    if (!std::isalpha(static_cast<unsigned char>(nickname[0]))) {
         return false;
     }
-
     // Subsequent characters can be letters, digits, or special chars
     for (std::string::size_type i = 1; i < nickname.length(); i++) {
-        char c = nickname[i];
-        if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
+    unsigned char c = static_cast<unsigned char>(nickname[i]);
+    if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
             c != '^' && c != '{' && c != '}') {
             return false;
         }
     }
-
     return true;
 }
 
@@ -145,31 +142,130 @@ bool Parser::isValidNickname(const std::string& nickname) {
 std::string Parser::trim(const std::string& str) {
     std::string::size_type start = 0;
     std::string::size_type end   = str.length();
-
     // Find first non-whitespace character
-    while (start < end && std::isspace(str[start])) {
+    while (start < end && std::isspace(static_cast<unsigned char>(str[start]))) {
         start++;
     }
-
     // Find last non-whitespace character
-    while (end > start && std::isspace(str[end - 1])) {
+    while (end > start && std::isspace(static_cast<unsigned char>(str[end - 1]))) {
         end--;
     }
 
     return str.substr(start, end - start);
 }
 
-/* SPLIT STRING BY DELIMITER */
-std::vector<std::string> Parser::split(const std::string& str, char delimiter) {
-    std::vector<std::string> tokens;
-    std::stringstream        ss(str);
-    std::string              token;
+std::string Parser::toUpperASCII(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        out.push_back(static_cast<char>(std::toupper(c)));
+    }
+    return out;
+}
 
-    while (std::getline(ss, token, delimiter)) {
-        if (!token.empty()) {
-            tokens.push_back(token);
-        }
+std::string Parser::toLowerRFC1459(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        // RFC1459 casemap: []\ equal to {}|
+        if (c == '[') c = '{';
+        else if (c == ']') c = '}';
+        else if (c == '\\') c = '|';
+        out.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return out;
+}
+
+std::string Parser::foldLower(const std::string& s, bool useRFC1459) {
+    return useRFC1459 ? toLowerRFC1459(s) : toLowerASCII(s);
+}
+
+std::string Parser::toLowerASCII(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        out.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return out;
+}
+
+void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& options) {
+    // For ft_irc, treat these tokens case-insensitively:
+    // - NICK nick
+    // - PRIVMSG target :text (target can be nick or #channel)
+    // - JOIN #chans[,#other] [keys]
+    // - KICK #chan nick[,more]
+    // - INVITE nick #chan
+    // We'll lowercase nicknames and channel names in params to ease matching.
+    if (msg.params.empty()) return;
+    const std::string& cmd = msg.command;
+    if (cmd == "NICK") {
+        msg.params[0] = foldLower(msg.params[0], options.useRFC1459CaseMap);
+        return;
     }
 
-    return tokens;
+    // Helper to lowercase list params preserving commas
+    const std::string lowerList = 
+        (msg.params.size() ? std::string() : std::string());
+    (void)lowerList;
+    
+    // Lowercase first parameter for commands that take nick/channel or a comma-separated list
+    if (cmd == "PRIVMSG" || cmd == "JOIN" || cmd == "KICK" || cmd == "INVITE" || cmd == "TOPIC") {
+        std::string& p0 = msg.params[0];
+        std::string  out0;
+        out0.reserve(p0.size());
+        for (size_t i = 0; i < p0.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(p0[i]);
+            if (c == ',') {
+                out0.push_back(',');
+            } else {
+                // apply RFC1459 folding if enabled
+                if (options.useRFC1459CaseMap) {
+                    if (c == '[') c = '{';
+                    else if (c == ']') c = '}';
+                    else if (c == '\\') c = '|';
+                }
+                out0.push_back(static_cast<char>(std::tolower(c)));
+            }
+        }
+        msg.params[0] = out0;
+    }
+
+    // KICK: also lowercase targets list in params[1]
+    if (cmd == "KICK" && msg.params.size() > 1) {
+        std::string& p1 = msg.params[1];
+        std::string  out1;
+        out1.reserve(p1.size());
+        for (size_t i = 0; i < p1.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(p1[i]);
+            if (c == ',') {
+                out1.push_back(',');
+            } else {
+                if (options.useRFC1459CaseMap) {
+                    if (c == '[') c = '{';
+                    else if (c == ']') c = '}';
+                    else if (c == '\\') c = '|';
+                }
+                out1.push_back(static_cast<char>(std::tolower(c)));
+            }
+        }
+        msg.params[1] = out1;
+    }
+
+    // INVITE: second param is channel; lowercase it
+    if (cmd == "INVITE" && msg.params.size() > 1) {
+        std::string& p1 = msg.params[1];
+        for (size_t i = 0; i < p1.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(p1[i]);
+            if (options.useRFC1459CaseMap) {
+                if (c == '[') c = '{';
+                else if (c == ']') c = '}';
+                else if (c == '\\') c = '|';
+            }
+            p1[i] = static_cast<char>(std::tolower(c));
+        }
+    }
 }
