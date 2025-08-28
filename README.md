@@ -84,6 +84,14 @@ PRIVMSG #canal :Olá!
 
 ---
 
+## Parse testing use
+
+```
+make -C /home/bocal/go -j2 && bash /home/bocal/go/tests/test_parser.sh
+```
+
+---
+
 ## Fluxo de Desenvolvimento
 
 1. **Infraestrutura**: Makefile e classe `Server` com socket não-bloqueante.
