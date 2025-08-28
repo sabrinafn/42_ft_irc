@@ -1,9 +1,3 @@
-/*
- * Parser.hpp
- *
- * Defines the Parser class for parsing IRC messages according to RFC 1459.
- * Handles message buffering, line extraction, and command/parameter parsing.
- */
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
@@ -32,7 +26,14 @@ class Parser {
     Parser& operator=(const Parser& other);
     ~Parser();
 
+    struct ParserOptions {
+        bool useRFC1459CaseMap;
+        ParserOptions() : useRFC1459CaseMap(true) {}
+    };
+
     static IRCMessage               parseMessage(const std::string& line);
+    static IRCMessage               parseMessage(const std::string& line,
+                                                 const ParserOptions& options);
     static std::vector<std::string> extractLines(std::string& buffer);
     static bool                     isValidCommand(const std::string& command);
     static bool                     isValidNickname(const std::string& nickname);
@@ -41,8 +42,10 @@ class Parser {
     static std::string trim(const std::string& str);
     static std::string toUpperASCII(const std::string& s);
     static std::string toLowerASCII(const std::string& s);
+    static std::string toLowerRFC1459(const std::string& s);
+    static std::string foldLower(const std::string& s, bool useRFC1459);
     // case sensitive handler
-    static void         normalizeParamsForCommand(IRCMessage& msg);
+    static void         normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& options);
 };
 
 #endif
