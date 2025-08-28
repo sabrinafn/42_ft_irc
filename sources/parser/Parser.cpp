@@ -60,13 +60,11 @@ IRCMessage Parser::parseMessage(const std::string& line) {
 
     std::string::size_type cmd_end = trimmed.find(' ', pos);
     if (cmd_end == std::string::npos) {
-        msg.command = trimmed.substr(pos);
-        std::transform(msg.command.begin(), msg.command.end(), msg.command.begin(), ::toupper);
+        msg.command = toUpperASCII(trimmed.substr(pos));
         return msg;
     }
 
-    msg.command = trimmed.substr(pos, cmd_end - pos);
-    std::transform(msg.command.begin(), msg.command.end(), msg.command.begin(), ::toupper);
+    msg.command = toUpperASCII(trimmed.substr(pos, cmd_end - pos));
     pos = cmd_end + 1;
 
     while (pos < trimmed.length()) {
@@ -90,6 +88,8 @@ IRCMessage Parser::parseMessage(const std::string& line) {
         }
     }
 
+    // Normalize parameters for case-insensitive nick/channel handling
+    normalizeParamsForCommand(msg);
     return msg;
 }
 
@@ -120,14 +120,14 @@ bool Parser::isValidNickname(const std::string& nickname) {
     }
 
     // First character must be a letter
-    if (!std::isalpha(nickname[0])) {
+    if (!std::isalpha(static_cast<unsigned char>(nickname[0]))) {
         return false;
     }
 
     // Subsequent characters can be letters, digits, or special chars
     for (std::string::size_type i = 1; i < nickname.length(); i++) {
-        char c = nickname[i];
-        if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
+    unsigned char c = static_cast<unsigned char>(nickname[i]);
+    if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
             c != '^' && c != '{' && c != '}') {
             return false;
         }
@@ -155,3 +155,54 @@ std::string Parser::trim(const std::string& str) {
 }
 
 /* Removed duplicate split helper; use global split() in Utils instead. */
+
+std::string Parser::toUpperASCII(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        out.push_back(static_cast<char>(std::toupper(c)));
+    }
+    return out;
+}
+
+std::string Parser::toLowerASCII(const std::string& s) {
+    std::string out;
+    out.reserve(s.size());
+    for (size_t i = 0; i < s.size(); ++i) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        out.push_back(static_cast<char>(std::tolower(c)));
+    }
+    return out;
+}
+
+void Parser::normalizeParamsForCommand(IRCMessage& msg) {
+    // For ft_irc, treat these tokens case-insensitively:
+    // - NICK nick
+    // - PRIVMSG target :text (target can be nick or #channel)
+    // - JOIN #chans[,#other] [keys]
+    // - KICK #chan nick[,more]
+    // - INVITE nick #chan
+    // We'll lowercase nicknames and channel names in params to ease matching.
+    if (msg.params.empty()) return;
+    const std::string& cmd = msg.command;
+    if (cmd == "NICK") {
+        msg.params[0] = toLowerASCII(msg.params[0]);
+    } else if (cmd == "PRIVMSG" || cmd == "JOIN" || cmd == "KICK" || cmd == "INVITE" ||
+               cmd == "TOPIC") {
+        // First param is a target/channel list; lowercase channels (#...) and nicks
+        // Keep commas as-is.
+        std::string& p0 = msg.params[0];
+        std::string  out;
+        out.reserve(p0.size());
+        for (size_t i = 0; i < p0.size(); ++i) {
+            unsigned char c = static_cast<unsigned char>(p0[i]);
+            if (c == ',') {
+                out.push_back(',');
+            } else {
+                out.push_back(static_cast<char>(std::tolower(c)));
+            }
+        }
+        p0 = out;
+    }
+}

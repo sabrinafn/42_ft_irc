@@ -39,6 +39,10 @@ class Parser {
 
    private:
     static std::string trim(const std::string& str);
+    static std::string toUpperASCII(const std::string& s);
+    static std::string toLowerASCII(const std::string& s);
+    // case sensitive handler
+    static void         normalizeParamsForCommand(IRCMessage& msg);
 };
 
 #endif
