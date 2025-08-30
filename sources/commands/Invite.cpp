@@ -26,7 +26,7 @@ void Commands::handleInvite(Client &client, Server &server, const IRCMessage &ms
     }
 
     // 3. Buscar o convidado no servidor
-    Client *target = server.serverGetClientByNick(targetNick);
+    Client *target = server.getClientByNick(targetNick);
     if (!target) {
         client.sendReply(ERR_NOSUCHNICK(targetNick));
         return;

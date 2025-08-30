@@ -29,15 +29,16 @@
 #include "../parser/Parser.hpp"   // parser class
 #include "../commands/Commands.hpp"
 #include "../standardReplies/StdReplies.hpp" // standard irc reply messages
+#include "../includes/ft_irc.hpp"
 
 class Server {
    private:
     int                              port;
     int                              socket_fd;
     std::string                      password;
+    Pollset                          pollset;
     std::vector<Client *>            clients;
     std::map<std::string, Channel *> channels;
-    Pollset                          pollset;
     static bool                      signals;
     int                              timeout_seconds;
     int                              pong_timeout;
@@ -57,8 +58,6 @@ class Server {
     ~Server(void);
 
     /* SETTERS */
-    // void setPortNumber(int other);
-    // void setServerPassword(std::string other);
     void setChannel(Channel *new_channel);
 
     /* GETTERS */
@@ -68,8 +67,9 @@ class Server {
     const std::vector<Client *>      &getClients() const;
     std::map<std::string, Channel *> &get_channels();
     int                               getPongTimeout(void) const;
-    Client                           *serverGetClientByNick(const std::string &nick);
-
+    Client                           *getClientByNick(const std::string &nick);
+    size_t                           getPollsetIdxByFd(int fd);
+    
     /* CREATE SOCKET */
     void createSocket(void);
 
@@ -99,9 +99,6 @@ class Server {
 
     /* SIGNAL HANDLER FUNCTION */
     static void signalHandler(int sig);
-
-    /* FIND FD INDEX IN POLLSET BY FD IN CLIENT */
-    size_t getPollsetIdxByFd(int fd);
 
     /* VERIFY CLIENTS ACTIVE TIME */
     void handleInactiveClients(void);

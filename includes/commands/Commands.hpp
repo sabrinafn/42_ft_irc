@@ -46,7 +46,6 @@ class Commands {
     bool        check_params(Client &client, const IRCMessage &msg);
     bool        sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
 
-
    public:
     /* CONSTRUCTOR */
     Commands(void);

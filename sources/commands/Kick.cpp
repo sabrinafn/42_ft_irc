@@ -49,7 +49,7 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
         // Para cada alvo
         for (size_t ti = 0; ti < targets.size(); ++ti) {
             std::string targetNick = targets[ti];
-            Client*     target     = server.serverGetClientByNick(targetNick);
+            Client*     target     = server.getClientByNick(targetNick);
             if (!target) {
                 client.sendReply(ERR_NOSUCHNICK(targetNick));
                 continue;
