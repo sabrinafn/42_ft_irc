@@ -84,14 +84,6 @@ PRIVMSG #canal :Olá!
 
 ---
 
-## Parse testing use
-
-```
-make -C /home/bocal/go -j2 && bash /home/bocal/go/tests/test_parser.sh
-```
-
----
-
 ## Fluxo de Desenvolvimento
 
 1. **Infraestrutura**: Makefile e classe `Server` com socket não-bloqueante.
@@ -244,7 +236,7 @@ feature/<nome>: branches para cada nova feature ou módulo.
 
 - [ ] **Utilitários e Protocol Helpers**  
   - [ ] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
-  - [ ] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
+  - [x] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
   - [x] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
 
 - [ ] **Testes e Robustez**  
