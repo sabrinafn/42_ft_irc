@@ -34,15 +34,11 @@ Commands::~Commands(void) {
 /* COMMAND HANDLER THAT WILL CALL EACH COMMAND */
 void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
     std::map<std::string, CommandFunc>::iterator it = this->commandsMap.find(msg.command);
-    std::cout << "DEBUG: Commands::handler called" << std::endl;
     if (it != commandsMap.end()) {
         CommandFunc func = it->second;
         (this->*func)(client, server, msg);
-        std::cout << "DEBUG: command=" << msg.command << std::endl;
 
     } else {
-        std::cout << "ERROR: command=" << msg.command << std::endl;
-
         if (client.getState() == REGISTERED) {
             client.sendReply(ERR_UNKNOWNCMD(msg.command));
         }

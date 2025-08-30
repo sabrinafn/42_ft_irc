@@ -12,11 +12,13 @@ void Commands::handlePass(Client &client, Server &server, const IRCMessage &msg)
     }
     if (msg.params[0] == server.getServerPassword()) {
         client.setState(PASS_OK);
-        std::cout << "DEBUG: Client " << client.getFd() << " provided correct password"
-                  << std::endl;
+        std::stringstream ss;
+        ss << "Client [" << client.getFd() << "] provided a correct password";
+        logInfo(ss.str());
     } else {
         client.sendReply(ERR_PASSWDMISMATCH());
-        std::cout << "ERROR: Client " << client.getFd() << " provided an incorrect password"
-                  << std::endl;
+        std::stringstream ss2;
+        ss2 << "Client [" << client.getFd() << "] provided an incorrect password";
+        logError(ss2.str());
     }
 }

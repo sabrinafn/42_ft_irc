@@ -127,11 +127,15 @@ void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
     ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
     if (ret == -1) {
-        std::cerr << "ERROR: falha ao enviar para " << nickname << " (fd=" << this->fd << ")"
-                  << std::endl;
-    } else {
-        std::cout << "DEBUG: enviado para " << nickname << " (fd=" << this->fd << ")"
-                  << " -> " << msg << std::endl;
+    int err = errno;
+    std::stringstream ss;
+    ss << "send() failed for client [" << this->fd 
+       << "]: " << strerror(err) << " (errno=" << err << ")";
+    logError(ss.str());
+} else {
+        std::stringstream ss;
+        ss << "Reply message sent to client [" << this->fd << "]" << " : " << msg;
+        logInfo(ss.str());
     }
 }
 
@@ -143,6 +147,7 @@ void Client::sendWelcomeMessages(void) {
     this->sendReply(RPL_CREATED(this->nickname, startup_time));
     this->sendReply(RPL_MYINFO(this->nickname, "o", "o"));
 
-    std::cout << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!"
-              << std::endl;
+    std::stringstream ss;
+    ss << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!";
+    logInfo(ss.str());
 }

@@ -19,15 +19,14 @@ std::string Commands::buildMessageFromParams(const std::vector<std::string> &par
 bool Commands::check_params(Client &client, const IRCMessage &msg) {
     // colocar if de autenticação
 
-    if (msg.params.empty() || msg.params.size() < 2) {
+if (msg.params.empty() || msg.params.size() < 2) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or "
-                     "msg.params.size() < 2"
-                  << std::endl;
+        logError("PRIVMSG -> ERR_NEEDMOREPARAMS: empty or <2 params");
         return false;
     }
     if (msg.params[1][0] != ':') {
         client.sendReply(ERR_NOTEXTTOSEND(msg.command));
+        logError("PRIVMSG -> ERR_NOTEXTTOSEND: missing ':' before message");
         return false;
     }
     return true;
@@ -76,13 +75,13 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
 
 void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
     // std::string prefix;      // usually server name or nick!user@host
-    std::cout << "DEBUG: msg.prefix: " + msg.prefix << std::endl;
+    // std::cout << "DEBUG: msg.prefix: " + msg.prefix << std::endl;
     // std::string command;     // Command (NICK, USER, PRIVMSG, etc....)
-    std::cout << "DEBUG: msg.command: " + msg.command << std::endl;
+    // std::cout << "DEBUG: msg.command: " + msg.command << std::endl;
     // std::vector<std::string> params;
-    std::cout << "DEBUG: msg.params[0]: " + msg.params[0] << std::endl;
+    // std::cout << "DEBUG: msg.params[0]: " + msg.params[0] << std::endl;
     // std::string trailing;    // Optional parameter (after :)
-    std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
+    // std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
 
     if (!check_params(client, msg))
         return;

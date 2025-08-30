@@ -20,8 +20,8 @@ void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg)
     }
 
     client.setNickname(nickname);
-    std::cout << "INFO: Client [" << client.getFd() << "] set nickname to: " << nickname
-              << std::endl;
+    std::stringstream ss;
+    ss << "INFO: Client [" << client.getFd() << "] set nickname to: " << nickname;
 
     // Check if client is now fully registered
     if (client.getState() == PASS_OK && !client.getUsername().empty()) {

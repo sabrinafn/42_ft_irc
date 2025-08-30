@@ -34,7 +34,17 @@ Server::Server(const Server &other) {
 
 /* OPERATORS */
 Server &Server::operator=(const Server &other) {
-    (void)other;
+    if (this != &other) {
+        this->port            = other.port;
+        this->socket_fd       = other.socket_fd;
+        this->password        = other.password;
+        this->pollset         = other.pollset;
+        this->clients         = other.clients;
+        this->channels = other.channels;
+        this->signals = other.signals;
+        this->timeout_seconds = other.timeout_seconds;
+        this->pong_timeout    = other.pong_timeout;
+    }
     return *this;
 }
 
@@ -147,14 +157,18 @@ void Server::monitorConnections(void) {
     for (size_t i = 0; i < pollset.getSize(); i++) {
         struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
-            std::stringstream ss;
-            ss << "Client fd [" << current.fd << "] connected";
-            logDebug(ss.str());
-            if (current.fd == this->socket_fd)
+            if (current.fd == this->socket_fd) {
+                std::stringstream ss;
+                ss << "Server listening socket [" << current.fd << "] is ready to accept a new client";
+                logInfo(ss.str());
                 this->connectClient(); // accept a new client
-            else
-                this->receiveData(i); // receive data for client that is already registered
-        } else if (current.revents & POLLHUP || current.revents & POLLERR) {
+            } else {
+                std::stringstream ss;
+                ss << "Client [" << current.fd << "] is sending new data";
+                logDebug(ss.str());
+                this->receiveData(i); // receive data
+            }
+        }  else if (current.revents & POLLHUP || current.revents & POLLERR) {
             this->disconnectClient(i);
             --i;
         }
@@ -196,9 +210,6 @@ void Server::connectClient(void) {
     client->setFd(client_fd);
     client->setLastActivity(std::time(0));
     this->clients.push_back(client);
-    std::stringstream ss;
-    ss << "Last activity time: " << client->getLastActivity();
-    logDebug(ss.str());
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -227,9 +238,6 @@ void Server::receiveData(size_t &index) {
         if (buf.empty() || buffer[0] == '\0')
             return;
         this->handleClientMessage(*client, buf);
-        std::stringstream ss;
-        ss << "Client fd [" << client->getFd() << "] buffer: '" << client->getData() << "'";
-        logDebug(ss.str());
         client->setLastActivity(std::time(0));
         client->setPingSent(false);
     }

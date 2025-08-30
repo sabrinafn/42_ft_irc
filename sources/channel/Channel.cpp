@@ -180,12 +180,15 @@ void Channel::removeInvite(Client* client) {
 // Broadcast
 // Envio de mensagens para todos os membros do canal
 void Channel::broadcast(const std::string& message, Client* client) {
-    std::cout << "DEBUG: broadcast para " << members.size()
-              << " membros, client: " << (client ? client->getNickname() : "NULL")
-              << std::endl;
+    std::stringstream ss;
+    ss << "Broadcast message sent to " << members.size()
+              << " members, client: " << (client ? client->getNickname() : "NULL");
+    logDebug(ss.str());
 
     for (size_t i = 0; i < members.size(); ++i) {
-        std::cout << "DEBUG: membro[" << i << "] = " << members[i]->getNickname() << std::endl;
+        std::stringstream ss;
+        ss << "Channel member [" << i << "] = " << members[i]->getNickname();
+        logDebug(ss.str());
         if (client == NULL || members[i] != client) {
             members[i]->sendReply(message);
         }

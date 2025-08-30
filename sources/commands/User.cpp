@@ -20,9 +20,10 @@ void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg)
 
     client.setUsername(msg.params[0]);
     client.setRealname(msg.trailing);
-    std::cout << "INFO: Client [" << client.getFd() << "] set username: " << msg.params[0]
-              << ", realname: " << msg.trailing << std::endl;
-
+    std::stringstream ss;
+    ss << "Client [" << client.getFd() << "] set username: " << msg.params[0]
+              << ", realname: " << msg.trailing;
+    logInfo(ss.str());
     // Check if client is now fully registered
     if (client.getState() == PASS_OK && !client.getNickname().empty()) {
         client.setState(REGISTERED);
