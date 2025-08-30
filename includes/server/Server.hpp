@@ -68,8 +68,8 @@ class Server {
     std::map<std::string, Channel *> &get_channels();
     int                               getPongTimeout(void) const;
     Client                           *getClientByNick(const std::string &nick);
-    size_t                           getPollsetIdxByFd(int fd);
-    
+    size_t                            getPollsetIdxByFd(int fd);
+
     /* CREATE SOCKET */
     void createSocket(void);
 

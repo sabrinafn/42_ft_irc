@@ -147,7 +147,6 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     }
 }
 
-
 bool Commands::isValidChannelName(const std::string &name) {
     if (name[0] != '#' && name[0] != '&')
         return false;

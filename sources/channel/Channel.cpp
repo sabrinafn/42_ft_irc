@@ -182,7 +182,7 @@ void Channel::removeInvite(Client* client) {
 void Channel::broadcast(const std::string& message, Client* client) {
     std::stringstream ss;
     ss << "Broadcast message sent to " << members.size()
-              << " members, client: " << (client ? client->getNickname() : "NULL");
+       << " members, client: " << (client ? client->getNickname() : "NULL");
     logDebug(ss.str());
 
     for (size_t i = 0; i < members.size(); ++i) {

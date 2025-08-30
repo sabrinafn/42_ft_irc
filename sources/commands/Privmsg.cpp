@@ -19,7 +19,7 @@ std::string Commands::buildMessageFromParams(const std::vector<std::string> &par
 bool Commands::check_params(Client &client, const IRCMessage &msg) {
     // colocar if de autenticação
 
-if (msg.params.empty() || msg.params.size() < 2) {
+    if (msg.params.empty() || msg.params.size() < 2) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         logError("PRIVMSG -> ERR_NEEDMOREPARAMS: empty or <2 params");
         return false;

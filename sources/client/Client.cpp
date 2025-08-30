@@ -127,14 +127,15 @@ void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
     ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
     if (ret == -1) {
-    int err = errno;
-    std::stringstream ss;
-    ss << "send() failed for client [" << this->fd 
-       << "]: " << strerror(err) << " (errno=" << err << ")";
-    logError(ss.str());
-} else {
+        int               err = errno;
         std::stringstream ss;
-        ss << "Reply message sent to client [" << this->fd << "]" << " : " << msg;
+        ss << "send() failed for client [" << this->fd << "]: " << strerror(err)
+           << " (errno=" << err << ")";
+        logError(ss.str());
+    } else {
+        std::stringstream ss;
+        ss << "Reply message sent to client [" << this->fd << "]"
+           << " : " << msg;
         logInfo(ss.str());
     }
 }

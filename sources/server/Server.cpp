@@ -23,7 +23,8 @@ Server::Server(int port, const std::string &password)
       timeout_seconds(300),
       pong_timeout(20) {
     std::stringstream ss;
-    ss << "Server starting on port " << this->port << " with password '" << this->password << "'";
+    ss << "Server starting on port " << this->port << " with password '" << this->password
+       << "'";
     logInfo(ss.str());
 }
 
@@ -40,8 +41,8 @@ Server &Server::operator=(const Server &other) {
         this->password        = other.password;
         this->pollset         = other.pollset;
         this->clients         = other.clients;
-        this->channels = other.channels;
-        this->signals = other.signals;
+        this->channels        = other.channels;
+        this->signals         = other.signals;
         this->timeout_seconds = other.timeout_seconds;
         this->pong_timeout    = other.pong_timeout;
     }
@@ -85,17 +86,17 @@ int Server::getPongTimeout(void) const {
 Client *Server::getClientByNick(const std::string &nick) {
     for (size_t i = 0; i < clients.size(); ++i) {
         if (clients[i]->getNickname() == nick)
-        return clients[i];
-}
-return NULL;
+            return clients[i];
+    }
+    return NULL;
 }
 
 size_t Server::getPollsetIdxByFd(int fd) {
     for (size_t i = 0; i < pollset.getPollfds().size(); i++) {
         if (pollset.getPollfds()[i].fd == fd)
-        return i;
-}
-return -1;
+            return i;
+    }
+    return -1;
 }
 
 Client *Server::getClientByFd(int fd_to_find) {
@@ -159,7 +160,8 @@ void Server::monitorConnections(void) {
         if (current.revents & POLLIN) {
             if (current.fd == this->socket_fd) {
                 std::stringstream ss;
-                ss << "Server listening socket [" << current.fd << "] is ready to accept a new client";
+                ss << "Server listening socket [" << current.fd
+                   << "] is ready to accept a new client";
                 logInfo(ss.str());
                 this->connectClient(); // accept a new client
             } else {
@@ -168,14 +170,13 @@ void Server::monitorConnections(void) {
                 logDebug(ss.str());
                 this->receiveData(i); // receive data
             }
-        }  else if (current.revents & POLLHUP || current.revents & POLLERR) {
+        } else if (current.revents & POLLHUP || current.revents & POLLERR) {
             this->disconnectClient(i);
             --i;
         }
     }
     this->handleInactiveClients();
 }
-
 
 /* SET SOCKETS AS NON BLOCKING */
 void Server::setNonBlocking(int socket) {
@@ -259,7 +260,6 @@ void Server::disconnectClient(size_t index) {
     close(current.fd);
 }
 
-
 /* CLEAR RESOURCES */
 void Server::clearServer(void) {
     for (size_t i = 0; i < clients.size(); ++i) {
@@ -309,7 +309,7 @@ void Server::handleInactiveClients(void) {
                 logDebug(ss2.str());
                 ++it;
             } else if (now - (*it)->getLastPingSent() >= this->pong_timeout) {
-                 std::stringstream ss;
+                std::stringstream ss;
                 ss << "Client with fd [" << (*it)->getFd() << "] timeouted (no PONG received)";
                 logInfo(ss.str());
 
