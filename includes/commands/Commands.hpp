@@ -41,9 +41,7 @@ class Commands {
     /* CHECK IF IT IS A VALID KEY */
     bool isValidkey(std::string key);
 
-    std::string buildMessageFromParams(const std::vector<std::string> &params);
     bool        sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
-    bool        check_params(Client &client, const IRCMessage &msg);
     bool        sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
 
 

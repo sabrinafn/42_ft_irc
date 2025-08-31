@@ -2,36 +2,29 @@
 
 /* HANDLEPRIVMSG */
 
-std::string Commands::buildMessageFromParams(const std::vector<std::string> &params) {
-    std::string message;
+// std::string Commands::buildMessageFromParams(const std::vector<std::string> &params) {
+//     std::string message;
 
-    for (size_t i = 1; i < params.size(); ++i) {
-        message += params[i];
-        if (i != params.size() - 1)
-            message += " ";
-    }
-    if (!message.empty() && message[0] == ':')
-        message = message.substr(1);
+//     for (size_t i = 1; i < params.size(); ++i) {
+//         message += params[i];
+//         if (i != params.size() - 1)
+//             message += " ";
+//     }
+//     return message;
+//}
 
-    return message;
-}
+// bool Commands::check_params(Client &client, const IRCMessage &msg) {
+//     // colocar if de autenticação
 
-bool Commands::check_params(Client &client, const IRCMessage &msg) {
-    // colocar if de autenticação
-
-    if (msg.params.empty() || msg.params.size() < 2) {
-        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-        std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or "
-                     "msg.params.size() < 2"
-                  << std::endl;
-        return false;
-    }
-    if (msg.params[1][0] != ':') {
-        client.sendReply(ERR_NOTEXTTOSEND(msg.command));
-        return false;
-    }
-    return true;
-}
+//     if (msg.params.empty() || msg.params.size() < 2) {
+//         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+//         std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or "
+//                      "msg.params.size() < 2"
+//                   << std::endl;
+//         return false;
+//     }
+//     return true;
+// }
 
 bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg) {
     Channel                         *channel;
@@ -44,8 +37,8 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
             return false;
         }
         /// ver se é necessario fazer a validação de onlyinvited
-        std::string message  = buildMessageFromParams(msg.params);
-        std::string response = RPL_PRIVMSG(client.getNickname(), dest, message);
+       // std::string message  = buildMessageFromParams(msg.params);
+        std::string response = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
         channel->broadcast(response, &client);
     } else {
         client.sendReply(ERR_NOSUCHCHANNEL(dest));
@@ -57,13 +50,11 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
 
 bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
     std::string dest    = msg.params[0];
-    std::string message = buildMessageFromParams(msg.params);
 
-    const std::vector<Client *> &serverClients =
-        server.getClients(); // pega a lista de clientes do server
+    const std::vector<Client *> &serverClients = server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, message);
+            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
             serverClients[i]->sendReply(fullMessage);
             return true; // encontrou, não precisa continuar
         }
@@ -84,10 +75,9 @@ void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &m
     // std::string trailing;    // Optional parameter (after :)
     std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
 
-    if (!check_params(client, msg))
-        return;
-    if (sendMsgToChannel(client, server, msg))
-        return;
+    if (msg.params[0][0] == '#')
+        if(sendMsgToChannel(client, server, msg))
+            return;
     if (sendMsgToClient(client, server, msg))
         return;
 

@@ -1,5 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
+//TOPIC <canal> [<tópico>]
 /* HANDLETOPIC */
 void Commands::handleTopic(Client &client, Server &server, const IRCMessage &msg) {
     if (msg.params.empty() || msg.params.size() < 2) {
@@ -8,15 +9,15 @@ void Commands::handleTopic(Client &client, Server &server, const IRCMessage &msg
     }
     std::string                      channelName  = msg.params[0];
     std::map<std::string, Channel *> all_channels = server.get_channels();
-    if (all_channels.find(channelName) != all_channels.end()) {
+    if (all_channels.find(channelName) == all_channels.end()) {
         client.sendReply(ERR_NOSUCHCHANNEL(channelName));
         return;
     }
     Channel *channel = all_channels[channelName];
     // Sem parâmetro de tópico → mostrar tópico atual
-    if (msg.params.size() == 1) {
+    if (msg.params.size() < 2) {
         std::string topic = channel->getTopic();
-        if (topic.empty()) {
+        if (!topic.empty()) {
             client.sendReply(RPL_NOTOPIC(client.getNickname(), channelName));
             return;
         } else {

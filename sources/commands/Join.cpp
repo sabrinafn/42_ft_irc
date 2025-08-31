@@ -55,11 +55,10 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         if (server.get_channels().find(name) == server.get_channels().end()) {
             std::cout << "DEBUG: criando canal " << name << std::endl;
             channel = new Channel(name);
-            // channels[name] = channel;
             server.setChannel(channel);
             channel->addOperator(&client);
         } else {
-            // channel = channels[name];
+            channel = server.get_channels()[name];
             std::cout << "ERROR: canal ja existe " << name << std::endl;
         }
 
