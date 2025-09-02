@@ -45,3 +45,15 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     }
     return tokens;
 }
+
+std::string getStartupTime() {
+    std::time_t t       = std::time(NULL);
+    std::tm*    tm_info = std::localtime(&t);
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(3) << (tm_info->tm_year + 1900) << "-" << std::setw(2)
+       << (tm_info->tm_mon + 1) << "-" << std::setw(2) << tm_info->tm_mday << " "
+       << std::setw(2) << tm_info->tm_hour << ":" << std::setw(2) << tm_info->tm_min << ":"
+       << std::setw(2) << tm_info->tm_sec;
+    return ss.str();
+}

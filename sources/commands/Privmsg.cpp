@@ -44,7 +44,7 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
         }
         /// ver se é necessario fazer a validação de onlyinvited
         std::string message  = buildMessageFromParams(msg.params);
-        std::string response = RPL_PRIVMSG(client.getNickname(), dest, message);
+        std::string response = RPL_PRIVMSG(client.getPrefix(), dest, message);
         channel->broadcast(response, &client);
     } else {
         client.sendReply(ERR_NOSUCHCHANNEL(dest));
@@ -62,7 +62,7 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
         server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, message);
+            std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, message);
             serverClients[i]->sendReply(fullMessage);
             return true; // encontrou, não precisa continuar
         }

@@ -44,7 +44,7 @@ std::string RPL_WELCOME(const std::string& nickname, const std::string& username
 std::string RPL_YOURHOST(const std::string& nickname);
 
 // 003
-std::string RPL_CREATED(const std::string& nickname, std::string& startup_time);
+std::string RPL_CREATED(const std::string& nickname, const std::string& startup_time);
 
 // 004
 std::string RPL_MYINFO(const std::string& nickname, const std::string& usermodes,
@@ -100,10 +100,6 @@ std::string ERR_INVITEONLYCHAN(const std::string& channel);
 // 475
 std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& channel);
 
-// PRIVMSG
-std::string RPL_PRIVMSG(const std::string& nickname, const std::string& other,
-                        const std::string& message);
-
 // 412
 std::string ERR_NOTEXTTOSEND(const std::string& nickname);
 
@@ -123,11 +119,14 @@ std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& 
 std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname,
                                  const std::string& channel);
 
-// invite
+// 341
 std::string RPL_INVITING(const std::string& targetNick, const std::string& nickname,
                          const std::string& channel);
 
 std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname,
                        const std::string& channel);
 
+// PRIVMSG
+std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
+                        const std::string& message);
 #endif
