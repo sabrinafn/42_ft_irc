@@ -234,14 +234,14 @@ feature/<nome>: branches para cada nova feature ou módulo.
   - [x] **INVITE**: adicionar em `invited`, notificar convidado; checar modo `i`  
   - [ ] **MODE**: alterar flags do canal ou do usuário; parâmetros variáveis  
 
-- [ ] **Utilitários e Protocol Helpers**  
-  - [ ] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
+- [x] **Utilitários e Protocol Helpers**  
+  - [x] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
   - [x] **Enums**: códigos de resposta (001–005, 433, 464…) em `enum IRCCode`  
   - [x] **Formatters**: construir replies padronizadas `:<server> <code> <nick> :<message>\r\n`  
 
 - [ ] **Testes e Robustez**  
   - [ ] Escrever scripts Bash em `tests/` para:  
-    - [ ] Autenticação completa (PASS+NICK+USER)  
+    - [x] Autenticação completa (PASS+NICK+USER)  
     - [ ] Fragmentação de linha (`echo -n "PRIV"; sleep 1; echo "MSG\r\n"`)  
     - [ ] Múltiplos clientes simultâneos (loops `nc`)  
   - [ ] Testar logs de erro e comportamentos inválidos (`NICK !nv@l!d\r\n`)  
