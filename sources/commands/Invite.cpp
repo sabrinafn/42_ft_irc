@@ -34,7 +34,7 @@ void Commands::handleInvite(Client &client, Server &server, const IRCMessage &ms
     /// ver a diferença dos erros de nao achar o nick do destido e nao achar o nick no servidor
     // 4. Se canal for +i, só operador pode convidar
     if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isOperator(&client)) {
-        client.sendReply(ERR_CHANOPRISNEEDED(client.getNickname(), channelName));
+        client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName));
         return;
     }
 

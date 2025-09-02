@@ -159,6 +159,11 @@ bool Channel::isOperator(Client* client) const {
     return std::find(ops.begin(), ops.end(), client) != ops.end();
 }
 
+/* GETTER FOR OPERATORS */
+std::vector<Client*> Channel::getOperators() const {
+    return ops;
+}
+
 // Convites
 
 /* INVITE A CLIENT */
