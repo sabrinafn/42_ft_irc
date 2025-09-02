@@ -1,128 +1,72 @@
-void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg) {
-    if (msg.params.empty()) {
-        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+#include "../includes/ft_irc.hpp"
+
+
+void handleMode(Client &client, Server &server, const IRCMessage &msg) {
+    if (msg.params.empty()) return;
+
+    std::string channelName = msg.params[0];
+
+    if (!server.hasChannel(channelName)) {
+        client.sendReply(ERR_NOSUCHCHANNEL(channelName));
         return;
     }
 
-    std::string target = msg.params[0];
+    Channel *channel = server.get_channels()[channelName];
 
-    // Checar se é canal ou usuário
-    if (!target.empty() && target[0] == '#') {
-        // ----- MODE em Canal -----
-        std::map<std::string, Channel*> all_channels = server.get_channels();
-        if (all_channels.find(target) == all_channels.end()) {
-            client.sendReply(ERR_NOSUCHCHANNEL(target));
-            return;
-        }
-        Channel* channel = all_channels[target];
+    if (msg.params.size() == 1) {
+        // Apenas retornar modos do canal
+        // client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModes(), channel->getModeParams()));
+        return;
+    }
 
-        // Sem modos → retornar os modos atuais
-        if (msg.params.size() < 2) {
-            client.sendReply(RPL_CHANNELMODEIS(channel->getName(), channel->getModesAsString()));
-            return;
-        }
+    if (!channel->isOperator(&client)) {
+        // client.sendReply(ERR_CHANOPRIVSNEEDED(client.get_nickname(), channelName));
+        return;
+    }
 
-        // Precisa ser operador
-        if (!channel->isOperator(&client)) {
-            client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), target));
-            return;
-        }
+    std::string mode = msg.params[1];
 
-        std::string modes = msg.params[1];
-        bool adding = true;
-        size_t paramIndex = 2;
+    // Validação do primeiro caractere: deve ser '+' ou '-'
+    if (mode.empty() || (mode[0] != '+' && mode[0] != '-')) {
+        client.sendReply(ERR_UNKNOWNMODE(mode)); // opcional: envia erro
+        return;
+    }
 
-        for (size_t i = 0; i < modes.size(); i++) {
-            char flag = modes[i];
-            if (flag == '+') { adding = true; continue; }
-            if (flag == '-') { adding = false; continue; }
+    std::string arg  = (msg.params.size() > 2) ? msg.params[2] : "";
+    bool add = (mode[0] == '+');
 
-            switch (flag) {
-                case 'i':
-                    channel->setMode(Channel::INVITE_ONLY, adding);
-                    break;
-                case 't':
-                    channel->setMode(Channel::TOPIC_RESTRICTED, adding);
-                    break;
-                case 'k':
-                    if (adding) {
-                        if (paramIndex >= msg.params.size()) {
-                            client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-                            return;
-                        }
-                        channel->setKey(msg.params[paramIndex++]);
-                    } else {
-                        channel->clearKey();
-                    }
-                    break;
-                case 'l':
-                    if (adding) {
-                        if (paramIndex >= msg.params.size()) {
-                            client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-                            return;
-                        }
-                        int limit = atoi(msg.params[paramIndex++].c_str());
-                        channel->setLimit(limit);
-                    } else {
-                        channel->clearLimit();
-                    }
-                    break;
-                case 'o': {
-                    if (paramIndex >= msg.params.size()) {
-                        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-                        return;
-                    }
-                    std::string nick = msg.params[paramIndex++];
-                    Client* targetClient = server.serverGetClientByNick(nick);
-                    if (targetClient && channel->isMember(targetClient)) {
-                        if (adding) channel->addOperator(targetClient);
-                        else channel->removeOperator(targetClient);
-                    }
-                    break;
+    for (size_t i = 1; i < mode.size(); ++i) {
+        switch (mode[i]) {
+            case 'i':
+                if (add) channel->addMode(Channel::INVITE_ONLY);
+                else channel->removeMode(Channel::INVITE_ONLY);
+                break;
+            case 't':
+                if (add) channel->addMode(Channel::TOPIC_RESTRICTED);
+                else channel->removeMode(Channel::TOPIC_RESTRICTED);
+                break;
+            case 'k':
+                if (add) {
+                    channel->addMode(Channel::KEY_REQUIRED);
+                    channel->setKey(arg);
+                } else {
+                    channel->removeMode(Channel::KEY_REQUIRED);
+                    channel->setKey(""); // remove a senha
                 }
-                default:
-                    client.sendReply(ERR_UNKNOWNMODE(flag, target));
-            }
-        }
-    } else {
-        // ----- MODE em Usuário -----
-        Client* targetClient = server.serverGetClientByNick(target);
-        if (!targetClient) {
-            client.sendReply(ERR_NOSUCHNICK(target));
-            return;
-        }
-
-        // Sem modos → retornar os modos atuais
-        if (msg.params.size() < 2) {
-            client.sendReply(RPL_UMODEIS(targetClient->getModesAsString()));
-            return;
-        }
-
-        // Só o próprio usuário pode mudar seus modos (ou operador global se você implementar)
-        if (&client != targetClient) {
-            client.sendReply(ERR_USERSDONTMATCH());
-            return;
-        }
-
-        std::string modes = msg.params[1];
-        bool adding = true;
-
-        for (size_t i = 0; i < modes.size(); i++) {
-            char flag = modes[i];
-            if (flag == '+') { adding = true; continue; }
-            if (flag == '-') { adding = false; continue; }
-
-            switch (flag) {
-                case 'i': // invisível
-                    targetClient->setMode('i', adding);
-                    break;
-                case 'o': // operador (normalmente só server pode dar)
-                    if (adding)
-                        client.sendReply(ERR_NOPRIVILEGES(client.getNickname()));
-                    break;
-                default:
-                    client.sendReply(ERR_UMODEUNKNOWNFLAG());
-            }
+                break;
+            case 'l':
+                if (add) {
+                    channel->addMode(Channel::LIMIT_SET);
+                    if (!arg.empty())
+                        channel->setLimit(std::atoi(arg.c_str()));
+                } else {
+                    channel->removeMode(Channel::LIMIT_SET);
+                    channel->removeLimit(); // remove o limite
+                }
+                break;
+            default:
+                // caractere de modo desconhecido, pode ignorar ou enviar erro
+                break;
         }
     }
 }

@@ -75,11 +75,17 @@ void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &m
     // std::string trailing;    // Optional parameter (after :)
     std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
 
+    if(msg.params.empty() || msg.trailing.empty())
+    {
+        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+        return;
+    }
     if (msg.params[0][0] == '#')
         if(sendMsgToChannel(client, server, msg))
-            return;
-    if (sendMsgToClient(client, server, msg))
         return;
+    else 
+        if (sendMsgToClient(client, server, msg))
+            return;
 
     return;
 }

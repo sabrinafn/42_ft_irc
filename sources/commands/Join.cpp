@@ -7,7 +7,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
               << std::endl;
 
     // verifica se tem parametros depois do JOIN
-    if (msg.params.empty()) {
+    if (msg.params.empty() ) {
         std::cout << "DEBUG: JOIN sem parametros" << std::endl;
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;

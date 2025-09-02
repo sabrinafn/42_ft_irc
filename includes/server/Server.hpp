@@ -69,6 +69,7 @@ class Server {
     std::map<std::string, Channel *> &get_channels();
     int                               getPongTimeout(void) const;
     Client                           *serverGetClientByNick(const std::string &nick);
+    bool Server::hasChannel(const std::string& channel_name);
 
     /* CREATE SOCKET */
     void createSocket(void);
