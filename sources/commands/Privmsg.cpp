@@ -83,9 +83,8 @@ void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &m
     if (msg.params[0][0] == '#')
         if(sendMsgToChannel(client, server, msg))
         return;
-    else 
-        if (sendMsgToClient(client, server, msg))
-            return;
+    if (sendMsgToClient(client, server, msg))
+        return;
 
     return;
 }
