@@ -1,6 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-//TOPIC <canal> [<tópico>]
+// TOPIC <canal> [<tópico>]
 /* HANDLETOPIC */
 void Commands::handleTopic(Client &client, Server &server, const IRCMessage &msg) {
     if (msg.params.empty() || msg.params.size() < 2) {

@@ -351,7 +351,7 @@ void Server::handleClientMessage(Client &client, const std::string &msg) {
     }
 }
 
-bool Server::hasChannel(const std::string& channel_name) {
+bool Server::hasChannel(const std::string &channel_name) {
     if (channels.find(channel_name) == channels.end())
         return false;
     return true;

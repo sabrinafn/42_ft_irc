@@ -126,14 +126,14 @@ std::string RPL_INVITING(const std::string& targetNick, const std::string& nickn
 std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname,
                        const std::string& channel);
 
-//472
+// 472
 std::string ERR_UNKNOWNMODE(const std::string& mode);
 
-//482
+// 482
 std::string ERR_CHANOPRIVSNEEDED(const std::string& user, const std::string& channel);
 
 std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mode,
-                                     const std::string& modeParams);
+                              const std::string& modeParams);
 // PRIVMSG
 std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
                         const std::string& message);

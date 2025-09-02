@@ -27,7 +27,7 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
     ///// verificar o erro 442 e 441 em todos os comandos
     // Para cada canal
     for (size_t i = 0; i < _channels.size(); ++i) {
-        std::string                     channelName  = _channels[i];
+        std::string channelName = _channels[i];
         std::cout << "DEBUG: nome do canal " << channelName << std::endl;
         std::map<std::string, Channel*> all_channels = server.get_channels();
 
@@ -39,14 +39,14 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
 
         Channel* channel = all_channels[channelName];
         if (!channel->isMember(&client)) {
-           client.sendReply(ERR_NOTONCHANNEL(channelName));
+            client.sendReply(ERR_NOTONCHANNEL(channelName));
             continue;
         }
 
-    //    if (!channel->isOperator(&client)) {
-       //     client.sendReply(ERR_CHANOPRISNEEDED(client.getNickname(), channelName));
-      //      continue;
-      //  }
+        //    if (!channel->isOperator(&client)) {
+        //     client.sendReply(ERR_CHANOPRISNEEDED(client.getNickname(), channelName));
+        //      continue;
+        //  }
 
         // Para cada alvo
         for (size_t ti = 0; ti < targets.size(); ++ti) {

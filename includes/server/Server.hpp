@@ -67,7 +67,7 @@ class Server {
     const std::vector<Client *>      &getClients() const;
     std::map<std::string, Channel *> &get_channels();
     int                               getPongTimeout(void) const;
-    bool hasChannel(const std::string& channel_name);
+    bool                              hasChannel(const std::string &channel_name);
     Client                           *getClientByNick(const std::string &nick);
     size_t                            getPollsetIdxByFd(int fd);
 

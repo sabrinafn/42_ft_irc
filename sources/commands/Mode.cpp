@@ -1,8 +1,8 @@
 #include "../includes/ft_irc.hpp"
 
-
 void handleMode(Client &client, Server &server, const IRCMessage &msg) {
-    if (msg.params.empty()) return;
+    if (msg.params.empty())
+        return;
 
     std::string channelName = msg.params[0];
 
@@ -15,7 +15,8 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
 
     if (msg.params.size() == 1) {
         // Apenas retornar modos do canal
-       // client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), channel->getModeParams()));
+        // client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(),
+        // channel->getModeParams()));
         return;
     }
 
@@ -31,21 +32,25 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
     }
 
     size_t argIndex = 2; // índice inicial para argumentos extras
-    bool add = (mode[0] == '+');
+    bool   add      = (mode[0] == '+');
 
     for (size_t i = 1; i < mode.size(); ++i) {
-        std::string arg = (argIndex < msg.params.size()) ? msg.params[argIndex++] : "";
+        std::string arg        = (argIndex < msg.params.size()) ? msg.params[argIndex++] : "";
         std::string modeChange = (add ? "+" : "-");
         modeChange += mode[i];
 
         switch (mode[i]) {
             case 'i':
-                if (add) channel->addMode(Channel::INVITE_ONLY);
-                else channel->removeMode(Channel::INVITE_ONLY);
+                if (add)
+                    channel->addMode(Channel::INVITE_ONLY);
+                else
+                    channel->removeMode(Channel::INVITE_ONLY);
                 break;
             case 't':
-                if (add) channel->addMode(Channel::TOPIC_RESTRICTED);
-                else channel->removeMode(Channel::TOPIC_RESTRICTED);
+                if (add)
+                    channel->addMode(Channel::TOPIC_RESTRICTED);
+                else
+                    channel->removeMode(Channel::TOPIC_RESTRICTED);
                 break;
             case 'k':
                 if (add) {
@@ -59,19 +64,24 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
             case 'l':
                 if (add) {
                     channel->addMode(Channel::LIMIT_SET);
-                    if (!arg.empty()) channel->setLimit(std::atoi(arg.c_str()));
+                    if (!arg.empty())
+                        channel->setLimit(std::atoi(arg.c_str()));
                 } else {
                     channel->removeMode(Channel::LIMIT_SET);
                     channel->removeLimit();
                 }
                 break;
             case 'o':
-                if (arg.empty()) break;
+                if (arg.empty())
+                    break;
                 {
-                    Client* target = server.serverGetClientByNick(arg);
-                    if (!target) break;
-                    if (add) channel->addOperator(target);
-                    else channel->removeOperator(target);
+                    Client *target = server.serverGetClientByNick(arg);
+                    if (!target)
+                        break;
+                    if (add)
+                        channel->addOperator(target);
+                    else
+                        channel->removeOperator(target);
                 }
                 break;
             default:
@@ -79,8 +89,10 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
         }
 
         // Broadcast da alteração para todos do canal
-        std::string broadcastMsg = ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
-        if (!arg.empty()) broadcastMsg += " " + arg;
+        std::string broadcastMsg =
+            ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
+        if (!arg.empty())
+            broadcastMsg += " " + arg;
         channel->broadcast(broadcastMsg, &client);
     }
 }

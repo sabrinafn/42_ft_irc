@@ -41,8 +41,8 @@ class Commands {
     /* CHECK IF IT IS A VALID KEY */
     bool isValidkey(std::string key);
 
-    bool        sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
-    bool        sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
+    bool sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
+    bool sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
 
    public:
     /* CONSTRUCTOR */
