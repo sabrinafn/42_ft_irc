@@ -229,10 +229,10 @@ feature/<nome>: branches para cada nova feature ou módulo.
   - [x] **PRIVMSG**: destino usuário ou canal; falhar com erro 401/404 conforme necessário  
   - [x] **TOPIC**: se sem parâmetros → mostrar tópico; com parâmetros → somente operadores ou modo `t`  
 
-- [ ] **Comandos de Operador: KICK / INVITE / MODE**  
+- [x] **Comandos de Operador: KICK / INVITE / MODE**  
   - [x] **KICK**: remover membro, notificar canal; checar operador  
   - [x] **INVITE**: adicionar em `invited`, notificar convidado; checar modo `i`  
-  - [ ] **MODE**: alterar flags do canal ou do usuário; parâmetros variáveis  
+  - [x] **MODE**: alterar flags do canal ou do usuário; parâmetros variáveis  
 
 - [x] **Utilitários e Protocol Helpers**  
   - [x] **Logger**: nível `DEBUG`/`INFO`/`ERROR`, console ou arquivo  
