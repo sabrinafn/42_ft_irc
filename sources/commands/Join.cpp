@@ -66,7 +66,6 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             channel->addOperator(&client);
         } else {
             channel = server.get_channels()[name];
-            std::cout << "ERROR: canal ja existe " << name << std::endl;
             logError("Channel already exists: " + name);
         }
 

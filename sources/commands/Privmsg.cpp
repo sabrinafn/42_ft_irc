@@ -58,7 +58,7 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
         server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, message);
+            std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
             serverClients[i]->sendReply(fullMessage);
             return true; // encontrou, não precisa continuar
         }

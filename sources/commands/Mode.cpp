@@ -75,7 +75,7 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
                 if (arg.empty())
                     break;
                 {
-                    Client *target = server.serverGetClientByNick(arg);
+                    Client *target = server.getClientByNick(arg);
                     if (!target)
                         break;
                     if (add)
