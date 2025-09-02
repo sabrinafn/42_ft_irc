@@ -15,27 +15,29 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
 
     if (msg.params.size() == 1) {
         // Apenas retornar modos do canal
-        // client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModes(), channel->getModeParams()));
+       // client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), channel->getModeParams()));
         return;
     }
 
     if (!channel->isOperator(&client)) {
-        // client.sendReply(ERR_CHANOPRIVSNEEDED(client.get_nickname(), channelName));
+        client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName));
         return;
     }
 
     std::string mode = msg.params[1];
-
-    // Validação do primeiro caractere: deve ser '+' ou '-'
     if (mode.empty() || (mode[0] != '+' && mode[0] != '-')) {
-        client.sendReply(ERR_UNKNOWNMODE(mode)); // opcional: envia erro
+        client.sendReply(ERR_UNKNOWNMODE(mode));
         return;
     }
 
-    std::string arg  = (msg.params.size() > 2) ? msg.params[2] : "";
+    size_t argIndex = 2; // índice inicial para argumentos extras
     bool add = (mode[0] == '+');
 
     for (size_t i = 1; i < mode.size(); ++i) {
+        std::string arg = (argIndex < msg.params.size()) ? msg.params[argIndex++] : "";
+        std::string modeChange = (add ? "+" : "-");
+        modeChange += mode[i];
+
         switch (mode[i]) {
             case 'i':
                 if (add) channel->addMode(Channel::INVITE_ONLY);
@@ -51,22 +53,34 @@ void handleMode(Client &client, Server &server, const IRCMessage &msg) {
                     channel->setKey(arg);
                 } else {
                     channel->removeMode(Channel::KEY_REQUIRED);
-                    channel->setKey(""); // remove a senha
+                    channel->setKey("");
                 }
                 break;
             case 'l':
                 if (add) {
                     channel->addMode(Channel::LIMIT_SET);
-                    if (!arg.empty())
-                        channel->setLimit(std::atoi(arg.c_str()));
+                    if (!arg.empty()) channel->setLimit(std::atoi(arg.c_str()));
                 } else {
                     channel->removeMode(Channel::LIMIT_SET);
-                    channel->removeLimit(); // remove o limite
+                    channel->removeLimit();
+                }
+                break;
+            case 'o':
+                if (arg.empty()) break;
+                {
+                    Client* target = server.serverGetClientByNick(arg);
+                    if (!target) break;
+                    if (add) channel->addOperator(target);
+                    else channel->removeOperator(target);
                 }
                 break;
             default:
-                // caractere de modo desconhecido, pode ignorar ou enviar erro
                 break;
         }
+
+        // Broadcast da alteração para todos do canal
+        std::string broadcastMsg = ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
+        if (!arg.empty()) broadcastMsg += " " + arg;
+        channel->broadcast(broadcastMsg, &client);
     }
 }

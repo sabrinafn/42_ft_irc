@@ -214,3 +214,17 @@ std::string RPL_INVITE(const std::string& targetNick, const std::string& nicknam
         << CRLF;
     return oss.str();
 }
+
+std::string ERR_UNKNOWNMODE(const std::string& mode) {
+  return SERVER + " 472 * " + mode + " :is unknown mode char to me" + CRLF;
+}
+
+std::string ERR_CHANOPRIVSNEEDED(const std::string& user, const std::string& channel) {
+  return SERVER + " 482 " + user + " " + channel + " :You're not a channel operator!" + CRLF;
+}
+
+
+std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mode,
+                                     const std::string& modeParams) {
+  return SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
+}
