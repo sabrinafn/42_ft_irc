@@ -28,12 +28,12 @@ class Parser {
 
     struct ParserOptions {
         bool useRFC1459CaseMap;
-        ParserOptions() : useRFC1459CaseMap(true) {}
+        ParserOptions() : useRFC1459CaseMap(true) {
+        }
     };
 
-    static IRCMessage               parseMessage(const std::string& line);
-    static IRCMessage               parseMessage(const std::string& line,
-                                                 const ParserOptions& options);
+    static IRCMessage parseMessage(const std::string& line);
+    static IRCMessage parseMessage(const std::string& line, const ParserOptions& options);
     static std::vector<std::string> extractLines(std::string& buffer);
     static bool                     isValidCommand(const std::string& command);
     static bool                     isValidNickname(const std::string& nickname);
@@ -45,7 +45,7 @@ class Parser {
     static std::string toLowerRFC1459(const std::string& s);
     static std::string foldLower(const std::string& s, bool useRFC1459);
     // case sensitive handler
-    static void         normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& options);
+    static void normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& options);
 };
 
 #endif

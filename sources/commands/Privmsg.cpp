@@ -18,12 +18,15 @@
 
 //     if (msg.params.empty() || msg.params.size() < 2) {
 //         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
-//         std::cout << "ERROR: returning ERR_NEEDMOREPARAMS for msg.params.empty or "
-//                      "msg.params.size() < 2"
-//                   << std::endl;
+//         logError("PRIVMSG -> ERR_NEEDMOREPARAMS: empty or <2 params");
 //         return false;
 //     }
-//     return true;
+//      if (msg.params[1][0] != ':') {
+//          client.sendReply(ERR_NOTEXTTOSEND(msg.command));
+//          logError("PRIVMSG -> ERR_NOTEXTTOSEND: missing ':' before message");
+//          return false;
+//      }
+//      return true;
 // }
 
 bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg) {
@@ -37,8 +40,8 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
             return false;
         }
         /// ver se é necessario fazer a validação de onlyinvited
-       // std::string message  = buildMessageFromParams(msg.params);
-        std::string response = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
+        // std::string message  = buildMessageFromParams(msg.params);
+        std::string response = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
         channel->broadcast(response, &client);
     } else {
         client.sendReply(ERR_NOSUCHCHANNEL(dest));
@@ -49,12 +52,13 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
 }
 
 bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
-    std::string dest    = msg.params[0];
+    std::string dest = msg.params[0];
 
-    const std::vector<Client *> &serverClients = server.getClients(); // pega a lista de clientes do server
+    const std::vector<Client *> &serverClients =
+        server.getClients(); // pega a lista de clientes do server
     for (size_t i = 0; i < serverClients.size(); ++i) {
         if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getNickname(), dest, msg.trailing);
+            std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, message);
             serverClients[i]->sendReply(fullMessage);
             return true; // encontrou, não precisa continuar
         }
@@ -67,22 +71,21 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
 
 void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
     // std::string prefix;      // usually server name or nick!user@host
-    std::cout << "DEBUG: msg.prefix: " + msg.prefix << std::endl;
+    // std::cout << "DEBUG: msg.prefix: " + msg.prefix << std::endl;
     // std::string command;     // Command (NICK, USER, PRIVMSG, etc....)
-    std::cout << "DEBUG: msg.command: " + msg.command << std::endl;
+    // std::cout << "DEBUG: msg.command: " + msg.command << std::endl;
     // std::vector<std::string> params;
-    std::cout << "DEBUG: msg.params[0]: " + msg.params[0] << std::endl;
+    // std::cout << "DEBUG: msg.params[0]: " + msg.params[0] << std::endl;
     // std::string trailing;    // Optional parameter (after :)
-    std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
+    // std::cout << "DEBUG: msg.trailing: " + msg.trailing << std::endl;
 
-    if(msg.params.empty() || msg.trailing.empty())
-    {
+    if (msg.params.empty() || msg.trailing.empty()) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
     if (msg.params[0][0] == '#')
-        if(sendMsgToChannel(client, server, msg))
-        return;
+        if (sendMsgToChannel(client, server, msg))
+            return;
     if (sendMsgToClient(client, server, msg))
         return;
 

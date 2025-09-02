@@ -5,8 +5,10 @@ void Commands::handleQuit(Client &client, Server &server, const IRCMessage &msg)
     std::string quitMessage = msg.trailing.empty() ? "Client Quit" : msg.trailing;
 
     // Send quit message to client (optional)
-    std::cout << "Client [" << client.getFd() << "] (" << client.getNickname()
-              << ") quit: " << quitMessage << std::endl;
+    std::stringstream ss;
+    ss << "Client [" << client.getFd() << "] (" << client.getNickname()
+       << ") quit: " << quitMessage;
+    logInfo(ss.str());
 
     // Find the client in pollset and disconnect
     size_t pollIndex = server.getPollsetIdxByFd(client.getFd());

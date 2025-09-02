@@ -9,8 +9,7 @@ Client::Client(void)
       last_ping_sent(-1),
       state(UNREGISTERED),
       nickname(""),
-      username(""),
-      realname("") {
+      username("") {
 }
 
 /* COPY CONSTRUCTOR */
@@ -113,7 +112,7 @@ const std::string& Client::getRealname() const {
 }
 
 std::string Client::getPrefix() const {
-    std::string prefix = this->nickname + "!" + this->realname + "@";
+    std::string prefix = this->nickname + "!" + this->username + "@";
     return prefix;
 }
 
@@ -127,22 +126,28 @@ void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
     ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
     if (ret == -1) {
-        std::cerr << "ERROR: falha ao enviar para " << nickname << " (fd=" << this->fd << ")"
-                  << std::endl;
+        int               err = errno;
+        std::stringstream ss;
+        ss << "send() failed for client [" << this->fd << "]: " << strerror(err)
+           << " (errno=" << err << ")";
+        logError(ss.str());
     } else {
-        std::cout << "DEBUG: enviado para " << nickname << " (fd=" << this->fd << ")"
-                  << " -> " << msg << std::endl;
+        std::stringstream ss;
+        ss << "Reply message sent to client [" << this->fd << "]"
+           << " : " << msg;
+        logInfo(ss.str());
     }
 }
 
 /* SEND WELCOME MESSAGES AFTER REGISTRATION */
 void Client::sendWelcomeMessages(void) {
-    this->sendReply(RPL_WELCOME(this->nickname, this->realname));
+    this->sendReply(RPL_WELCOME(this->nickname, this->username));
     this->sendReply(RPL_YOURHOST(this->nickname));
-    std::string startup_time = "2001-01-01 01:01:01"; // criar funcao pra pegar data atual
+    std::string startup_time = getStartupTime();
     this->sendReply(RPL_CREATED(this->nickname, startup_time));
     this->sendReply(RPL_MYINFO(this->nickname, "o", "o"));
 
-    std::cout << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!"
-              << std::endl;
+    std::stringstream ss;
+    ss << "Client [" << this->fd << "] (" << this->nickname << ") is now registered!";
+    logInfo(ss.str());
 }

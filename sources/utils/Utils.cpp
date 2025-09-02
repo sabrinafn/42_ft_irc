@@ -1,6 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-std::pair<int, std::string> parsePortAndPassword(char **av) {
+std::pair<int, std::string> parsePortAndPassword(char** av) {
     // validate port from 1024 to 65535
     int               port;
     std::stringstream ss(av[1]);
@@ -40,7 +40,20 @@ std::vector<std::string> split(const std::string& str, char delimiter) {
     std::stringstream        ss(str);
     std::string              item;
     while (std::getline(ss, item, delimiter)) {
-        if (!item.empty()) tokens.push_back(item);
+        if (!item.empty())
+            tokens.push_back(item);
     }
     return tokens;
+}
+
+std::string getStartupTime() {
+    std::time_t t       = std::time(NULL);
+    std::tm*    tm_info = std::localtime(&t);
+
+    std::stringstream ss;
+    ss << std::setfill('0') << std::setw(3) << (tm_info->tm_year + 1900) << "-" << std::setw(2)
+       << (tm_info->tm_mon + 1) << "-" << std::setw(2) << tm_info->tm_mday << " "
+       << std::setw(2) << tm_info->tm_hour << ":" << std::setw(2) << tm_info->tm_min << ":"
+       << std::setw(2) << tm_info->tm_sec;
+    return ss.str();
 }

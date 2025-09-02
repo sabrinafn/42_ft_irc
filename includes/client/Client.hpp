@@ -54,7 +54,7 @@ class Client {
     void setState(ClientState state);
     void setNickname(const std::string& nick);
     void setUsername(const std::string& user);
-    void setRealname(const std::string& real);
+    void setRealname(const std::string& user);
 
     /* GETTERS */
     int                getFd(void) const;

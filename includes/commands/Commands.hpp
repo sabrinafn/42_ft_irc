@@ -43,8 +43,6 @@ class Commands {
 
     bool        sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
     bool        sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
-    bool        sendModeToChannel(Client &client, Server &server, const IRCMessage &msg);
-    bool        sendModeToUser(Client &client, Server &server, const IRCMessage &msg);
 
    public:
     /* CONSTRUCTOR */

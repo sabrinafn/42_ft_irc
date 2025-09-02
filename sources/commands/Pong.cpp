@@ -5,8 +5,9 @@ void Commands::handlePong(Client &client, Server &server, const IRCMessage &msg)
     if (std::time(0) - client.getLastPingSent() < server.getPongTimeout()) {
         client.setPingSent(false);
         client.setLastActivity(std::time(0));
-        std::cout << "PONG received from Client with fd [" << client.getFd() << "]"
-                  << std::endl;
+        std::stringstream ss;
+        ss << "PONG received from Client [" << client.getFd() << "]";
+        logDebug(ss.str());
     }
     client.setLastActivity(std::time(0));
 }
