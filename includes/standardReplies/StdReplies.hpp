@@ -134,4 +134,5 @@ std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mod
 // PRIVMSG
 std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
                         const std::string& message);
+
 #endif

@@ -222,3 +222,6 @@ std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mod
                               const std::string& modeParams) {
     return SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
 }
+
+
+

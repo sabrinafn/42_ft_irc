@@ -1,6 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-void handleMode(Client &client, Server &server, const IRCMessage &msg) {
+void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg) {
     if (msg.params.empty())
         return;
 
