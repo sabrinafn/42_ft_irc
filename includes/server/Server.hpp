@@ -106,6 +106,8 @@ class Server {
 
     /* HANDLER FOR MESSAGE */
     void handleClientMessage(Client &client, const std::string &msg);
+
+    void removeChannel(const std::string &channel_name);
 };
 
 #endif

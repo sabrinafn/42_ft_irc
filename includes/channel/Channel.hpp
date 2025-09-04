@@ -48,6 +48,8 @@ class Channel {
     /* DESTRUCTOR */
     ~Channel(void);
 
+    bool isEmptyChannel() const;
+
     // GETTERS
     std::string              getName() const;        // nome do canal
     std::string              getTopic() const;       // tópico atual

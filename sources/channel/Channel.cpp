@@ -28,6 +28,10 @@ Channel& Channel::operator=(const Channel& other) {
 Channel::~Channel(void) {
 }
 
+bool Channel::isEmptyChannel() const {
+    return members.empty();
+}
+
 /* GETTER FOR NAME */
 std::string Channel::getName() const {
     return name;

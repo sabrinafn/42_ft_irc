@@ -104,6 +104,8 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
                         ssOps2 << " " << ops[i]->getNickname();
                     }
                     logDebug(ssOps2.str());
+                    if(channel->isEmptyChannel())
+                        server.removeChannel(channelName);                 
                 }
             }
         }
