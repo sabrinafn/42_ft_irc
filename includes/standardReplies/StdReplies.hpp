@@ -32,7 +32,7 @@ enum IRCReplyCode {
     ERR_NOSUCHCHANNEL_CODE    = 403,
     ERR_NOTONCHANNEL_CODE     = 442,
     ERR_NOSUCHNICK_CODE       = 406,
-    ERR_CHANOPRISNEEDED_CODE  = 482,
+    ERR_CHANOPRIVSNEEDED_CODE = 482,
     ERR_USERNOTINCHANNEL_CODE = 441,
     RPL_INVITING_CODE         = 341
 };
@@ -113,7 +113,7 @@ std::string ERR_NOTONCHANNEL(const std::string& channel);
 std::string ERR_NOSUCHNICK(const std::string& dest);
 
 // 482
-std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& channel);
+std::string ERR_CHANOPRIVSNEEDED(const std::string& nickname, const std::string& channel);
 
 // 441
 std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname,
@@ -126,7 +126,13 @@ std::string RPL_INVITING(const std::string& targetNick, const std::string& nickn
 std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname,
                        const std::string& channel);
 
+// 472
+std::string ERR_UNKNOWNMODE(const std::string& mode);
+
+std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mode,
+                              const std::string& modeParams);
 // PRIVMSG
 std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
                         const std::string& message);
+
 #endif

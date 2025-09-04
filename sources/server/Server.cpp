@@ -350,3 +350,17 @@ void Server::handleClientMessage(Client &client, const std::string &msg) {
         }
     }
 }
+
+bool Server::hasChannel(const std::string &channel_name) {
+    if (channels.find(channel_name) == channels.end())
+        return false;
+    return true;
+}
+
+void Server::removeChannel(const std::string &channel_name) {
+    std::map<std::string, Channel *>::iterator it = channels.find(channel_name);
+    if (it != channels.end()) {
+        delete it->second;       // Libera memória do Channel
+        channels.erase(it);      // Remove do map
+    }
+}

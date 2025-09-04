@@ -28,6 +28,10 @@ Channel& Channel::operator=(const Channel& other) {
 Channel::~Channel(void) {
 }
 
+bool Channel::isEmptyChannel() const {
+    return members.empty();
+}
+
 /* GETTER FOR NAME */
 std::string Channel::getName() const {
     return name;
@@ -157,6 +161,11 @@ void Channel::removeOperator(Client* client) {
 /* FIND OPERATOR */
 bool Channel::isOperator(Client* client) const {
     return std::find(ops.begin(), ops.end(), client) != ops.end();
+}
+
+/* GETTER FOR OPERATORS */
+std::vector<Client*> Channel::getOperators() const {
+    return ops;
 }
 
 // Convites

@@ -151,8 +151,7 @@ std::string ERR_BADCHANNELKEY(const std::string& username, const std::string& ch
 std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
                         const std::string& message) {
     std::stringstream ss;
-    ss << COLON << prefix << "@"
-       << " PRIVMSG " << other << " :" << message << CRLF;
+    ss << COLON << prefix << " PRIVMSG " << other << " :" << message << CRLF;
     return ss.str();
 }
 
@@ -184,9 +183,9 @@ std::string ERR_NOSUCHNICK(const std::string& dest) {
     return ss.str();
 }
 
-std::string ERR_CHANOPRISNEEDED(const std::string& nickname, const std::string& channel) {
+std::string ERR_CHANOPRIVSNEEDED(const std::string& nickname, const std::string& channel) {
     std::stringstream ss;
-    ss << COLON << SERVER << SPACE << ERR_CHANOPRISNEEDED_CODE << " * " << nickname << SPACE
+    ss << COLON << SERVER << SPACE << ERR_CHANOPRIVSNEEDED_CODE << " * " << nickname << SPACE
        << channel << " :You're not a channel operator" << CRLF;
     return ss.str();
 }
@@ -214,3 +213,15 @@ std::string RPL_INVITE(const std::string& targetNick, const std::string& nicknam
        << CRLF;
     return ss.str();
 }
+
+std::string ERR_UNKNOWNMODE(const std::string& mode) {
+    return SERVER + " 472 * " + mode + " :is unknown mode char to me" + CRLF;
+}
+
+std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mode,
+                              const std::string& modeParams) {
+    return SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
+}
+
+
+

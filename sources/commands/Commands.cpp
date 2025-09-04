@@ -13,7 +13,7 @@ Commands::Commands(void) {
     commandsMap["TOPIC"]   = &Commands::handleTopic;
     commandsMap["KICK"]    = &Commands::handleKick;
     commandsMap["INVITE"]  = &Commands::handleInvite;
-    // commandsMap["MODE"]    = &Commands::handleMode;
+    commandsMap["MODE"]    = &Commands::handleMode;
 }
 
 /* COPY CONSTRUCTOR */

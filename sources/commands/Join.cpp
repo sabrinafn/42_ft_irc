@@ -64,44 +64,45 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             logDebug("Creating channel " + name);
             channel = new Channel(name);
             server.setChannel(channel);
+            // adiciona o usuario como membro do canal
+            channel->addMember(&client);
+            logDebug("Client added to channel " + name);
             channel->addOperator(&client);
+            logDebug("Client added as operator to channel " + name);
         } else {
-            logError("Channel already exists: " + name);
             channel = server.get_channels()[name];
-        }
-
-        // verifica se o usuario ja eh membro desse canal
-        if (channel->isMember(&client)) {
-            logDebug("Client already member of channel " + name);
-            client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
-            continue;
-        }
-
-        // verifica limite de usuarios (+l)
-        if (channel->hasMode(Channel::LIMIT_SET) &&
-            (int)channel->getMembers().size() >= channel->getLimit()) {
-            logDebug("Channel " + name + " reached user limit");
-            client.sendReply(ERR_CHANNELISFULL(channel->getName()));
-            continue;
-        }
-
-        // verifica se o canal eh invite only (+i)
-        if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
-            logDebug("Client not invited to channel " + name);
-            client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
-            continue;
-        }
-
-        // verifica se precisa de senha (+k)
-        if (channel->hasMode(Channel::KEY_REQUIRED)) {
-            if (i >= modes.size() || channel->getKey() != modes[i]) {
-                logDebug("Invalid key for channel " + name);
-                client.sendReply(ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
+            // verifica se o usuario ja eh membro desse canal
+            if (channel->isMember(&client)) {
+                logDebug("Client already member of channel " + name);
+                client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
                 continue;
             }
-        }
 
-        // adiciona o usuario como membro do canal
+            // verifica limite de usuarios (+l), sai daqui. nao entra mais ninguem
+            if (channel->hasMode(Channel::LIMIT_SET) &&
+                (int)channel->getMembers().size() >= channel->getLimit()) {
+                logDebug("Channel " + name + " reached user limit");
+                client.sendReply(ERR_CHANNELISFULL(channel->getName()));
+                return;
+            }
+
+            // verifica se o canal eh invite only (+i) nao foi convidado, sai daqui
+            if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
+                logDebug("Client not invited to channel " + name);
+                client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
+                return;
+            }
+            // verifica se precisa de senha (+k) senha errada? sai daqui
+            if (channel->hasMode(Channel::KEY_REQUIRED)) {
+                if (i >= modes.size() || channel->getKey() != modes[i]) {
+                    logDebug("Invalid key for channel " + name);
+                    client.sendReply(
+                        ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
+                    return;
+                }
+            }
+        }
+        // adiciona o usuario como membro do canal nada de errado com os modes? entao entra
         channel->addMember(&client);
         logDebug("Client added to channel " + name);
 

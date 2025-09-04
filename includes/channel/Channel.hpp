@@ -48,6 +48,8 @@ class Channel {
     /* DESTRUCTOR */
     ~Channel(void);
 
+    bool isEmptyChannel() const;
+
     // GETTERS
     std::string              getName() const;        // nome do canal
     std::string              getTopic() const;       // tópico atual
@@ -75,9 +77,10 @@ class Channel {
     std::vector<Client*> getMembers() const;             // Retorna todos os membros
 
     // Gerenciamento de operadores
-    void addOperator(Client* client);      // Promove membro a operador
-    void removeOperator(Client* client);   // Remove status de operador
-    bool isOperator(Client* client) const; // Verifica se é operador
+    void                 addOperator(Client* client);      // Promove membro a operador
+    void                 removeOperator(Client* client);   // Remove status de operador
+    bool                 isOperator(Client* client) const; // Verifica se é operador
+    std::vector<Client*> getOperators() const;
 
     // Gerenciamento de convites
     void invite(Client* client);          // Convida um cliente para o canal
