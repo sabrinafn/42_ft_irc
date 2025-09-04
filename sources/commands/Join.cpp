@@ -23,7 +23,8 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             std::stringstream ss2;
             ss2 << "Invalid channel name: " << channelName;
             logError(ss2.str());
-            return;
+            client.sendReply(ERR_NOSUCHCHANNEL(channelName));
+            continue;
         }
         if (!channelName.empty())
             channelNames.push_back(channelName);
