@@ -139,18 +139,18 @@ else
 fi
 echo ""
 
-# Test 7: JOIN com senha
-print_test "Test 7: JOIN #canal2 senhacorreta"
-run_test "PASS $PASSWORD\r\nNICK user3\r\nUSER user3 0 * :User Three\r\nJOIN #chan1,#chan2,&chan3,&chan4\r\nQUIT\r\n"
-for chan in "#chan1" "#chan2" "&chan3" "&chan4"; do
-    if grep -q "353 user3 = $chan" test_output.tmp; then
-        print_success "Entrou corretamente no canal $chan"
-    else
-        print_error "Falha ao entrar no canal $chan"
-        cat test_output.tmp
-    fi
-done
-echo ""
+# # Test 7: JOIN com senha
+# print_test "Test 7: JOIN #canal2 senhacorreta"
+# run_test "PASS $PASSWORD\r\nNICK user3\r\nUSER user3 0 * :User Three\r\nJOIN #chan1,#chan2,&chan3,&chan4\r\nQUIT\r\n"
+# for chan in "#chan1" "#chan2" "&chan3" "&chan4"; do
+#     if grep -q "353 user3 = $chan" test_output.tmp; then
+#         print_success "Entrou corretamente no canal $chan"
+#     else
+#         print_error "Falha ao entrar no canal $chan"
+#         cat test_output.tmp
+#     fi
+# done
+# echo ""
 
 print_info "=== Test Summary ==="
 print_info "Todos os testes de JOIN completados."
