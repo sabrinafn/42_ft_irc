@@ -62,6 +62,10 @@ void Client::setState(ClientState state) {
     this->state = state;
 }
 
+void Client::setIpAddress(const std::string &ip_addr) {
+    this->ip_address = ip_addr;
+}
+
 void Client::setNickname(const std::string& nick) {
     this->nickname = nick;
 }
@@ -99,6 +103,10 @@ ClientState Client::getState() const {
     return this->state;
 }
 
+const std::string& Client::getIpAddress() const {
+    return this->ip_address;
+}
+
 const std::string& Client::getNickname() const {
     return this->nickname;
 }
@@ -112,7 +120,7 @@ const std::string& Client::getRealname() const {
 }
 
 std::string Client::getPrefix() const {
-    std::string prefix = this->nickname + "!" + this->username + "@";
+    std::string prefix = this->nickname + "!" + this->username + "@" + this->ip_address;
     return prefix;
 }
 

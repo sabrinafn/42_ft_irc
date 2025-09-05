@@ -206,10 +206,11 @@ void Server::connectClient(void) {
     }
     this->setNonBlocking(client_fd);
     this->pollset.add(client_fd);
-
+    
     Client *client = new Client();
     client->setFd(client_fd);
     client->setLastActivity(std::time(0));
+    client->setIpAddress(std::string(inet_ntoa(client_addr.sin_addr)));
     this->clients.push_back(client);
 }
 
