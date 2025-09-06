@@ -267,8 +267,13 @@ void Server::receiveData(size_t &index) {
         if (buf.empty() || buffer[0] == '\0')
         return;
         this->handleClientMessage(*client, buf);
-        client->setLastActivity(std::time(0));
-        client->setPingSent(false);
+        
+        // Check if client still exists after handling message (might have been deleted by QUIT)
+        client = getClientByFd(current.fd);
+        if (client) {
+            client->setLastActivity(std::time(0));
+            client->setPingSent(false);
+        }
     }
 }
 
