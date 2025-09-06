@@ -58,59 +58,61 @@ class Server {
     ~Server(void);
 
     /* SETTERS */
-    void setChannel(Channel *new_channel);
-
+    
     /* GETTERS */
     int                               getPortNumber(void) const;
     std::string                       getServerPassword(void) const;
     Client                           *getClientByFd(int fd_to_find);
     const std::vector<Client *>      &getClients() const;
-    std::map<std::string, Channel *> &get_channels();
     int                               getPongTimeout(void) const;
-    bool                              hasChannel(const std::string &channel_name);
     Client                           *getClientByNick(const std::string &nick);
     size_t                            getPollsetIdxByFd(int fd);
-
+    
     /* CREATE SOCKET */
     void createSocket(void);
-
+    
     /* INIT SERVER */
     void initServer(void);
-
+    
     /* MONITORING FOR ACTIVITY ON FDS */
     void monitorConnections(void);
-
+    
     /* SET SOCKETS AS NON BLOCKING */
     void setNonBlocking(int socket);
-
+    
     /* ACCEPT A NEW CLIENT */
     void connectClient(void);
-
+    
     /* RECEIVE DATA FROM REGISTERED CLIENT */
     void receiveData(size_t &index);
-
+    
     /* CLEAR RESOURCES */
     void clearServer(void);
-
+    
     /* DISCONNECT CLIENT */
     void disconnectClient(size_t index);
-
+    
     /* THROW + SYSTEM ERROR MESSAGE */
     void throwSystemError(const std::string &msg);
-
+    
     /* SIGNAL HANDLER FUNCTION */
     static void signalHandler(int sig);
-
+    
     /* VERIFY CLIENTS ACTIVE TIME */
     void handleInactiveClients(void);
     void sendPing(Client* client, time_t now);
     bool isClientTimedOut(Client* client, time_t now);
     bool isPongTimeout(Client* client, time_t now);
-
+    void removeTimedOutClient(Client *client);
+    
     /* HANDLER FOR MESSAGE */
     void handleClientMessage(Client &client, const std::string &msg);
-
-    void removeChannel(const std::string &channel_name);
+    
+    /* CHANNEL HANDLER */
+    void    removeChannel(const std::string &channel_name);
+    bool    hasChannel(const std::string &channel_name);
+    std::map<std::string, Channel *> &get_channels();
+    void setChannel(Channel *new_channel);
 };
 
 #endif

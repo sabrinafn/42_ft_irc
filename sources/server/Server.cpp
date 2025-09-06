@@ -20,8 +20,8 @@ Server::Server(int port, const std::string &password)
       pollset(),
       clients(),
       channels(),
-      timeout_seconds(300),
-      pong_timeout(20) {
+      timeout_seconds(30),
+      pong_timeout(30) {
     std::stringstream ss;
     ss << "Server starting on port " << this->port << " with password '" << this->password
        << "'";
@@ -58,9 +58,6 @@ Server::~Server(void) {
 }
 
 /* SETTERS*/
-void Server::setChannel(Channel *new_channel) {
-    channels[new_channel->getName()] = new_channel;
-}
 
 /* GETTERS */
 int Server::getPortNumber(void) const {
@@ -86,7 +83,7 @@ int Server::getPongTimeout(void) const {
 Client *Server::getClientByNick(const std::string &nick) {
     for (size_t i = 0; i < clients.size(); ++i) {
         if (clients[i]->getNickname() == nick)
-            return clients[i];
+        return clients[i];
     }
     return NULL;
 }
@@ -94,7 +91,7 @@ Client *Server::getClientByNick(const std::string &nick) {
 size_t Server::getPollsetIdxByFd(int fd) {
     for (size_t i = 0; i < pollset.getPollfds().size(); i++) {
         if (pollset.getPollfds()[i].fd == fd)
-            return i;
+        return i;
     }
     return -1;
 }
@@ -102,7 +99,7 @@ size_t Server::getPollsetIdxByFd(int fd) {
 Client *Server::getClientByFd(int fd_to_find) {
     for (size_t i = 0; i < clients.size(); ++i) {
         if (clients[i]->getFd() == fd_to_find)
-            return clients[i];
+        return clients[i];
     }
     return NULL;
 }
@@ -121,31 +118,31 @@ void Server::createSocket(void) {
     hint.sin_family      = AF_INET;           // IPV4
     hint.sin_port        = htons(this->port); // convert number to network byte order
     hint.sin_addr.s_addr = INADDR_ANY;        // set the address to any local machine address
-
+    
     // create socket
     logInfo("Creating server socket...");
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd == -1)
-        throwSystemError("socket");
-
+    throwSystemError("socket");
+    
     // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
     if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-        throwSystemError("setsockopt");
-
+    throwSystemError("setsockopt");
+    
     // Setar O_NONBLOCK com fcntl()
     this->setNonBlocking(this->socket_fd);
-
+    
     // bind socket to a IP/port
     logInfo("Binding server socket to ip address");
     if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1)
-        throwSystemError("bind");
-
+    throwSystemError("bind");
+    
     // mark socket to start listening
     logInfo("Marking socket to start listening");
     if (listen(this->socket_fd, SOMAXCONN) == -1)
-        throwSystemError("listen");
-
+    throwSystemError("listen");
+    
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
     this->pollset.add(this->socket_fd);
 }
@@ -153,15 +150,15 @@ void Server::createSocket(void) {
 /* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     if (this->pollset.poll() == -1 && !Server::signals)
-        throwSystemError("poll");
-
+    throwSystemError("poll");
+    
     for (size_t i = 0; i < pollset.getSize(); i++) {
         struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
             if (current.fd == this->socket_fd) {
                 std::stringstream ss;
                 ss << "Server listening socket [" << current.fd
-                   << "] is ready to accept a new client";
+                << "] is ready to accept a new client";
                 logInfo(ss.str());
                 this->connectClient(); // accept a new client
             } else {
@@ -183,13 +180,13 @@ void Server::setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0);
     if (flags == -1) {
         if (socket != this->socket_fd)
-            close(socket);
+        close(socket);
         throwSystemError("fcntl");
     }
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) == -1) {
         if (socket != this->socket_fd)
-            close(socket);
+        close(socket);
         throwSystemError("fcntl");
     }
 }
@@ -238,7 +235,7 @@ void Server::receiveData(size_t &index) {
         }
         std::string buf = buffer;
         if (buf.empty() || buffer[0] == '\0')
-            return;
+        return;
         this->handleClientMessage(*client, buf);
         client->setLastActivity(std::time(0));
         client->setPingSent(false);
@@ -291,31 +288,23 @@ void Server::signalHandler(int sig) {
 void Server::handleInactiveClients(void) {
     std::vector<Client *>::iterator it  = this->clients.begin();
     time_t                          now = std::time(0);
-
+    
     while (it != this->clients.end()) {
         Client* client = *it;
-
+        
         if (isClientTimedOut(client, now)) {
-            if (!(*it)->pingSent()) {
+            if (!client->pingSent()) {
                 sendPing(client, now);
                 ++it;
             } else if (isPongTimeout(client, now)) {
-                std::stringstream ss;
-                ss << "Client with fd [" << (*it)->getFd() << "] timeouted (no PONG received)";
-                logInfo(ss.str());
-
-                int poll_fd_idx = this->getPollsetIdxByFd((*it)->getFd());
-                if (poll_fd_idx != -1) {
-                    struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
-                    this->pollset.remove(poll_fd_idx);
-                    close(current.fd);
-                }
-                delete *it;
+                removeTimedOutClient(client);
                 it = this->clients.erase(it);
-            } else { // if ping was sent an timeout for pong is still not over
+            }
+            else { // ping sent and pong timeout is not over
                 ++it;
             }
-        } else { // if client is still active
+        }
+        else { // if client is still active
             ++it;
         }
     }
@@ -337,20 +326,34 @@ void Server::sendPing(Client* client, time_t now) {
     client->setPingSent(true);
     client->setLastPingSent(now);
     std::stringstream ss2;
-    ss2 << "Sent PING to Client with fd [" << (*it)->getFd() << "]";
+    ss2 << "Sent PING to Client with fd [" << client->getFd() << "]";
     logDebug(ss2.str());
+}
+
+void Server::removeTimedOutClient(Client *client) {
+    std::stringstream ss;
+    ss << "Client with fd [" << client->getFd() << "] timeouted (no PONG received)";
+    logInfo(ss.str());
+    
+    int poll_fd_idx = this->getPollsetIdxByFd(client->getFd());
+    if (poll_fd_idx != -1) {
+        struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
+        this->pollset.remove(poll_fd_idx);
+        close(current.fd);
+    }
+    delete client;
 }
 
 /* HANDLER FOR MESSAGE */
 void Server::handleClientMessage(Client &client, const std::string &msg) {
     client.appendData(msg);
     Commands commands;
-
+    
     std::string              buffer = client.getData();
     std::vector<std::string> lines  = Parser::extractLines(buffer);
-
+    
     client.setData(buffer);
-
+    
     for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
         std::stringstream ss;
         ss << "Processing message from client [" << client.getFd() << "]: " << *it;
@@ -362,16 +365,21 @@ void Server::handleClientMessage(Client &client, const std::string &msg) {
     }
 }
 
+/* CHANNEL HANDLER METHODS */
+void Server::setChannel(Channel *new_channel) {
+    channels[new_channel->getName()] = new_channel;
+}
+
 bool Server::hasChannel(const std::string &channel_name) {
     if (channels.find(channel_name) == channels.end())
-        return false;
+    return false;
     return true;
 }
 
 void Server::removeChannel(const std::string &channel_name) {
     std::map<std::string, Channel *>::iterator it = channels.find(channel_name);
     if (it != channels.end()) {
-        delete it->second;       // Libera memória do Channel
-        channels.erase(it);      // Remove do map
+        delete it->second;
+        channels.erase(it);
     }
 }
