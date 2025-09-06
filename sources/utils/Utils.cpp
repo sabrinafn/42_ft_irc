@@ -15,9 +15,9 @@ std::pair<int, std::string> parsePortAndPassword(char** av) {
     // validate password
     std::string password = av[2];
     if (password.find(" ") != std::string::npos ||
-        (password.length() < 8 || password.length() > 16)) {
+        (password.length() < 3 || password.length() > 10)) {
         throw std::invalid_argument(
-            "Password must be 8-16 characters long and contain no spaces.");
+            "Password must be 3-10 characters long and contain no spaces.");
     }
 
     std::pair<int, std::string> pair;

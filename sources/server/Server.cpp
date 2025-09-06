@@ -20,8 +20,8 @@ Server::Server(int port, const std::string &password)
       pollset(),
       clients(),
       channels(),
-      timeout_seconds(30),
-      pong_timeout(30) {
+      timeout_seconds(300),
+      pong_timeout(20) {
     std::stringstream ss;
     ss << "Server starting on port " << this->port << " with password '" << this->password
        << "'";
@@ -54,10 +54,12 @@ Server::~Server(void) {
     for (size_t i = 0; i < clients.size(); ++i) {
         delete clients[i];
     }
+    for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        delete it->second;
+    }
+    channels.clear();
     clients.clear();
 }
-
-/* SETTERS*/
 
 /* GETTERS */
 int Server::getPortNumber(void) const {

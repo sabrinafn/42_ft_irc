@@ -35,9 +35,14 @@ Commands::~Commands(void) {
 void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
     std::map<std::string, CommandFunc>::iterator it = this->commandsMap.find(msg.command);
     if (it != commandsMap.end()) {
+        if (client.getState() != REGISTERED) {
+            if (it->first != "PASS" && it->first != "NICK" && it->first != "USER") {
+                client.sendReply(ERR_NOTREGISTERED(it->first));
+                return;
+            }
+        }
         CommandFunc func = it->second;
         (this->*func)(client, server, msg);
-
     } else {
         if (client.getState() == REGISTERED) {
             client.sendReply(ERR_UNKNOWNCMD(msg.command));

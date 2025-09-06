@@ -223,5 +223,8 @@ std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mod
     return SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
 }
 
+std::string ERR_NOTREGISTERED(const std::string& command) {
+   return SERVER + "451 " + command + " :You have not registered" + CRLF;
+}
 
 

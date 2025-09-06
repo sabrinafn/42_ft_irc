@@ -34,7 +34,8 @@ enum IRCReplyCode {
     ERR_NOSUCHNICK_CODE       = 406,
     ERR_CHANOPRIVSNEEDED_CODE = 482,
     ERR_USERNOTINCHANNEL_CODE = 441,
-    RPL_INVITING_CODE         = 341
+    RPL_INVITING_CODE         = 341,
+    ERR_NOTREGISTERED_CODE    = 451
 };
 
 // 001
@@ -134,5 +135,8 @@ std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mod
 // PRIVMSG
 std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
                         const std::string& message);
+
+// 451
+std::string ERR_NOTREGISTERED(const std::string& command);
 
 #endif
