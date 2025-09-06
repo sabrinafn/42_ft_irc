@@ -103,6 +103,9 @@ class Server {
 
     /* VERIFY CLIENTS ACTIVE TIME */
     void handleInactiveClients(void);
+    void sendPing(Client* client, time_t now);
+    bool isClientTimedOut(Client* client, time_t now);
+    bool isPongTimeout(Client* client, time_t now);
 
     /* HANDLER FOR MESSAGE */
     void handleClientMessage(Client &client, const std::string &msg);

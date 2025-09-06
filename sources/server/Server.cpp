@@ -293,23 +293,13 @@ void Server::handleInactiveClients(void) {
     time_t                          now = std::time(0);
 
     while (it != this->clients.end()) {
-        time_t lastActivity = (*it)->getLastActivity();
+        Client* client = *it;
 
-        if (now - lastActivity >= this->timeout_seconds) {
+        if (isClientTimedOut(client, now)) {
             if (!(*it)->pingSent()) {
-                std::stringstream ss;
-                ss << now;
-                std::string msg = "PING :" + ss.str() + "\r\n";
-                send((*it)->getFd(), msg.c_str(), msg.length(), 0);
-
-                (*it)->setPingSent(true);
-                (*it)->setLastPingSent(now);
-
-                std::stringstream ss2;
-                ss2 << "Sent PING to Client with fd [" << (*it)->getFd() << "]";
-                logDebug(ss2.str());
+                sendPing(client, now);
                 ++it;
-            } else if (now - (*it)->getLastPingSent() >= this->pong_timeout) {
+            } else if (isPongTimeout(client, now)) {
                 std::stringstream ss;
                 ss << "Client with fd [" << (*it)->getFd() << "] timeouted (no PONG received)";
                 logInfo(ss.str());
@@ -329,6 +319,26 @@ void Server::handleInactiveClients(void) {
             ++it;
         }
     }
+}
+
+bool Server::isClientTimedOut(Client* client, time_t now) {
+    return (now - client->getLastActivity() >= timeout_seconds);
+}
+
+bool Server::isPongTimeout(Client* client, time_t now) {
+    return (now - client->getLastPingSent() >= pong_timeout);
+}
+
+void Server::sendPing(Client* client, time_t now) {
+    std::stringstream ss;
+    ss << now;
+    std::string msg = "PING :" + ss.str() + "\r\n";
+    send(client->getFd(), msg.c_str(), msg.length(), 0);
+    client->setPingSent(true);
+    client->setLastPingSent(now);
+    std::stringstream ss2;
+    ss2 << "Sent PING to Client with fd [" << (*it)->getFd() << "]";
+    logDebug(ss2.str());
 }
 
 /* HANDLER FOR MESSAGE */
