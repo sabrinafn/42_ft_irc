@@ -3,15 +3,7 @@
 bool Server::signals = false;
 
 /* CONSTRUCTORS */
-Server::Server(void)
-    : port(-1),
-      socket_fd(-1),
-      password(""),
-      pollset(),
-      clients(),
-      timeout_seconds(300),
-      pong_timeout(20) {
-}
+Server::Server(void) {}
 
 Server::Server(int port, const std::string &password)
     : port(port),
@@ -35,23 +27,16 @@ Server::Server(const Server &other) {
 
 /* OPERATORS */
 Server &Server::operator=(const Server &other) {
-    if (this != &other) {
-        this->port            = other.port;
-        this->socket_fd       = other.socket_fd;
-        this->password        = other.password;
-        this->pollset         = other.pollset;
-        this->clients         = other.clients;
-        this->channels        = other.channels;
-        this->signals         = other.signals;
-        this->timeout_seconds = other.timeout_seconds;
-        this->pong_timeout    = other.pong_timeout;
-    }
+    (void)other;
     return *this;
 }
 
 /* DESTRUCTOR */
 Server::~Server(void) {
     for (size_t i = 0; i < clients.size(); ++i) {
+        Client *client = clients[i];
+        client->sendReply(ERR_SERVERSHUTDOWN(client->getNickname()));
+        close(clients[i]->getFd());
         delete clients[i];
     }
     for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
@@ -261,25 +246,9 @@ void Server::disconnectClient(size_t index) {
     close(current.fd);
 }
 
-/* CLEAR RESOURCES */
-void Server::clearServer(void) {
-    for (size_t i = 0; i < clients.size(); ++i) {
-        Client *client = clients[i];
-        client->sendReply(ERR_SERVERSHUTDOWN(client->getNickname()));
-        close(clients[i]->getFd());
-        delete clients[i];
-    }
-    for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
-        delete it->second;
-    }
-    channels.clear();
-    clients.clear();
-    this->pollset.clear();
-}
-
 /* THROW + SYSTEM ERROR MESSAGE */
 void Server::throwSystemError(const std::string &msg) {
-    this->clearServer();
+    //this->clearServer();
     int err = errno; // similar to perror(); returns the same error
     throw std::runtime_error(msg + ": " + strerror(err));
 }
