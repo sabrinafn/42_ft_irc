@@ -139,4 +139,6 @@ std::string RPL_PRIVMSG(const std::string& prefix, const std::string& other,
 // 451
 std::string ERR_NOTREGISTERED(const std::string& command);
 
+std::string ERR_SERVERSHUTDOWN(const std::string& nickname);
+
 #endif

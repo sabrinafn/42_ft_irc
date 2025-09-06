@@ -58,8 +58,6 @@ class Server {
     /* DESTRUCTOR */
     ~Server(void);
 
-    /* SETTERS */
-    
     /* GETTERS */
     int                               getPortNumber(void) const;
     std::string                       getServerPassword(void) const;
@@ -87,7 +85,6 @@ class Server {
     
     /* RECEIVE DATA FROM REGISTERED CLIENT */
     void receiveData(size_t &index);
-    
     
     /* DISCONNECT CLIENT */
     void disconnectClient(size_t index);

@@ -6,11 +6,10 @@ int main(int ac, char** av) {
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
         return 1;
     }
-    Server server;
     try {
         setupSignals(Server::signalHandler);
         std::pair<int, std::string> pair = parsePortAndPassword(av);
-        server                           = Server(pair.first, pair.second);
+        Server server(pair.first, pair.second);
         server.initServer();
     } catch (const std::exception& e) {
         std::cerr << "Error! " << e.what() << std::endl;
