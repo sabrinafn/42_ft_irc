@@ -215,16 +215,18 @@ std::string RPL_INVITE(const std::string& targetNick, const std::string& nicknam
 }
 
 std::string ERR_UNKNOWNMODE(const std::string& mode) {
-    return SERVER + " 472 * " + mode + " :is unknown mode char to me" + CRLF;
+    return COLON + SERVER + " 472 * " + mode + " :is unknown mode char to me" + CRLF;
 }
 
 std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mode,
                               const std::string& modeParams) {
-    return SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
+    return COLON + SERVER + " 324 * " + channel + " " + mode + " " + modeParams + CRLF;
 }
 
 std::string ERR_NOTREGISTERED(const std::string& command) {
-   return SERVER + "451 " + command + " :You have not registered" + CRLF;
+   return COLON + SERVER + "451 " + command + " :You have not registered" + CRLF;
 }
 
-
+std::string ERR_SERVERSHUTDOWN(const std::string& nickname) {
+   return COLON + SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" + CRLF;
+}

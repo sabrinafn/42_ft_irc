@@ -59,6 +59,7 @@ Server::~Server(void) {
     }
     channels.clear();
     clients.clear();
+    this->pollset.clear();
 }
 
 /* GETTERS */
@@ -263,9 +264,15 @@ void Server::disconnectClient(size_t index) {
 /* CLEAR RESOURCES */
 void Server::clearServer(void) {
     for (size_t i = 0; i < clients.size(); ++i) {
+        Client *client = clients[i];
+        client->sendReply(ERR_SERVERSHUTDOWN(client->getNickname()));
         close(clients[i]->getFd());
         delete clients[i];
     }
+    for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+        delete it->second;
+    }
+    channels.clear();
     clients.clear();
     this->pollset.clear();
 }
