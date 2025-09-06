@@ -4,3 +4,4 @@ build/
 .*
 test_connection_limit.sh
 test_connection_limit_full.sh
+test_connection_limit_full.sh
