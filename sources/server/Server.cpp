@@ -218,15 +218,20 @@ void Server::receiveData(size_t &index) {
     } else if (bytes_read > 0) {
         buffer[bytes_read] = '\0';
         Client *client     = getClientByFd(current.fd);
-        if (!client) {
+        if (!client){
             throw std::invalid_argument("Client fd not found");
         }
         std::string buf = buffer;
         if (buf.empty() || buffer[0] == '\0')
-        return;
+            return;
         this->handleClientMessage(*client, buf);
-        client->setLastActivity(std::time(0));
-        client->setPingSent(false);
+        
+        client = getClientByFd(current.fd);
+        if (client)
+        {
+            client->setLastActivity(std::time(0));
+            client->setPingSent(false);
+        }
     }
 }
 
