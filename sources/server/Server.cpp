@@ -10,7 +10,8 @@ Server::Server(void)
       pollset(),
       clients(),
       timeout_seconds(300),
-      pong_timeout(20) {
+      pong_timeout(20),
+      max_clients(100) {
 }
 
 Server::Server(int port, const std::string &password)
@@ -21,10 +22,11 @@ Server::Server(int port, const std::string &password)
       clients(),
       channels(),
       timeout_seconds(300),
-      pong_timeout(20) {
+      pong_timeout(20),
+      max_clients(100) {
     std::stringstream ss;
     ss << "Server starting on port " << this->port << " with password '" << this->password
-       << "'";
+       << "' (max clients: " << this->max_clients << ")";
     logInfo(ss.str());
 }
 
@@ -45,6 +47,7 @@ Server &Server::operator=(const Server &other) {
         this->signals         = other.signals;
         this->timeout_seconds = other.timeout_seconds;
         this->pong_timeout    = other.pong_timeout;
+        this->max_clients     = other.max_clients;
     }
     return *this;
 }
@@ -52,6 +55,7 @@ Server &Server::operator=(const Server &other) {
 /* DESTRUCTOR */
 Server::~Server(void) {
     for (size_t i = 0; i < clients.size(); ++i) {
+        close(clients[i]->getFd());
         delete clients[i];
     }
     for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
@@ -59,6 +63,7 @@ Server::~Server(void) {
     }
     channels.clear();
     clients.clear();
+    this->pollset.clear();
 }
 
 /* GETTERS */
@@ -80,6 +85,10 @@ std::map<std::string, Channel *> &Server::get_channels() {
 
 int Server::getPongTimeout(void) const {
     return this->pong_timeout;
+}
+
+int Server::getMaxClients(void) const {
+    return this->max_clients;
 }
 
 Client *Server::getClientByNick(const std::string &nick) {
@@ -195,6 +204,12 @@ void Server::setNonBlocking(int socket) {
 
 /* ACCEPT A NEW CLIENT */
 void Server::connectClient(void) {
+
+    if (this->clients.size() >= static_cast<size_t>(this->max_clients)) {
+        logInfo("Server is full, rejecting new connection");
+        return;
+    }
+    
     struct sockaddr_in client_addr;
     socklen_t          client_addr_len = sizeof(client_addr);
     int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -203,6 +218,14 @@ void Server::connectClient(void) {
         logError(std::string("accept: ") + strerror(err));
         return;
     }
+    
+    // Double-check connection limit after accept (race condition protection)
+    if (this->clients.size() >= static_cast<size_t>(this->max_clients)) {
+        logInfo("Server is full, closing new connection");
+        close(client_fd);
+        return;
+    }
+    
     this->setNonBlocking(client_fd);
     this->pollset.add(client_fd);
     
@@ -211,6 +234,11 @@ void Server::connectClient(void) {
     client->setLastActivity(std::time(0));
     client->setIpAddress(std::string(inet_ntoa(client_addr.sin_addr)));
     this->clients.push_back(client);
+    
+    std::stringstream ss;
+    ss << "New client connected [" << client_fd << "] from " << client->getIpAddress() 
+       << " (clients: " << this->clients.size() << "/" << this->max_clients << ")";
+    logInfo(ss.str());
 }
 
 /* RECEIVE DATA FROM REGISTERED CLIENT */
@@ -260,19 +288,9 @@ void Server::disconnectClient(size_t index) {
     close(current.fd);
 }
 
-/* CLEAR RESOURCES */
-void Server::clearServer(void) {
-    for (size_t i = 0; i < clients.size(); ++i) {
-        close(clients[i]->getFd());
-        delete clients[i];
-    }
-    clients.clear();
-    this->pollset.clear();
-}
 
 /* THROW + SYSTEM ERROR MESSAGE */
 void Server::throwSystemError(const std::string &msg) {
-    this->clearServer();
     int err = errno; // similar to perror(); returns the same error
     throw std::runtime_error(msg + ": " + strerror(err));
 }

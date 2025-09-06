@@ -42,6 +42,7 @@ class Server {
     static bool                      signals;
     int                              timeout_seconds;
     int                              pong_timeout;
+    int                              max_clients;
 
    public:
     /* CONSTRUCTOR */
@@ -67,6 +68,7 @@ class Server {
     int                               getPongTimeout(void) const;
     Client                           *getClientByNick(const std::string &nick);
     size_t                            getPollsetIdxByFd(int fd);
+    int                               getMaxClients(void) const;
     
     /* CREATE SOCKET */
     void createSocket(void);
@@ -86,8 +88,6 @@ class Server {
     /* RECEIVE DATA FROM REGISTERED CLIENT */
     void receiveData(size_t &index);
     
-    /* CLEAR RESOURCES */
-    void clearServer(void);
     
     /* DISCONNECT CLIENT */
     void disconnectClient(size_t index);
