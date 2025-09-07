@@ -46,7 +46,7 @@ void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &m
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
-    if (msg.params[0][0] == '#')
+    if (msg.params[0][0] == '#' || msg.params[0][0] == '&')
     {
         if (sendMsgToChannel(client, server, msg))
             return;
