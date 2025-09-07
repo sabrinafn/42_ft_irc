@@ -64,10 +64,6 @@ Server::~Server(void) {
     channels.clear();
     clients.clear();
     this->pollset.clear();
-    if (this->socket_fd != -1){
-        close(this->socket_fd);
-        this->socket_fd = -1;
-    }
 }
 
 /* GETTERS */

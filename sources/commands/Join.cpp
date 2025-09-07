@@ -83,14 +83,14 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
                 (int)channel->getMembers().size() >= channel->getLimit()) {
                 logDebug("Channel " + name + " reached user limit");
                 client.sendReply(ERR_CHANNELISFULL(channel->getName()));
-                return;
+                continue;
             }
 
             // verifica se o canal eh invite only (+i) nao foi convidado, sai daqui
             if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
                 logDebug("Client not invited to channel " + name);
                 client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
-                return;
+                continue;
             }
             // verifica se precisa de senha (+k) senha errada? sai daqui
             if (channel->hasMode(Channel::KEY_REQUIRED)) {
@@ -98,7 +98,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
                     logDebug("Invalid key for channel " + name);
                     client.sendReply(
                         ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
-                    return;
+                    continue;
                 }
             }
         }
