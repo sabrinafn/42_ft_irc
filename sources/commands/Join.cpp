@@ -15,6 +15,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     std::vector<std::string> modes;
     std::stringstream        ss(msg.params[0]);
     std::string              channelName;
+
     while (std::getline(ss, channelName, ',')) {
         std::stringstream ss;
         ss << "check channel name: " << channelName;
@@ -166,7 +167,9 @@ bool Commands::isValidChannelName(const std::string &name) {
 }
 
 bool Commands::isValidkey(std::string key) {
-    for (size_t i = 1; i < key.size(); ++i) {
+    if (key.empty()) return false; // Empty keys are invalid
+    
+    for (size_t i = 0; i < key.size(); ++i) { // Start at index 0
         unsigned char c = key[i];
         if (std::isspace(c)) // espaço
             return false;
