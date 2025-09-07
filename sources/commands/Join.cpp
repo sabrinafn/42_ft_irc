@@ -15,6 +15,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     std::vector<std::string> modes;
     std::stringstream        ss(msg.params[0]);
     std::string              channelName;
+
     while (std::getline(ss, channelName, ',')) {
         std::stringstream ss;
         ss << "check channel name: " << channelName;
@@ -83,14 +84,14 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
                 (int)channel->getMembers().size() >= channel->getLimit()) {
                 logDebug("Channel " + name + " reached user limit");
                 client.sendReply(ERR_CHANNELISFULL(channel->getName()));
-                return;
+                continue;
             }
 
             // verifica se o canal eh invite only (+i) nao foi convidado, sai daqui
             if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
                 logDebug("Client not invited to channel " + name);
                 client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
-                return;
+                continue;
             }
             // verifica se precisa de senha (+k) senha errada? sai daqui
             if (channel->hasMode(Channel::KEY_REQUIRED)) {
@@ -98,7 +99,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
                     logDebug("Invalid key for channel " + name);
                     client.sendReply(
                         ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
-                    return;
+                    continue;
                 }
             }
         }
@@ -166,7 +167,9 @@ bool Commands::isValidChannelName(const std::string &name) {
 }
 
 bool Commands::isValidkey(std::string key) {
-    for (size_t i = 1; i < key.size(); ++i) {
+    if (key.empty()) return false; // Empty keys are invalid
+    
+    for (size_t i = 0; i < key.size(); ++i) { // Start at index 0
         unsigned char c = key[i];
         if (std::isspace(c)) // espaço
             return false;
