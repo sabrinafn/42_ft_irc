@@ -3,7 +3,7 @@
 echo "=== IRC Server Command Testing ==="
 
 PORT=6667
-PASSWORD="testpass123"
+PASSWORD="test123"
 SERVER_PID=""
 
 RED='\033[0;31m'

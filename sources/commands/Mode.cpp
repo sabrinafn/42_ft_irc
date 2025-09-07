@@ -93,6 +93,6 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
             ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
         if (!arg.empty())
             broadcastMsg += " " + arg;
-        channel->broadcast(broadcastMsg, &client);
+        channel->broadcast(broadcastMsg, NULL);
     }
 }
