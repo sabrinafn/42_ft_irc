@@ -57,6 +57,7 @@ class Channel {
     int                      getLimit() const;       // limite de usuários
     std::vector<ChannelMode> getModes() const;       // modos ativos
     std::string              getModesString() const; // modos em string, ex: "+itkl"
+    std::string              getModeParameters() const; // getkey + getlimit
 
     // SETTERS
     void setTopic(const std::string& newTopic); // Define novo tópico

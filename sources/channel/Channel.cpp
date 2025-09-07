@@ -57,6 +57,24 @@ std::vector<Channel::ChannelMode> Channel::getModes() const {
     return modes;
 }
 
+std::string Channel::getModeParameters() const {
+    std::stringstream ss;
+    bool has_prev_param = false;
+
+    if (!this->key.empty()) {
+        ss << this->key;
+        has_prev_param = true;
+    }
+
+    if (this->limit > 0) {
+        if (has_prev_param) {
+            ss << " ";
+        }
+        ss << this->limit;
+    }
+    return ss.str();
+}
+
 /* GETTER FOR MODES STRING */
 std::string Channel::getModesString() const {
     std::string modeStr = "+";
