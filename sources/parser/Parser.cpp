@@ -91,6 +91,10 @@ IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& op
         } else {
             msg.params.push_back(trimmed.substr(pos, param_end - pos));
             pos = param_end + 1;
+            // Skip any additional consecutive spaces
+            while (pos < trimmed.length() && trimmed[pos] == ' ') {
+                pos++;
+            }
         }
     }
 

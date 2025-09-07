@@ -28,6 +28,15 @@ void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg)
         logInfo(ss2.str());
         return;
     }
+    if (msg.params[0].empty())
+    {
+        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+        std::stringstream ss_empty;
+        ss_empty << "Client [" << client.getFd()
+                 << "] provided empty username, sending ERR_NEEDMOREPARAMS";
+        logInfo(ss_empty.str());
+        return;
+    }
     if (!msg.trailing.empty())
         client.setRealname(msg.trailing); // no realname is accepted
     client.setUsername(msg.params[0]);

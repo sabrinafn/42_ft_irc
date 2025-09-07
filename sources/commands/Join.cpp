@@ -47,6 +47,22 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             }
             modes.push_back(key);
         }
+    } else if (!msg.trailing.empty()) {
+        // Handle case where key starts with ':' and goes to trailing
+        std::stringstream ss_keys(msg.trailing);
+        std::string       key;
+        while (std::getline(ss_keys, key, ',')) {
+            std::stringstream ss3;
+            ss3 << "check channel key password (trailing): " << key;
+            logDebug(ss3.str());
+            if (!isValidkey(key)) {
+                std::stringstream ss4;
+                ss4 << "Invalid key password: " << key;
+                logError(ss4.str());
+                return;
+            }
+            modes.push_back(key);
+        }
     }
 
     std::stringstream strs;
