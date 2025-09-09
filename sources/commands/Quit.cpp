@@ -4,7 +4,7 @@
 void Commands::handleQuit(Client &client, Server &server, const IRCMessage &msg) {
     std::string quitMessage = msg.trailing.empty() ? "Client Quit" : msg.trailing;
 
-    // CRITICAL: Remove client from all channels BEFORE disconnecting
+    // Remove client from all channels BEFORE disconnecting
     std::map<std::string, Channel*> &channels = server.get_channels();
     std::vector<std::string> channelsToRemove;
     
@@ -29,15 +29,11 @@ void Commands::handleQuit(Client &client, Server &server, const IRCMessage &msg)
     {
         server.removeChannel(channelsToRemove[i]);
     }
-    // Send quit message to client (optional)
+    // Send quit message to client
     std::stringstream ss;
     ss << "Client [" << client.getFd() << "] (" << client.getNickname()
        << ") quit: " << quitMessage;
     logInfo(ss.str());
 
-    // Find the client in pollset and disconnect
-    size_t pollIndex = server.getPollsetIdxByFd(client.getFd());
-    if (pollIndex != static_cast<size_t>(-1)) {
-        server.disconnectClient(pollIndex);
-    }
+    server.disconnectClient(client.getFd());
 }

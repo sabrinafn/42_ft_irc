@@ -37,12 +37,12 @@ class Server {
     int                              socket_fd;
     std::string                      password;
     Pollset                          pollset;
-    std::vector<Client *>            clients;
+    std::map<int, Client *>          clients;
     std::map<std::string, Channel *> channels;
     static bool                      signals;
     int                              timeout_seconds;
     int                              pong_timeout;
-    int                              max_clients;
+    size_t                           max_clients;
 
    public:
     /* CONSTRUCTOR */
@@ -62,9 +62,9 @@ class Server {
     int                               getPortNumber(void) const;
     std::string                       getServerPassword(void) const;
     Client                           *getClientByFd(int fd_to_find);
-    const std::vector<Client *>      &getClients() const;
-    int                               getPongTimeout(void) const;
     Client                           *getClientByNick(const std::string &nick);
+    const std::map<int, Client *>    &getClients(void) const;
+    int                               getPongTimeout(void) const;
     size_t                            getPollsetIdxByFd(int fd);
     int                               getMaxClients(void) const;
     
@@ -87,7 +87,7 @@ class Server {
     void receiveData(size_t &index);
     
     /* DISCONNECT CLIENT */
-    void disconnectClient(size_t index);
+    void disconnectClient(int client_fd);
     
     /* THROW + SYSTEM ERROR MESSAGE */
     void throwSystemError(const std::string &msg);

@@ -39,9 +39,9 @@ void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg)
 
 /* CHECK IF NICKNAME IS ALREADY IN USE */
 bool Commands::isNicknameInUse(Server &server, const std::string &nickname, int excludeFd) {
-    const std::vector<Client *> &clients = server.getClients();
-    for (size_t i = 0; i < clients.size(); ++i) {
-        if (clients[i]->getFd() != excludeFd && clients[i]->getNickname() == nickname) {
+    const std::map<int, Client *> &clients = server.getClients();
+    for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
+        if (it->first != excludeFd && it->second->getNickname() == nickname) {
             return true;
         }
     }

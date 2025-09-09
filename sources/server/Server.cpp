@@ -35,9 +35,9 @@ Server &Server::operator=(const Server &other) {
 
 /* DESTRUCTOR */
 Server::~Server(void) {
-    for (size_t i = 0; i < clients.size(); ++i) {
-        close(clients[i]->getFd());
-        delete clients[i];
+    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        close(it->second->getFd());
+        delete it->second;
     }
     for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
         delete it->second;
@@ -56,7 +56,7 @@ std::string Server::getServerPassword(void) const {
     return this->password;
 }
 
-const std::vector<Client *> &Server::getClients() const {
+const std::map<int, Client *> &Server::getClients() const {
     return clients;
 }
 
@@ -73,10 +73,17 @@ int Server::getMaxClients(void) const {
 }
 
 Client *Server::getClientByNick(const std::string &nick) {
-    for (size_t i = 0; i < clients.size(); ++i) {
-        if (clients[i]->getNickname() == nick)
-        return clients[i];
+    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+        if (it->second->getNickname() == nick)
+            return it->second;
     }
+    return NULL;
+}
+
+Client *Server::getClientByFd(int fd_to_find) {
+    std::map<int, Client *>::iterator it = clients.find(fd_to_find);
+    if (it != clients.end())
+        return it->second;
     return NULL;
 }
 
@@ -86,14 +93,6 @@ size_t Server::getPollsetIdxByFd(int fd) {
         return i;
     }
     return -1;
-}
-
-Client *Server::getClientByFd(int fd_to_find) {
-    for (size_t i = 0; i < clients.size(); ++i) {
-        if (clients[i]->getFd() == fd_to_find)
-        return clients[i];
-    }
-    return NULL;
 }
 
 /* INIT SERVER */
@@ -160,7 +159,7 @@ void Server::monitorConnections(void) {
                 this->receiveData(i); // receive data
             }
         } else if (current.revents & POLLHUP || current.revents & POLLERR) {
-            this->disconnectClient(i);
+            this->disconnectClient(current.fd);
             --i;
         }
     }
@@ -186,7 +185,7 @@ void Server::setNonBlocking(int socket) {
 /* ACCEPT A NEW CLIENT */
 void Server::connectClient(void) {
 
-    if (this->clients.size() >= static_cast<size_t>(this->max_clients)) {
+    if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, rejecting new connection");
         return;
     }
@@ -201,7 +200,7 @@ void Server::connectClient(void) {
     }
     
     // Double-check connection limit after accept (race condition protection)
-    if (this->clients.size() >= static_cast<size_t>(this->max_clients)) {
+    if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, closing new connection");
         close(client_fd);
         return;
@@ -214,7 +213,7 @@ void Server::connectClient(void) {
     client->setFd(client_fd);
     client->setLastActivity(std::time(0));
     client->setIpAddress(std::string(inet_ntoa(client_addr.sin_addr)));
-    this->clients.push_back(client);
+    this->clients[client_fd] = client;
     
     std::stringstream ss;
     ss << "New client connected [" << client_fd << "] from " << client->getIpAddress() 
@@ -230,12 +229,12 @@ void Server::receiveData(size_t &index) {
     if (bytes_read < 0) {
         int err = errno;
         logError(std::string("recv: ") + strerror(err));
-        this->disconnectClient(index);
+        this->disconnectClient(current.fd);
         --index;
         return;
     } else if (bytes_read == 0) {
         logInfo("client disconnected");
-        this->disconnectClient(index);
+        this->disconnectClient(current.fd);
         --index;
         return;
     } else if (bytes_read > 0) {
@@ -259,19 +258,18 @@ void Server::receiveData(size_t &index) {
 }
 
 /* DISCONNECT CLIENT */
-void Server::disconnectClient(size_t index) {
-    struct pollfd current = this->pollset.getPollFd(index);
-    this->pollset.remove(index);
-    std::vector<Client *>::iterator it = clients.begin();
-    for (size_t i = 0; i < clients.size(); i++) {
-        if ((*it)->getFd() == current.fd) {
-            delete *it;
-            clients.erase(it);
-            break;
-        }
-        it++;
+void Server::disconnectClient(int client_fd) {
+    std::map<int, Client *>::iterator it = clients.find(client_fd);
+    if (it != clients.end()) {
+        delete it->second;
+        clients.erase(it);
     }
-    close(current.fd);
+
+    size_t poll_index = getPollsetIdxByFd(client_fd);
+    if (poll_index != static_cast<size_t>(-1)) {
+        this->pollset.remove(poll_index);
+    }
+    close(client_fd);
 }
 
 
@@ -292,25 +290,23 @@ void Server::signalHandler(int sig) {
 
 /* VERIFY CLIENTS ACTIVE TIME */
 void Server::handleInactiveClients(void) {
-    std::vector<Client *>::iterator it  = this->clients.begin();
-    time_t                          now = std::time(0);
-    
+    time_t now = std::time(0);
+    std::map<int, Client *>::iterator it = this->clients.begin();
+
     while (it != this->clients.end()) {
-        Client* client = *it;
-        
+        Client* client = it->second;
         if (isClientTimedOut(client, now)) {
             if (!client->pingSent()) {
                 sendPing(client, now);
                 ++it;
             } else if (isPongTimeout(client, now)) {
-                removeTimedOutClient(client);
-                it = this->clients.erase(it);
-            }
-            else { // ping sent and pong timeout is not over
+                logInfo("Client timed out and will be removed.");
+                this->disconnectClient(client->getFd());
+                it = this->clients.begin();
+            } else { // PING sent, but PONG timeout is not over
                 ++it;
             }
-        }
-        else { // if client is still active
+        } else { // The client is still active
             ++it;
         }
     }
@@ -334,20 +330,6 @@ void Server::sendPing(Client* client, time_t now) {
     std::stringstream ss2;
     ss2 << "Sent PING to Client with fd [" << client->getFd() << "]";
     logDebug(ss2.str());
-}
-
-void Server::removeTimedOutClient(Client *client) {
-    std::stringstream ss;
-    ss << "Client with fd [" << client->getFd() << "] timeouted (no PONG received)";
-    logInfo(ss.str());
-    
-    int poll_fd_idx = this->getPollsetIdxByFd(client->getFd());
-    if (poll_fd_idx != -1) {
-        struct pollfd current = this->pollset.getPollFd(poll_fd_idx);
-        this->pollset.remove(poll_fd_idx);
-        close(current.fd);
-    }
-    delete client;
 }
 
 /* HANDLER FOR MESSAGE */

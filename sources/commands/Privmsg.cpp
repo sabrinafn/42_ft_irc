@@ -25,18 +25,16 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
 bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
     std::string dest = msg.params[0];
 
-    const std::vector<Client *> &serverClients =
-        server.getClients(); // pega a lista de clientes do server
-    for (size_t i = 0; i < serverClients.size(); ++i) {
-        if (serverClients[i]->getNickname() == dest) {
-            std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
-            serverClients[i]->sendReply(fullMessage);
-            return true; // encontrou, não precisa continuar
-        }
+    Client* targetClient = server.getClientByNick(dest);
+    
+    if (targetClient) {
+        // encontrado
+        std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
+        targetClient->sendReply(fullMessage);
+        return true;
     }
-    // se não encontrar o cliente:
+    // não encontrado
     client.sendReply(ERR_NOSUCHNICK(dest));
-    // verificar se o erro esta correto
     return false;
 }
 
