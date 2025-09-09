@@ -183,8 +183,9 @@ bool Commands::isValidChannelName(const std::string &name) {
 }
 
 bool Commands::isValidkey(std::string key) {
-    if (key.empty()) return false; // Empty keys are invalid
-    
+    if (key.empty())
+        return false; // Empty keys are invalid
+
     for (size_t i = 0; i < key.size(); ++i) { // Start at index 0
         unsigned char c = key[i];
         if (std::isspace(c)) // espaço

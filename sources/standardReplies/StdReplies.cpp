@@ -224,9 +224,10 @@ std::string RPL_CHANNELMODEIS(const std::string& channel, const std::string& mod
 }
 
 std::string ERR_NOTREGISTERED(const std::string& command) {
-   return COLON + SERVER + "451 " + command + " :You have not registered" + CRLF;
+    return COLON + SERVER + "451 " + command + " :You have not registered" + CRLF;
 }
 
 std::string ERR_SERVERSHUTDOWN(const std::string& nickname) {
-   return COLON + SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" + CRLF;
+    return COLON + SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" +
+           CRLF;
 }

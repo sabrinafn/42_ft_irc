@@ -62,7 +62,7 @@ void Client::setState(ClientState state) {
     this->state = state;
 }
 
-void Client::setIpAddress(const std::string &ip_addr) {
+void Client::setIpAddress(const std::string& ip_addr) {
     this->ip_address = ip_addr;
 }
 

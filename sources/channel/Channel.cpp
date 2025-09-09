@@ -59,7 +59,7 @@ std::vector<Channel::ChannelMode> Channel::getModes() const {
 
 std::string Channel::getModeParameters() const {
     std::stringstream ss;
-    bool has_prev_param = false;
+    bool              has_prev_param = false;
 
     if (!this->key.empty()) {
         ss << this->key;

@@ -51,12 +51,12 @@ class Channel {
     bool isEmptyChannel() const;
 
     // GETTERS
-    std::string              getName() const;        // nome do canal
-    std::string              getTopic() const;       // tópico atual
-    std::string              getKey() const;         // chave do canal
-    int                      getLimit() const;       // limite de usuários
-    std::vector<ChannelMode> getModes() const;       // modos ativos
-    std::string              getModesString() const; // modos em string, ex: "+itkl"
+    std::string              getName() const;           // nome do canal
+    std::string              getTopic() const;          // tópico atual
+    std::string              getKey() const;            // chave do canal
+    int                      getLimit() const;          // limite de usuários
+    std::vector<ChannelMode> getModes() const;          // modos ativos
+    std::string              getModesString() const;    // modos em string, ex: "+itkl"
     std::string              getModeParameters() const; // getkey + getlimit
 
     // SETTERS

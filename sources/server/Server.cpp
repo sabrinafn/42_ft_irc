@@ -35,11 +35,12 @@ Server &Server::operator=(const Server &other) {
 
 /* DESTRUCTOR */
 Server::~Server(void) {
-    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+    for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it) {
         close(it->second->getFd());
         delete it->second;
     }
-    for (std::map<std::string, Channel*>::iterator it = channels.begin(); it != channels.end(); ++it) {
+    for (std::map<std::string, Channel *>::iterator it = channels.begin();
+         it != channels.end(); ++it) {
         delete it->second;
     }
     channels.clear();
@@ -73,7 +74,7 @@ int Server::getMaxClients(void) const {
 }
 
 Client *Server::getClientByNick(const std::string &nick) {
-    for (std::map<int, Client*>::iterator it = clients.begin(); it != clients.end(); ++it) {
+    for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it) {
         if (it->second->getNickname() == nick)
             return it->second;
     }
@@ -90,7 +91,7 @@ Client *Server::getClientByFd(int fd_to_find) {
 size_t Server::getPollsetIdxByFd(int fd) {
     for (size_t i = 0; i < pollset.getPollfds().size(); i++) {
         if (pollset.getPollfds()[i].fd == fd)
-        return i;
+            return i;
     }
     return -1;
 }
@@ -109,31 +110,31 @@ void Server::createSocket(void) {
     hint.sin_family      = AF_INET;           // IPV4
     hint.sin_port        = htons(this->port); // convert number to network byte order
     hint.sin_addr.s_addr = INADDR_ANY;        // set the address to any local machine address
-    
+
     // create socket
     logInfo("Creating server socket...");
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd == -1)
-    throwSystemError("socket");
-    
+        throwSystemError("socket");
+
     // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
     if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
-    throwSystemError("setsockopt");
-    
+        throwSystemError("setsockopt");
+
     // Setar O_NONBLOCK com fcntl()
     this->setNonBlocking(this->socket_fd);
-    
+
     // bind socket to a IP/port
     logInfo("Binding server socket to ip address");
     if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1)
-    throwSystemError("bind");
-    
+        throwSystemError("bind");
+
     // mark socket to start listening
     logInfo("Marking socket to start listening");
     if (listen(this->socket_fd, SOMAXCONN) == -1)
-    throwSystemError("listen");
-    
+        throwSystemError("listen");
+
     // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
     this->pollset.add(this->socket_fd);
 }
@@ -141,15 +142,15 @@ void Server::createSocket(void) {
 /* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     if (this->pollset.poll() == -1 && !Server::signals)
-    throwSystemError("poll");
-    
+        throwSystemError("poll");
+
     for (size_t i = 0; i < pollset.getSize(); i++) {
         struct pollfd current = this->pollset.getPollFd(i);
         if (current.revents & POLLIN) {
             if (current.fd == this->socket_fd) {
                 std::stringstream ss;
                 ss << "Server listening socket [" << current.fd
-                << "] is ready to accept a new client";
+                   << "] is ready to accept a new client";
                 logInfo(ss.str());
                 this->connectClient(); // accept a new client
             } else {
@@ -171,25 +172,24 @@ void Server::setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0);
     if (flags == -1) {
         if (socket != this->socket_fd)
-        close(socket);
+            close(socket);
         throwSystemError("fcntl");
     }
     flags |= O_NONBLOCK;
     if (fcntl(socket, F_SETFL, flags) == -1) {
         if (socket != this->socket_fd)
-        close(socket);
+            close(socket);
         throwSystemError("fcntl");
     }
 }
 
 /* ACCEPT A NEW CLIENT */
 void Server::connectClient(void) {
-
     if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, rejecting new connection");
         return;
     }
-    
+
     struct sockaddr_in client_addr;
     socklen_t          client_addr_len = sizeof(client_addr);
     int client_fd = accept(this->socket_fd, (struct sockaddr *)&client_addr, &client_addr_len);
@@ -198,25 +198,25 @@ void Server::connectClient(void) {
         logError(std::string("accept: ") + strerror(err));
         return;
     }
-    
+
     // Double-check connection limit after accept (race condition protection)
     if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, closing new connection");
         close(client_fd);
         return;
     }
-    
+
     this->setNonBlocking(client_fd);
     this->pollset.add(client_fd);
-    
+
     Client *client = new Client();
     client->setFd(client_fd);
     client->setLastActivity(std::time(0));
     client->setIpAddress(std::string(inet_ntoa(client_addr.sin_addr)));
     this->clients[client_fd] = client;
-    
+
     std::stringstream ss;
-    ss << "New client connected [" << client_fd << "] from " << client->getIpAddress() 
+    ss << "New client connected [" << client_fd << "] from " << client->getIpAddress()
        << " (clients: " << this->clients.size() << "/" << this->max_clients << ")";
     logInfo(ss.str());
 }
@@ -245,10 +245,11 @@ void Server::receiveData(size_t &index) {
         }
         std::string buf = buffer;
         if (buf.empty() || buffer[0] == '\0')
-        return;
+            return;
         this->handleClientMessage(*client, buf);
-        
-        // Check if client still exists after handling message (might have been deleted by QUIT)
+
+        // Check if client still exists after handling message (might have been deleted by
+        // QUIT)
         client = getClientByFd(current.fd);
         if (client) {
             client->setLastActivity(std::time(0));
@@ -272,7 +273,6 @@ void Server::disconnectClient(int client_fd) {
     close(client_fd);
 }
 
-
 /* THROW + SYSTEM ERROR MESSAGE */
 void Server::throwSystemError(const std::string &msg) {
     int err = errno; // similar to perror(); returns the same error
@@ -290,11 +290,11 @@ void Server::signalHandler(int sig) {
 
 /* VERIFY CLIENTS ACTIVE TIME */
 void Server::handleInactiveClients(void) {
-    time_t now = std::time(0);
-    std::map<int, Client *>::iterator it = this->clients.begin();
+    time_t                            now = std::time(0);
+    std::map<int, Client *>::iterator it  = this->clients.begin();
 
     while (it != this->clients.end()) {
-        Client* client = it->second;
+        Client *client = it->second;
         if (isClientTimedOut(client, now)) {
             if (!client->pingSent()) {
                 sendPing(client, now);
@@ -312,15 +312,15 @@ void Server::handleInactiveClients(void) {
     }
 }
 
-bool Server::isClientTimedOut(Client* client, time_t now) {
+bool Server::isClientTimedOut(Client *client, time_t now) {
     return (now - client->getLastActivity() >= timeout_seconds);
 }
 
-bool Server::isPongTimeout(Client* client, time_t now) {
+bool Server::isPongTimeout(Client *client, time_t now) {
     return (now - client->getLastPingSent() >= pong_timeout);
 }
 
-void Server::sendPing(Client* client, time_t now) {
+void Server::sendPing(Client *client, time_t now) {
     std::stringstream ss;
     ss << now;
     std::string msg = "PING :" + ss.str() + "\r\n";
@@ -336,12 +336,12 @@ void Server::sendPing(Client* client, time_t now) {
 void Server::handleClientMessage(Client &client, const std::string &msg) {
     client.appendData(msg);
     Commands commands;
-    
+
     std::string              buffer = client.getData();
     std::vector<std::string> lines  = Parser::extractLines(buffer);
-    
+
     client.setData(buffer);
-    
+
     for (std::vector<std::string>::iterator it = lines.begin(); it != lines.end(); ++it) {
         std::stringstream ss;
         ss << "Processing message from client [" << client.getFd() << "]: " << *it;
@@ -360,7 +360,7 @@ void Server::setChannel(Channel *new_channel) {
 
 bool Server::hasChannel(const std::string &channel_name) {
     if (channels.find(channel_name) == channels.end())
-    return false;
+        return false;
     return true;
 }
 

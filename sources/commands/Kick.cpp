@@ -28,7 +28,7 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
         std::string channelName = _channels[i];
         logDebug("KICK: channel name: " + channelName);
 
-        std::map<std::string, Channel*> &all_channels = server.get_channels();
+        std::map<std::string, Channel*>& all_channels = server.get_channels();
 
         if (!server.hasChannel(channelName)) {
             logError("KICK: channel does not exist -> " + channelName);
@@ -104,8 +104,8 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
                         ssOps2 << " " << ops[i]->getNickname();
                     }
                     logDebug(ssOps2.str());
-                    if(channel->isEmptyChannel())
-                        server.removeChannel(channelName);                 
+                    if (channel->isEmptyChannel())
+                        server.removeChannel(channelName);
                 }
             }
         }

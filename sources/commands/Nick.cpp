@@ -40,7 +40,8 @@ void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg)
 /* CHECK IF NICKNAME IS ALREADY IN USE */
 bool Commands::isNicknameInUse(Server &server, const std::string &nickname, int excludeFd) {
     const std::map<int, Client *> &clients = server.getClients();
-    for (std::map<int, Client*>::const_iterator it = clients.begin(); it != clients.end(); ++it) {
+    for (std::map<int, Client *>::const_iterator it = clients.begin(); it != clients.end();
+         ++it) {
         if (it->first != excludeFd && it->second->getNickname() == nickname) {
             return true;
         }

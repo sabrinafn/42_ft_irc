@@ -2,9 +2,10 @@
 
 void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg) {
     logInfo("Received MODE command from " + client.getNickname());
-    
+
     if (msg.params.empty()) {
-        logError("MODE command without parameters. Sending ERR_NEEDMOREPARAMS to " + client.getNickname());
+        logError("MODE command without parameters. Sending ERR_NEEDMOREPARAMS to " +
+                 client.getNickname());
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
@@ -18,21 +19,24 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
         return;
     }
 
-    Channel *channel = server.get_channels()[channelName];
+    Channel          *channel = server.get_channels()[channelName];
     std::stringstream ss1;
-    ss1 << "Channel '" << channelName << "' found. Total members: " << channel->getMembers().size();
+    ss1 << "Channel '" << channelName
+        << "' found. Total members: " << channel->getMembers().size();
     logDebug(ss1.str());
 
     if (msg.params.size() == 1) {
         // Apenas retornar modos do canal
         logInfo("Querying modes for channel " + channelName + ". Sending RPL_CHANNELMODEIS.");
-        client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), channel->getModeParameters()));
-        
+        client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(),
+                                           channel->getModeParameters()));
+
         return;
     }
 
     if (!channel->isOperator(&client)) {
-        logError("Client " + client.getNickname() + " is not a channel operator on " + channelName + ". Sending ERR_CHANOPRIVSNEEDED.");
+        logError("Client " + client.getNickname() + " is not a channel operator on " +
+                 channelName + ". Sending ERR_CHANOPRIVSNEEDED.");
         client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName));
         return;
     }
@@ -52,15 +56,15 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
         std::string modeChange = (add ? "+" : "-");
         modeChange += mode[i];
 
-        logDebug("Processing mode: " + modeChange + (arg.empty() ? "" : " with argument: " + arg));
+        logDebug("Processing mode: " + modeChange +
+                 (arg.empty() ? "" : " with argument: " + arg));
 
         switch (mode[i]) {
             case 'i':
                 if (add) {
                     logInfo("Adding mode +i to " + channelName);
                     channel->addMode(Channel::INVITE_ONLY);
-                }
-                else {
+                } else {
                     logInfo("Removing mode -i from " + channelName);
                     channel->removeMode(Channel::INVITE_ONLY);
                 }
@@ -69,8 +73,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                 if (add) {
                     logInfo("Adding mode +t to " + channelName);
                     channel->addMode(Channel::TOPIC_RESTRICTED);
-                }
-                else {
+                } else {
                     logInfo("Removing mode -t from " + channelName);
                     channel->removeMode(Channel::TOPIC_RESTRICTED);
                 }
@@ -109,7 +112,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                         logError("Target client for mode 'o' not found: " + arg);
                         break;
                     }
-                     if (add) {
+                    if (add) {
                         logInfo("Adding operator " + arg + " on " + channelName);
                         channel->addOperator(target);
                     } else {
@@ -119,7 +122,8 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                 }
                 break;
             default:
-                logError("Unknown mode: " + std::string(1, mode[i]) + ". Sending ERR_UNKNOWNMODE.");
+                logError("Unknown mode: " + std::string(1, mode[i]) +
+                         ". Sending ERR_UNKNOWNMODE.");
                 break;
         }
 

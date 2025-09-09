@@ -9,7 +9,7 @@ int main(int ac, char** av) {
     try {
         setupSignals(Server::signalHandler);
         std::pair<int, std::string> pair = parsePortAndPassword(av);
-        Server server(pair.first, pair.second);
+        Server                      server(pair.first, pair.second);
         server.initServer();
     } catch (const std::exception& e) {
         std::cerr << "Error! " << e.what() << std::endl;

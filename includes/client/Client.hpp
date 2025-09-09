@@ -53,7 +53,7 @@ class Client {
     void setPingSent(bool set);
     void setLastPingSent(time_t time);
     void setState(ClientState state);
-    void setIpAddress(const std::string &ip_addr);
+    void setIpAddress(const std::string& ip_addr);
     void setNickname(const std::string& nick);
     void setUsername(const std::string& user);
     void setRealname(const std::string& user);

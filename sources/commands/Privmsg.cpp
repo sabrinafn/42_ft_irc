@@ -25,8 +25,8 @@ bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage
 bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage &msg) {
     std::string dest = msg.params[0];
 
-    Client* targetClient = server.getClientByNick(dest);
-    
+    Client *targetClient = server.getClientByNick(dest);
+
     if (targetClient) {
         // encontrado
         std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
@@ -39,19 +39,16 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
 }
 
 void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
-
     if (msg.params.empty() || msg.trailing.empty()) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
-    if (msg.params[0][0] == '#' || msg.params[0][0] == '&')
-    {
+    if (msg.params[0][0] == '#' || msg.params[0][0] == '&') {
         if (sendMsgToChannel(client, server, msg))
             return;
-    }
-    else{
+    } else {
         if (sendMsgToClient(client, server, msg))
             return;
-    }       
+    }
     return;
 }

@@ -30,7 +30,7 @@ void Commands::handleInvite(Client &client, Server &server, const IRCMessage &ms
         client.sendReply(ERR_NOSUCHNICK(targetNick));
         return;
     }
-     if (channel->isMember(target)) {
+    if (channel->isMember(target)) {
         client.sendReply(ERR_USERONCHANNEL(targetNick, channelName));
         return;
     }
