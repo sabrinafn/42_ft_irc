@@ -71,7 +71,7 @@ IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& op
     }
 
     msg.command = toUpperASCII(trimmed.substr(pos, cmd_end - pos));
-    pos = cmd_end + 1;
+    pos         = cmd_end + 1;
 
     while (pos < trimmed.length()) {
         while (pos < trimmed.length() && trimmed[pos] == ' ') {
@@ -91,6 +91,10 @@ IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& op
         } else {
             msg.params.push_back(trimmed.substr(pos, param_end - pos));
             pos = param_end + 1;
+            // Skip any additional consecutive spaces
+            while (pos < trimmed.length() && trimmed[pos] == ' ') {
+                pos++;
+            }
         }
     }
 
@@ -100,14 +104,15 @@ IRCMessage Parser::parseMessage(const std::string& line, const ParserOptions& op
 }
 
 bool Parser::isValidCommand(const std::string& command) {
-    if (command.empty()) return false;
+    if (command.empty())
+        return false;
 
     // Known, supported command tokens (keep in sync with Commands map)
-    static const char* kKnown[] = {"PASS",   "NICK",   "USER",   "QUIT",  "JOIN",
-                                   "KICK",   "PING",   "PONG",   "PRIVMSG","TOPIC",
-                                   "INVITE", "MODE"};
+    static const char* kKnown[] = {"PASS", "NICK", "USER",    "QUIT",  "JOIN",   "KICK",
+                                   "PING", "PONG", "PRIVMSG", "TOPIC", "INVITE", "MODE"};
     for (size_t i = 0; i < sizeof(kKnown) / sizeof(kKnown[0]); ++i) {
-        if (command == kKnown[i]) return true;
+        if (command == kKnown[i])
+            return true;
     }
 
     // Accept 3-digit numeric replies
@@ -129,8 +134,8 @@ bool Parser::isValidNickname(const std::string& nickname) {
     }
     // Subsequent characters can be letters, digits, or special chars
     for (std::string::size_type i = 1; i < nickname.length(); i++) {
-    unsigned char c = static_cast<unsigned char>(nickname[i]);
-    if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
+        unsigned char c = static_cast<unsigned char>(nickname[i]);
+        if (!std::isalnum(c) && c != '-' && c != '[' && c != ']' && c != '\\' && c != '`' &&
             c != '^' && c != '{' && c != '}') {
             return false;
         }
@@ -170,9 +175,12 @@ std::string Parser::toLowerRFC1459(const std::string& s) {
     for (size_t i = 0; i < s.size(); ++i) {
         unsigned char c = static_cast<unsigned char>(s[i]);
         // RFC1459 casemap: []\ equal to {}|
-        if (c == '[') c = '{';
-        else if (c == ']') c = '}';
-        else if (c == '\\') c = '|';
+        if (c == '[')
+            c = '{';
+        else if (c == ']')
+            c = '}';
+        else if (c == '\\')
+            c = '|';
         out.push_back(static_cast<char>(std::tolower(c)));
     }
     return out;
@@ -200,7 +208,8 @@ void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& opt
     // - KICK #chan nick[,more]
     // - INVITE nick #chan
     // We'll lowercase nicknames and channel names in params to ease matching.
-    if (msg.params.empty()) return;
+    if (msg.params.empty())
+        return;
     const std::string& cmd = msg.command;
     if (cmd == "NICK") {
         msg.params[0] = foldLower(msg.params[0], options.useRFC1459CaseMap);
@@ -208,12 +217,12 @@ void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& opt
     }
 
     // Helper to lowercase list params preserving commas
-    const std::string lowerList = 
-        (msg.params.size() ? std::string() : std::string());
+    const std::string lowerList = (msg.params.size() ? std::string() : std::string());
     (void)lowerList;
-    
+
     // Lowercase first parameter for commands that take nick/channel or a comma-separated list
-    if (cmd == "PRIVMSG" || cmd == "JOIN" || cmd == "KICK" || cmd == "INVITE" || cmd == "TOPIC") {
+    if (cmd == "PRIVMSG" || cmd == "JOIN" || cmd == "KICK" || cmd == "INVITE" ||
+        cmd == "TOPIC") {
         std::string& p0 = msg.params[0];
         std::string  out0;
         out0.reserve(p0.size());
@@ -224,9 +233,12 @@ void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& opt
             } else {
                 // apply RFC1459 folding if enabled
                 if (options.useRFC1459CaseMap) {
-                    if (c == '[') c = '{';
-                    else if (c == ']') c = '}';
-                    else if (c == '\\') c = '|';
+                    if (c == '[')
+                        c = '{';
+                    else if (c == ']')
+                        c = '}';
+                    else if (c == '\\')
+                        c = '|';
                 }
                 out0.push_back(static_cast<char>(std::tolower(c)));
             }
@@ -245,9 +257,12 @@ void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& opt
                 out1.push_back(',');
             } else {
                 if (options.useRFC1459CaseMap) {
-                    if (c == '[') c = '{';
-                    else if (c == ']') c = '}';
-                    else if (c == '\\') c = '|';
+                    if (c == '[')
+                        c = '{';
+                    else if (c == ']')
+                        c = '}';
+                    else if (c == '\\')
+                        c = '|';
                 }
                 out1.push_back(static_cast<char>(std::tolower(c)));
             }
@@ -261,9 +276,12 @@ void Parser::normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& opt
         for (size_t i = 0; i < p1.size(); ++i) {
             unsigned char c = static_cast<unsigned char>(p1[i]);
             if (options.useRFC1459CaseMap) {
-                if (c == '[') c = '{';
-                else if (c == ']') c = '}';
-                else if (c == '\\') c = '|';
+                if (c == '[')
+                    c = '{';
+                else if (c == ']')
+                    c = '}';
+                else if (c == '\\')
+                    c = '|';
             }
             p1[i] = static_cast<char>(std::tolower(c));
         }

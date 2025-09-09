@@ -48,13 +48,16 @@ class Channel {
     /* DESTRUCTOR */
     ~Channel(void);
 
+    bool isEmptyChannel() const;
+
     // GETTERS
-    std::string              getName() const;        // nome do canal
-    std::string              getTopic() const;       // tópico atual
-    std::string              getKey() const;         // chave do canal
-    int                      getLimit() const;       // limite de usuários
-    std::vector<ChannelMode> getModes() const;       // modos ativos
-    std::string              getModesString() const; // modos em string, ex: "+itkl"
+    std::string              getName() const;           // nome do canal
+    std::string              getTopic() const;          // tópico atual
+    std::string              getKey() const;            // chave do canal
+    int                      getLimit() const;          // limite de usuários
+    std::vector<ChannelMode> getModes() const;          // modos ativos
+    std::string              getModesString() const;    // modos em string, ex: "+itkl"
+    std::string              getModeParameters() const; // getkey + getlimit
 
     // SETTERS
     void setTopic(const std::string& newTopic); // Define novo tópico
@@ -75,9 +78,10 @@ class Channel {
     std::vector<Client*> getMembers() const;             // Retorna todos os membros
 
     // Gerenciamento de operadores
-    void addOperator(Client* client);      // Promove membro a operador
-    void removeOperator(Client* client);   // Remove status de operador
-    bool isOperator(Client* client) const; // Verifica se é operador
+    void                 addOperator(Client* client);      // Promove membro a operador
+    void                 removeOperator(Client* client);   // Remove status de operador
+    bool                 isOperator(Client* client) const; // Verifica se é operador
+    std::vector<Client*> getOperators() const;
 
     // Gerenciamento de convites
     void invite(Client* client);          // Convida um cliente para o canal

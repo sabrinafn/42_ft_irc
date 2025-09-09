@@ -29,18 +29,20 @@
 #include "../parser/Parser.hpp"   // parser class
 #include "../commands/Commands.hpp"
 #include "../standardReplies/StdReplies.hpp" // standard irc reply messages
+#include "../includes/ft_irc.hpp"
 
 class Server {
    private:
     int                              port;
     int                              socket_fd;
     std::string                      password;
-    std::vector<Client *>            clients;
-    std::map<std::string, Channel *> channels;
     Pollset                          pollset;
+    std::map<int, Client *>          clients;
+    std::map<std::string, Channel *> channels;
     static bool                      signals;
     int                              timeout_seconds;
     int                              pong_timeout;
+    size_t                           max_clients;
 
    public:
     /* CONSTRUCTOR */
@@ -56,19 +58,15 @@ class Server {
     /* DESTRUCTOR */
     ~Server(void);
 
-    /* SETTERS */
-    // void setPortNumber(int other);
-    // void setServerPassword(std::string other);
-    void setChannel(Channel *new_channel);
-
     /* GETTERS */
-    int                               getPortNumber(void) const;
-    std::string                       getServerPassword(void) const;
-    Client                           *getClientByFd(int fd_to_find);
-    const std::vector<Client *>      &getClients() const;
-    std::map<std::string, Channel *> &get_channels();
-    int                               getPongTimeout(void) const;
-    Client                           *serverGetClientByNick(const std::string &nick);
+    int                            getPortNumber(void) const;
+    std::string                    getServerPassword(void) const;
+    Client                        *getClientByFd(int fd_to_find);
+    Client                        *getClientByNick(const std::string &nick);
+    const std::map<int, Client *> &getClients(void) const;
+    int                            getPongTimeout(void) const;
+    size_t                         getPollsetIdxByFd(int fd);
+    int                            getMaxClients(void) const;
 
     /* CREATE SOCKET */
     void createSocket(void);
@@ -88,11 +86,8 @@ class Server {
     /* RECEIVE DATA FROM REGISTERED CLIENT */
     void receiveData(size_t &index);
 
-    /* CLEAR RESOURCES */
-    void clearServer(void);
-
     /* DISCONNECT CLIENT */
-    void disconnectClient(size_t index);
+    void disconnectClient(int client_fd);
 
     /* THROW + SYSTEM ERROR MESSAGE */
     void throwSystemError(const std::string &msg);
@@ -100,14 +95,21 @@ class Server {
     /* SIGNAL HANDLER FUNCTION */
     static void signalHandler(int sig);
 
-    /* FIND FD INDEX IN POLLSET BY FD IN CLIENT */
-    size_t getPollsetIdxByFd(int fd);
-
     /* VERIFY CLIENTS ACTIVE TIME */
     void handleInactiveClients(void);
+    void sendPing(Client *client, time_t now);
+    bool isClientTimedOut(Client *client, time_t now);
+    bool isPongTimeout(Client *client, time_t now);
+    void removeTimedOutClient(Client *client);
 
     /* HANDLER FOR MESSAGE */
     void handleClientMessage(Client &client, const std::string &msg);
+
+    /* CHANNEL HANDLER */
+    void                              removeChannel(const std::string &channel_name);
+    bool                              hasChannel(const std::string &channel_name);
+    std::map<std::string, Channel *> &get_channels();
+    void                              setChannel(Channel *new_channel);
 };
 
 #endif

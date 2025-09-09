@@ -28,6 +28,10 @@ Channel& Channel::operator=(const Channel& other) {
 Channel::~Channel(void) {
 }
 
+bool Channel::isEmptyChannel() const {
+    return members.empty();
+}
+
 /* GETTER FOR NAME */
 std::string Channel::getName() const {
     return name;
@@ -51,6 +55,24 @@ int Channel::getLimit() const {
 /* GETTER FOR MODES */
 std::vector<Channel::ChannelMode> Channel::getModes() const {
     return modes;
+}
+
+std::string Channel::getModeParameters() const {
+    std::stringstream ss;
+    bool              has_prev_param = false;
+
+    if (!this->key.empty()) {
+        ss << this->key;
+        has_prev_param = true;
+    }
+
+    if (this->limit > 0) {
+        if (has_prev_param) {
+            ss << " ";
+        }
+        ss << this->limit;
+    }
+    return ss.str();
 }
 
 /* GETTER FOR MODES STRING */
@@ -159,6 +181,11 @@ bool Channel::isOperator(Client* client) const {
     return std::find(ops.begin(), ops.end(), client) != ops.end();
 }
 
+/* GETTER FOR OPERATORS */
+std::vector<Client*> Channel::getOperators() const {
+    return ops;
+}
+
 // Convites
 
 /* INVITE A CLIENT */
@@ -180,12 +207,15 @@ void Channel::removeInvite(Client* client) {
 // Broadcast
 // Envio de mensagens para todos os membros do canal
 void Channel::broadcast(const std::string& message, Client* client) {
-    std::cout << "DEBUG: broadcast para " << members.size()
-              << " membros, client: " << (client ? client->getNickname() : "NULL")
-              << std::endl;
+    std::stringstream ss;
+    ss << "Broadcast message sent to " << members.size()
+       << " members, client: " << (client ? client->getNickname() : "NULL");
+    logDebug(ss.str());
 
     for (size_t i = 0; i < members.size(); ++i) {
-        std::cout << "DEBUG: membro[" << i << "] = " << members[i]->getNickname() << std::endl;
+        std::stringstream ss;
+        ss << "Channel member [" << i << "] = " << members[i]->getNickname();
+        logDebug(ss.str());
         if (client == NULL || members[i] != client) {
             members[i]->sendReply(message);
         }

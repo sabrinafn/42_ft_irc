@@ -3,7 +3,7 @@
 echo "=== IRC Server Command Testing ==="
 
 PORT=6667
-PASSWORD="testpass123"
+PASSWORD="test123"
 SERVER_PID=""
 
 RED='\033[0;31m'
@@ -162,7 +162,7 @@ echo ""
 
 # Test 8: fragmented nessage test! (error last time)
 print_test "Test 8: Fragmented Message Test"
-(echo -n "PASS $PASSWORD"; sleep 0.5; echo -e "\r\n"; sleep 0.5; echo -e "NICK fraguser\r\nUSER fraguser 0 * :Fragmented User\r\nQUIT\r\n") | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
+(echo -n "PA"; sleep 0.5; echo -n "SS $PASSWORD\r\n"; sleep 0.5; echo -n "NI"; sleep 0.5; echo -n "CK fraguser\r\n"; sleep 0.5; echo -n "US"; sleep 0.5; echo -n "ER fraguser 0 * :Fragmented User\r\nQU"; sleep 0.5; echo -n "IT\r\n") | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 3
 
 if grep -q ":<3_irc_server_<3 1.*Welcome" test_output.tmp; then
