@@ -242,8 +242,8 @@ feature/<nome>: branches para cada nova feature ou módulo.
 - [ ] **Testes e Robustez**  
   - [ ] Escrever scripts Bash em `tests/` para:  
     - [x] Autenticação completa (PASS+NICK+USER)  
-    - [ ] Fragmentação de linha (`echo -n "PRIV"; sleep 1; echo "MSG\r\n"`)  
-    - [ ] Múltiplos clientes simultâneos (loops `nc`)  
+    - [x] Fragmentação de linha (`echo -n "PRIV"; sleep 1; echo "MSG\r\n"`)  
+    - [x] Múltiplos clientes simultâneos (loops `nc`)  
   - [ ] Testar logs de erro e comportamentos inválidos (`NICK !nv@l!d\r\n`)  
   - [ ] Conectar clientes reais (WeeChat/HexChat) e validar interoperabilidade  
 
