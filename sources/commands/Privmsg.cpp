@@ -39,8 +39,12 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
 }
 
 void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
-    if (msg.params.empty() || msg.trailing.empty()) {
+      if (msg.params.empty()) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+        return;
+    }
+    if (msg.trailing.empty()) {
+        client.sendReply(ERR_NOTEXTTOSEND(client.getNickname()));
         return;
     }
     if (msg.params[0][0] == '#' || msg.params[0][0] == '&') {

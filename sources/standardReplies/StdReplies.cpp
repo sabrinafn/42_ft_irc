@@ -36,7 +36,8 @@
 
 // std::string RPL_NOTOPIC(const std::string& nickname, const std::string& channel) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << RPL_NOTOPIC_CODE << SPACE << nickname << SPACE << channel
+//     ss << COLON << SERVER << SPACE << RPL_NOTOPIC_CODE << SPACE << nickname << SPACE <<
+//     channel
 //        << " :No topic is set" << CRLF;
 //     return ss.str();
 // }
@@ -44,7 +45,8 @@
 // std::string RPL_TOPIC(const std::string& nickname, const std::string& channel,
 //                       const std::string& topic) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << RPL_TOPIC_CODE << SPACE << nickname << SPACE << channel
+//     ss << COLON << SERVER << SPACE << RPL_TOPIC_CODE << SPACE << nickname << SPACE <<
+//     channel
 //        << " :" << topic << CRLF;
 //     return ss.str();
 // }
@@ -178,14 +180,16 @@
 
 // std::string ERR_NOSUCHNICK(const std::string& dest) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << ERR_NOSUCHNICK_CODE << " * " << dest << " :No such nick"
+//     ss << COLON << SERVER << SPACE << ERR_NOSUCHNICK_CODE << " * " << dest << " :No such
+//     nick"
 //        << CRLF;
 //     return ss.str();
 // }
 
 // std::string ERR_CHANOPRIVSNEEDED(const std::string& nickname, const std::string& channel) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << ERR_CHANOPRIVSNEEDED_CODE << " * " << nickname << SPACE
+//     ss << COLON << SERVER << SPACE << ERR_CHANOPRIVSNEEDED_CODE << " * " << nickname <<
+//     SPACE
 //        << channel << " :You're not a channel operator" << CRLF;
 //     return ss.str();
 // }
@@ -193,7 +197,8 @@
 // std::string ERR_USERNOTINCHANNEL(const std::string& targetNick, const std::string& nickname,
 //                                  const std::string& channel) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << ERR_USERNOTINCHANNEL_CODE << " * " << targetNick << SPACE
+//     ss << COLON << SERVER << SPACE << ERR_USERNOTINCHANNEL_CODE << " * " << targetNick <<
+//     SPACE
 //        << nickname << SPACE << channel << " :They aren't on that channel" << CRLF;
 //     return ss.str();
 // }
@@ -209,7 +214,8 @@
 // std::string RPL_INVITE(const std::string& targetNick, const std::string& nickname,
 //                        const std::string& channel) {
 //     std::stringstream ss;
-//     ss << COLON << SERVER << SPACE << nickname << " INVITE " << targetNick << SPACE << channel
+//     ss << COLON << SERVER << SPACE << nickname << " INVITE " << targetNick << SPACE <<
+//     channel
 //        << CRLF;
 //     return ss.str();
 // }
@@ -228,6 +234,7 @@
 // }
 
 // std::string ERR_SERVERSHUTDOWN(const std::string& nickname) {
-//     return COLON + SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" +
+//     return COLON + SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)"
+//     +
 //            CRLF;
 // }

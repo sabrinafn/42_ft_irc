@@ -48,8 +48,9 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
         return;
     }
 
-    size_t argIndex = 2; // índice inicial para argumentos extras
-    bool   add      = (mode[0] == '+');
+    bool   modeApplied = false;
+    size_t argIndex    = 2; // índice inicial para argumentos extras
+    bool   add         = (mode[0] == '+');
 
     for (size_t i = 1; i < mode.size(); ++i) {
         std::string arg        = (argIndex < msg.params.size()) ? msg.params[argIndex++] : "";
@@ -68,6 +69,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                     logInfo("Removing mode -i from " + channelName);
                     channel->removeMode(Channel::INVITE_ONLY);
                 }
+                modeApplied = true;
                 break;
             case 't':
                 if (add) {
@@ -77,62 +79,93 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                     logInfo("Removing mode -t from " + channelName);
                     channel->removeMode(Channel::TOPIC_RESTRICTED);
                 }
+                modeApplied = true;
                 break;
             case 'k':
                 if (add) {
+                    if (arg.empty()) {
+                        logError("Mode +k requires a key. Sending ERR_NEEDMOREPARAMS.");
+                        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+                        break;
+                    } else if (channel->hasMode(Channel::KEY_REQUIRED) &&
+                               !channel->getKey().empty()) {
+                        logError("Channel " + channelName +
+                                 " already has a key. Sending ERR_KEYSET.");
+                        client.sendReply(ERR_KEYSET(client.getNickname(), channelName));
+                        break;
+                    }
                     logInfo("Adding mode +k to " + channelName + " with key '" + arg + "'");
                     channel->addMode(Channel::KEY_REQUIRED);
                     channel->setKey(arg);
+                    modeApplied = true;
                 } else {
                     logInfo("Removing mode -k from " + channelName);
                     channel->removeMode(Channel::KEY_REQUIRED);
                     channel->setKey("");
+                    modeApplied = true;
                 }
                 break;
             case 'l':
                 if (add) {
+                    if (arg.empty() || !isStrDigit(arg)) {
+                        logError(
+                            "Mode +l requires a numeric limit. Sending ERR_NEEDMOREPARAMS.");
+                        client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
+                        break;
+                    }
                     logInfo("Adding mode +l to " + channelName + " with limit " + arg);
                     channel->addMode(Channel::LIMIT_SET);
-                    if (!arg.empty())
-                        channel->setLimit(std::atoi(arg.c_str()));
+                    channel->setLimit(std::atoi(arg.c_str()));
+                    modeApplied = true;
                 } else {
                     logInfo("Removing mode -l from " + channelName);
                     channel->removeMode(Channel::LIMIT_SET);
                     channel->removeLimit();
+                    modeApplied = true;
                 }
                 break;
-            case 'o':
+            case 'o': {
                 if (arg.empty()) {
-                    logError("Mode 'o' without argument. Skipping.");
+                    logError("Mode +o requires a nickname. Sending ERR_NEEDMOREPARAMS.");
+                    client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
                     break;
                 }
-                {
-                    Client *target = server.getClientByNick(arg);
-                    if (!target) {
-                        logError("Target client for mode 'o' not found: " + arg);
-                        break;
-                    }
-                    if (add) {
-                        logInfo("Adding operator " + arg + " on " + channelName);
+                Client *target = server.getClientByNick(arg);
+                if (!target) {
+                    logError("Target client for mode 'o' not found: " + arg +
+                             ". Sending ERR_NOSUCHNICK.");
+                    client.sendReply(ERR_NOSUCHNICK(arg));
+                    break;
+                }
+                if (add) {
+                    if (!channel->isOperator(target)) { // só adiciona se não for operador
                         channel->addOperator(target);
-                    } else {
-                        logInfo("Removing operator " + arg + " from " + channelName);
+                        modeApplied = true;
+                    }
+                } else {
+                    if (channel->isOperator(target)) { // só remove se for operador
                         channel->removeOperator(target);
+                        modeApplied = true;
                     }
                 }
                 break;
+            }
             default:
                 logError("Unknown mode: " + std::string(1, mode[i]) +
-                         ". Sending ERR_UNKNOWNMODE.");
+                     ". Sending ERR_UNKNOWNMODE.");
+                client.sendReply(
+                    ERR_UNKNOWNMODE(client.getNickname(), std::string(1, mode[i])));
                 break;
         }
 
         // Broadcast da alteração para todos do canal
-        std::string broadcastMsg =
-            ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
-        if (!arg.empty())
-            broadcastMsg += " " + arg;
-        logDebug("Broadcasting mode change to channel: " + broadcastMsg);
-        channel->broadcast(broadcastMsg, NULL);
+        if (modeApplied) {
+            std::string broadcastMsg =
+                ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;
+            if (!arg.empty())
+                broadcastMsg += " " + arg;
+            logDebug("Broadcasting mode change to channel: " + broadcastMsg);
+            channel->broadcast(broadcastMsg, NULL);
+        }
+        }
     }
-}

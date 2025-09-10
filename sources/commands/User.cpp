@@ -6,7 +6,8 @@ void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg)
     if (client.getState() == UNREGISTERED) {
         client.sendReply(ERR_PASSWDMISMATCH());
         std::stringstream ss;
-        ss << "Client [" << client.getFd() << "] not registered yet, sending ERR_PASSWDMISMATCH";
+        ss << "Client [" << client.getFd()
+           << "] not registered yet, sending ERR_PASSWDMISMATCH";
         logError(ss.str());
         return;
     }
