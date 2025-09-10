@@ -149,7 +149,7 @@ void Client::sendReply(const std::string& message) {
 
 /* SEND WELCOME MESSAGES AFTER REGISTRATION */
 void Client::sendWelcomeMessages(void) {
-    this->sendReply(RPL_WELCOME(this->nickname, this->username));
+    this->sendReply(RPL_WELCOME(this->nickname, this->getPrefix()));
     this->sendReply(RPL_YOURHOST(this->nickname));
     std::string startup_time = getStartupTime();
     this->sendReply(RPL_CREATED(this->nickname, startup_time));

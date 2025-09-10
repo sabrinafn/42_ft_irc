@@ -3,7 +3,7 @@
 /* HANDLEPASS */
 void Commands::handlePass(Client &client, Server &server, const IRCMessage &msg) {
     if (client.getState() != UNREGISTERED) {
-        client.sendReply(ERR_ALREADYREGISTRED(client.getNickname()));
+        client.sendReply(ERR_ALREADYREGISTERED(client.getNickname()));
         return;
     }
     if (msg.params.empty()) {

@@ -44,7 +44,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
     std::string mode = msg.params[1];
     if (mode.empty() || (mode[0] != '+' && mode[0] != '-')) {
         logError("Invalid mode: '" + mode + "'. Sending ERR_UNKNOWNMODE.");
-        client.sendReply(ERR_UNKNOWNMODE(mode));
+        client.sendReply(ERR_UNKNOWNMODE(client.getNickname(), mode));
         return;
     }
 

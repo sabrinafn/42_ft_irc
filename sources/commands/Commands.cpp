@@ -45,7 +45,7 @@ void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
         (this->*func)(client, server, msg);
     } else {
         if (client.getState() == REGISTERED) {
-            client.sendReply(ERR_UNKNOWNCMD(msg.command));
+            client.sendReply(ERR_UNKNOWNCOMMAND(client.getNickname(), msg.command));
         }
     }
 }

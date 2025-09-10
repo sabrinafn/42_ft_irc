@@ -7,7 +7,8 @@
 #include "parser/Parser.hpp"
 #include "pollset/Pollset.hpp"
 #include "server/Server.hpp"
-#include "standardReplies/StdReplies.hpp"
+// #include "standardReplies/StdReplies.hpp"
+#include "Replies.hpp"
 #include "utils/Utils.hpp"
 #include "logger/Logger.hpp"
 
