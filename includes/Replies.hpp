@@ -7,59 +7,80 @@
 #define COLON std::string(":")
 #define SPACE std::string(" ")
 
-// 001, 002, 003, 004
-#define RPL_WELCOME(nickname, userPrefix) (SERVER + " 001 " + nickname + " :Welcome to the Internet Relay Chat " + userPrefix + CRLF)
-#define RPL_YOURHOST(nickname) (SERVER + " 002 " + nickname + " :Your host is " + SERVER2 + ", running version 1.0" + CRLF)
-#define RPL_CREATED(nickname, startup_time) (SERVER + " 003 " + nickname + " :This server was created on " + startup_time + CRLF)
-#define RPL_MYINFO(nickname, usermodes, channelmodes) (SERVER + " 004 " + nickname + SPACE + SERVER2 + " 1.0 " + usermodes + SPACE + channelmodes + CRLF)
+#define RPL_WELCOME(nickname, userPrefix) \
+    (SERVER + " 001 " + nickname + " :Welcome to the Internet Relay Chat " + userPrefix + CRLF)
+#define RPL_YOURHOST(nickname)                                                             \
+    (SERVER + " 002 " + nickname + " :Your host is " + SERVER2 + ", running version 1.0" + \
+     CRLF)
+#define RPL_CREATED(nickname, startup_time) \
+    (SERVER + " 003 " + nickname + " :This server was created on " + startup_time + CRLF)
+#define RPL_MYINFO(nickname, usermodes, channelmodes)                              \
+    (SERVER + " 004 " + nickname + SPACE + SERVER2 + " 1.0 " + usermodes + SPACE + \
+     channelmodes + CRLF)
+#define RPL_CHANNELMODEIS(channel, mode, modeParams) \
+    (SERVER + " 324 * " + channel + SPACE + mode + SPACE + modeParams + CRLF)
+#define RPL_NOTOPIC(nickname, channel) \
+    (SERVER + " 331 " + nickname + SPACE + channel + " :No topic is set" + CRLF)
+#define RPL_TOPIC(nickname, channel, topic) \
+    (SERVER + " 332 " + nickname + SPACE + channel + " :" + topic + CRLF)
+#define RPL_INVITING(targetNick, nickname, channel) \
+    (SERVER + " 341 " + nickname + SPACE + targetNick + SPACE + channel + CRLF)
+#define RPL_NAMREPLY(nickname, channel, names) \
+    (SERVER + " 353 " + nickname + " = " + channel + " :" + names + CRLF)
+#define RPL_ENDOFNAMES(nickname, channel) \
+    (SERVER + " 366 " + nickname + SPACE + channel + " : End of names list" + CRLF)
+#define ERR_NOSUCHNICK(targetNick) \
+    (SERVER + " 401 " + targetNick + " :No such nick" + CRLF)
+#define ERR_NOSUCHCHANNEL(channel) \
+    (SERVER + " 403 * " + channel + " :No such channel" + CRLF)
+#define ERR_NOORIGIN(nickname) \
+    (SERVER + " 409 " + nickname + " :No origin specified" + CRLF)
+#define ERR_NOTEXTTOSEND(nickname) \
+    (SERVER + " 412 " + nickname + " :No text to send" + CRLF)
+#define ERR_UNKNOWNCOMMAND(nickname, command) \
+    (SERVER + " 421 " + nickname + SPACE + command + " :Unknown command" + CRLF)
+#define ERR_NONICKNAMEGIVEN() \
+    (SERVER + " 431 * :No nickname given" + CRLF)
+#define ERR_ERRONEUSNICKNAME(nickname) \
+    (SERVER + " 432 * " + nickname + " :Erroneus nickname" + CRLF)
+#define ERR_NICKNAMEINUSE(nickname) \
+    (SERVER + " 433 * " + nickname + " :Nickname is already in use" + CRLF)
+#define ERR_USERNOTINCHANNEL(targetNick, nickname, channel)               \
+    (SERVER + " 441 " + nickname + SPACE + targetNick + SPACE + channel + \
+     " :They aren't on that channel" + CRLF)
+#define ERR_NOTONCHANNEL(channel) \
+    (SERVER + " 442 * " + channel + " :You're not on that channel" + CRLF)
+#define ERR_USERONCHANNEL(nickname, channel) \
+    (SERVER + " 443 * " + nickname + SPACE + channel + " :is already on channel" + CRLF)
+#define ERR_NOTREGISTERED(command) \
+    (SERVER + " 451 * " + command + " :You have not registered" + CRLF)
+#define ERR_NEEDMOREPARAMS(command) \
+    (SERVER + " 461 * " + command + " :Not enough parameters" + CRLF)
+#define ERR_ALREADYREGISTERED(nickname) \
+    (SERVER + " 462 " + nickname + " :You may not reregister" + CRLF)
+#define ERR_PASSWDMISMATCH() (SERVER + " 464 * :Password incorrect" + CRLF)
+#define ERR_KEYSET(nickname, channel) \
+    (SERVER + " 467 " + nickname + SPACE + channel + " :Channel key already set" + CRLF)
+#define ERR_CHANNELISFULL(channel) \
+    (SERVER + " 471 * " + channel + " :Cannot join channel (+l)" + CRLF)
+#define ERR_UNKNOWNMODE(nickname, mode) \
+    (SERVER + " 472 * " + nickname + SPACE + mode + " :is unknown mode char to me" + CRLF)
+#define ERR_INVITEONLYCHAN(channel) \
+    (SERVER + " 473 * " + channel + " :Cannot join channel (+i)" + CRLF)
+#define ERR_BADCHANNELKEY(username, channel) \
+    (SERVER + " 475 *" + username + SPACE + channel + " :Cannot join channel (+k)" + CRLF)
+#define ERR_CHANOPRIVSNEEDED(username, channel) \
+    (SERVER + " 482 " + username + SPACE + channel + " :You're not a channel operator" + CRLF)
 
-// #define RPL_ENDOFWHO(channel)                               (SERVER + " 315 " + channel + " :End of /WHO list." + CRLF)
-// #define RPL_LISTSTART(nickname)                                 (SERVER + " 321 " + nickname + " Channel    |   Users   |   Topic" + CRLF)
-// #define RPL_LIST(nickname, channel, users, topic)               (SERVER + " 322 " + nickname + SPACE + channel + SPACE + users + " :" + topic + CRLF)
-// #define RPL_LISTEND(nickname)                                   (SERVER + " 323 " + nickname + " :End of /LIST" + CRLF)
-#define RPL_CHANNELMODEIS(channel, mode, modeParams)        (SERVER + " 324 * " + channel + SPACE + mode + SPACE + modeParams + CRLF)
-#define RPL_NOTOPIC(nickname, channel)                          (SERVER + " 331 " + nickname + SPACE + channel + " :No topic is set" + CRLF)
-#define RPL_TOPIC(nickname, channel, topic)                     (SERVER + " 332 " + nickname + SPACE + channel + " :" + topic + CRLF)
-#define RPL_INVITING(targetNick, nickname, channel)                         (SERVER + " 341 " + nickname + SPACE + targetNick + SPACE + channel + CRLF)
-// #define RPL_WHOREPLY(channel, username, nickname, flags, realname)  (SERVER + " 352 " + channel + SPACE + username + " 42sp.org.br ft.irc " + nickname + SPACE + flags + ":0 " + realname + CRLF)
-#define RPL_NAMREPLY(nickname, channel, names)                  (SERVER + " 353 " + nickname + " = " + channel + " :" + names + CRLF)
-#define RPL_ENDOFNAMES(nickname, channel)                       (SERVER + " 366 " + nickname + SPACE + channel + " : End of names list" + CRLF)
 
-#define ERR_NOSUCHNICK(targetNick)                       (SERVER + " 401 " + targetNick + " :No such nick" + CRLF)
-#define ERR_NOSUCHCHANNEL(channel)                      (SERVER + " 403 * " + channel + " :No such channel" + CRLF)
-// #define ERR_CANNOTSENDTOCHAN(nickname, chan)			         (SERVER + " 404 " + nickname + SPACE + chan + " :Cannot send to channel" + CRLF)
-// #define ERR_NORECIPIENT(nickname)                           (SERVER + " 411 " + username + " :No recipient given" + CRLF)
-#define ERR_NOTEXTTOSEND(nickname)                          (SERVER + " 412 " + nickname + " :No text to send" + CRLF)
-#define ERR_UNKNOWNCOMMAND(nickname, command)               (SERVER + " 421 " + nickname + SPACE + command + " :Unknown command" + CRLF)
-#define ERR_NONICKNAMEGIVEN()                           (SERVER + " 431 * :No nickname given" + CRLF)
-#define ERR_ERRONEUSNICKNAME(nickname)                      (SERVER + " 432 * " + nickname + " :Erroneus nickname" + CRLF)
-#define ERR_NICKNAMEINUSE(nickname)                         (SERVER + " 433 * " + nickname + " :Nickname is already in use" + CRLF)
-#define ERR_USERNOTINCHANNEL(targetNick, nickname, channel) (SERVER + " 441 " + nickname + SPACE + targetNick + SPACE + channel + " :They aren't on that channel" + CRLF)
-#define ERR_NOTONCHANNEL(channel)                       (SERVER + " 442 * " + channel + " :You're not on that channel" + CRLF)
-#define ERR_USERONCHANNEL(nickname, channel)                (SERVER + " 443 * " + nickname + SPACE + channel + " :is already on channel" + CRLF)
-#define ERR_NOTREGISTERED(command) (SERVER + " 451 * " + command + " :You have not registered" + CRLF)
-#define ERR_NEEDMOREPARAMS(command)             (SERVER + " 461 * " + command + " :Not enough parameters" + CRLF)
-#define ERR_ALREADYREGISTERED(nickname)                     (SERVER + " 462 " + nickname + " :You may not reregister" + CRLF)
-#define ERR_PASSWDMISMATCH()                            (SERVER + " 464 * :Password incorrect" + CRLF)
-#define ERR_KEYSET(nickname, channel)                   (SERVER + " 467 " + nickname + SPACE + channel + " :Channel key already set" + CRLF)
-#define ERR_CHANNELISFULL(channel)                      (SERVER + " 471 * " + channel + " :Cannot join channel (+l)" + CRLF)
-#define ERR_UNKNOWNMODE(nickname, mode)                 (SERVER + " 472 * " + nickname + SPACE + mode + " :is unknown mode char to me" + CRLF)
-#define ERR_INVITEONLYCHAN(channel)                     (SERVER + " 473 * " + channel + " :Cannot join channel (+i)" + CRLF)
-#define ERR_BADCHANNELKEY(username, channel)                (SERVER + " 475 *" + username + SPACE + channel + " :Cannot join channel (+k)" + CRLF)
-#define ERR_CHANOPRIVSNEEDED(username, channel)              (SERVER + " 482 " + username + SPACE + channel + " :You're not a channel operator" + CRLF)
-
-// #define JOIN(username, channel)                                         (COLON + username + " JOIN " + channel + CRLF)
-// #define PRIVMSG_BROADCAST(nickname, username, channel, topic)               (COLON + nickname + "!~" + username + "@ft.irc TOPIC " + channel + SPACE + topic + CRLF)
-#define RPL_PRIVMSG(nickname, dest, message)                            (COLON + nickname + " PRIVMSG " + dest + " :" + message + CRLF)
-// #define RPL_PARTMSG(nickname, username, dest, message)                      (COLON + nickname + "!~" + username + "@* PART " + dest + " :" + message + CRLF)
-// #define RPL_PARTNOMSG(nickname, username, dest)                             (COLON + nickname + "!" + username + "@* PART " + dest + CRLF)
-// #define RPL_KICKREASON(op_nickname, op_username, channel, client, reason)   (COLON + op_nickname + "!" + op_username + "@ft.irc KICK " + channel + SPACE + client + SPACE + COLON + reason + CRLF)
-// #define RPL_KICKNOREASON(op_nickname, op_username, channel, client)         (COLON + op_nickname + "!" + op_username + "@ft.irc KICK " + channel + SPACE + client + CRLF)
-// #define RPL_KICKFEEDBACK(op_nickname, op_username, channel, client)         (COLON + op_nickname + "!" + op_username + "@ft.irc KICK " + channel + SPACE + client + CRLF)
-// #define RPL_MODEBASE(nickname, username, channel)                           (COLON + nickname + "!" + username + "@ft.irc MODE " + channel + SPACE)
-#define RPL_INVITE(targetNick, nickname, channel) (SERVER + SPACE + nickname + " INVITE " + targetNick + SPACE + channel + CRLF)
-// #define RPL_QUIT(nickname, userName, host, reason) (":" + (nickname) + "!" + (userName) + "@" + (host) + " QUIT :" + (reason) + CRLF)
-
-#define ERR_SERVERSHUTDOWN(nickname) (SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" + CRLF)
+    // no code
+#define JOIN(client_prefix, channel) (COLON + client_prefix + " JOIN :" + channel + CRLF)
+#define RPL_PRIVMSG(nickname, dest, message) \
+    (COLON + nickname + " PRIVMSG " + dest + " :" + message + CRLF)
+#define RPL_INVITE(targetNick, nickname, channel) \
+    (SERVER + SPACE + nickname + " INVITE " + targetNick + SPACE + channel + CRLF)
+#define RPL_PONG(token) (SERVER + " PONG " + token + "\r\n")
+#define ERR_SERVERSHUTDOWN(nickname) \
+    (SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" + CRLF)
 
 #endif
