@@ -8,7 +8,7 @@
 #include <cctype>
 
 struct IRCMessage {
-    std::string              prefix;  // usually server name or nick!user@host
+    std::string              prefix;  // nick!user@host
     std::string              command; // Command (NICK, USER, PRIVMSG, etc....)
     std::vector<std::string> params;
     std::string              trailing; // Optional parameter (after :)

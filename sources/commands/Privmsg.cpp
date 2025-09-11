@@ -39,7 +39,7 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
 }
 
 void Commands::handlePrivmsg(Client &client, Server &server, const IRCMessage &msg) {
-      if (msg.params.empty()) {
+    if (msg.params.empty()) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }

@@ -152,7 +152,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
             }
             default:
                 logError("Unknown mode: " + std::string(1, mode[i]) +
-                     ". Sending ERR_UNKNOWNMODE.");
+                         ". Sending ERR_UNKNOWNMODE.");
                 client.sendReply(
                     ERR_UNKNOWNMODE(client.getNickname(), std::string(1, mode[i])));
                 break;
@@ -167,5 +167,5 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
             logDebug("Broadcasting mode change to channel: " + broadcastMsg);
             channel->broadcast(broadcastMsg, NULL);
         }
-        }
     }
+}

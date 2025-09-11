@@ -108,8 +108,9 @@ bool Parser::isValidCommand(const std::string& command) {
         return false;
 
     // Known, supported command tokens (keep in sync with Commands map)
-    static const char* kKnown[] = {"PASS", "NICK", "USER",    "QUIT",  "JOIN",   "KICK",
-                                   "PING", "PONG", "PRIVMSG", "TOPIC", "INVITE", "MODE"};
+    static const char* kKnown[] = {"PASS",   "NICK", "USER", "QUIT",    "JOIN",
+                                   "KICK",   "PING", "PONG", "PRIVMSG", "TOPIC",
+                                   "INVITE", "MODE", "NAMES"};
     for (size_t i = 0; i < sizeof(kKnown) / sizeof(kKnown[0]); ++i) {
         if (command == kKnown[i])
             return true;

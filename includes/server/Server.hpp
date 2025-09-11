@@ -28,7 +28,6 @@
 #include "../pollset/Pollset.hpp" // pollset class
 #include "../parser/Parser.hpp"   // parser class
 #include "../commands/Commands.hpp"
-#include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 #include "../includes/ft_irc.hpp"
 
 class Server {
