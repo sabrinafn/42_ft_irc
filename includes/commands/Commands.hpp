@@ -29,6 +29,7 @@ class Commands {
     void handleKick(Client &client, Server &server, const IRCMessage &msg);
     void handleInvite(Client &client, Server &server, const IRCMessage &msg);
     void handleMode(Client &client, Server &server, const IRCMessage &msg);
+    void handleNames(Client &client, Server &server, const IRCMessage &msg);
 
     /* UTILS FUNCTIONS */
 
@@ -43,6 +44,9 @@ class Commands {
 
     bool sendMsgToClient(Client &client, Server &server, const IRCMessage &msg);
     bool sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg);
+
+    std::string getChannelNames(Channel *channel);
+    void        sendChannelMembers(Client &client, Channel *channel);
 
    public:
     /* CONSTRUCTOR */

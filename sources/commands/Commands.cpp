@@ -14,6 +14,7 @@ Commands::Commands(void) {
     commandsMap["KICK"]    = &Commands::handleKick;
     commandsMap["INVITE"]  = &Commands::handleInvite;
     commandsMap["MODE"]    = &Commands::handleMode;
+    commandsMap["NAMES"]   = &Commands::handleNames;
 }
 
 /* COPY CONSTRUCTOR */
