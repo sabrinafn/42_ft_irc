@@ -30,7 +30,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
         logInfo("Querying modes for channel " + channelName + ". Sending RPL_CHANNELMODEIS.");
         if (!channel->isOperator(&client)) {
             if (channel->getLimit() == 0) {
-                client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), "");
+                client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), ""));
             } else {
                 std::stringstream ss;
                 ss << channel->getLimit();

@@ -33,6 +33,8 @@ void setupSignals(void (*handler)(int)) {
     signal(SIGQUIT, handler);
     // kill [pid]
     signal(SIGTERM, handler);
+    //handle broken pipe
+    signal(SIGPIPE, SIG_IGN);
 }
 
 std::vector<std::string> split(const std::string& str, char delimiter) {
