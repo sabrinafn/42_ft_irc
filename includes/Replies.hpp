@@ -67,10 +67,10 @@
     (SERVER + " 472 * " + nickname + SPACE + mode + " :is unknown mode char to me" + CRLF)
 #define ERR_INVITEONLYCHAN(channel) \
     (SERVER + " 473 * " + channel + " :Cannot join channel (+i)" + CRLF)
-#define ERR_BADCHANNELKEY(username, channel) \
-    (SERVER + " 475 *" + username + SPACE + channel + " :Cannot join channel (+k)" + CRLF)
-#define ERR_CHANOPRIVSNEEDED(username, channel) \
-    (SERVER + " 482 " + username + SPACE + channel + " :You're not a channel operator" + CRLF)
+#define ERR_BADCHANNELKEY(nickname, channel) \
+    (SERVER + " 475 *" + nickname + SPACE + channel + " :Cannot join channel (+k)" + CRLF)
+#define ERR_CHANOPRIVSNEEDED(nickname, channel) \
+    (SERVER + " 482 " + nickname + SPACE + channel + " :You're not a channel operator" + CRLF)
 
 
     // no code
@@ -82,5 +82,6 @@
 #define RPL_PONG(token) (SERVER + " PONG " + token + "\r\n")
 #define ERR_SERVERSHUTDOWN(nickname) \
     (SERVER + " ERROR :Closing Link: " + nickname + " (Server shutting down)" + CRLF)
+#define ERR_USERCANNOTKICKITSELF(nickname, channel) (SERVER + SPACE + nickname + SPACE + channel + ":You cannot kick yourself from the channel")
 
 #endif
