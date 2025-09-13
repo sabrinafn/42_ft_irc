@@ -169,14 +169,7 @@ void Server::monitorConnections(void) {
 
 /* SET SOCKETS AS NON BLOCKING */
 void Server::setNonBlocking(int socket) {
-    int flags = fcntl(socket, F_GETFL, 0);
-    if (flags == -1) {
-        if (socket != this->socket_fd)
-            close(socket);
-        throwSystemError("fcntl");
-    }
-    flags |= O_NONBLOCK;
-    if (fcntl(socket, F_SETFL, flags) == -1) {
+    if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
         if (socket != this->socket_fd)
             close(socket);
         throwSystemError("fcntl");
@@ -260,6 +253,20 @@ void Server::receiveData(size_t &index) {
 
 /* DISCONNECT CLIENT */
 void Server::disconnectClient(int client_fd) {
+
+    std::map<std::string, Channel *>::iterator itChannel = this->channels.begin();
+
+    while (itChannel != this->channels.end()) {
+
+        Channel* channel = itChannel->second;
+        Client* client = getClientByFd(client_fd);
+
+        if (channel->isMember(client)) {
+            channel->removeMember(client);
+        }
+        itChannel++;
+    }
+
     std::map<int, Client *>::iterator it = clients.find(client_fd);
     if (it != clients.end()) {
         delete it->second;

@@ -76,6 +76,9 @@ class Client {
     /* SEND IRC REPLY MESSAGE TO EACH CLIENT */
     void sendReply(const std::string& message);
 
+    /* SEND IRC REPLY WITHOUT LOGGING (used for silent bot messages) */
+    void sendReplySilent(const std::string& message);
+
     /* SEND WELCOME MESSAGES AFTER REGISTRATION */
     void sendWelcomeMessages(void);
 };

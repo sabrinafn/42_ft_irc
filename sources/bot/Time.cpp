@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLETIME */
 void Commands::handleTime(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     (void)msg;
@@ -16,9 +15,9 @@ void Commands::handleTime(Client &client, Server &server, const IRCMessage &msg)
         timeString.erase(timeString.length()-1);
     }
 
-    std::string response = RPL_PRIVMSG(SERVER2, client.getNickname(), "Current time: " + timeString);
-    client.sendReply(response);
-
+    std::string response = RPL_PRIVMSG(SERVER2, client.getNickname(), "[Marvin] - Current time: " + timeString);
+    client.sendReplySilent(response);
+    
     std::stringstream ss;
     ss << "Sent time to client [" << client.getFd() << "]: " << timeString;
     logInfo(ss.str());

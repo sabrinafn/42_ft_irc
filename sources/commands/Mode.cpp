@@ -28,9 +28,20 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
     if (msg.params.size() == 1) {
         // Apenas retornar modos do canal
         logInfo("Querying modes for channel " + channelName + ". Sending RPL_CHANNELMODEIS.");
-        client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(),
-                                           channel->getModeParameters()));
+        if (!channel->isOperator(&client)) {
+            if (channel->getLimit() == 0) {
+                client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), ""));
+            } else {
+                std::stringstream ss;
+                ss << channel->getLimit();
+                client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(), ss.str()));
+            }
 
+        }
+        else {
+            client.sendReply(RPL_CHANNELMODEIS(channelName, channel->getModesString(),
+                                           channel->getModeParameters()));
+        }
         return;
     }
 
@@ -101,7 +112,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                 } else {
                     logInfo("Removing mode -k from " + channelName);
                     channel->removeMode(Channel::KEY_REQUIRED);
-                    channel->setKey("");
+                    channel->removeKey();
                     modeApplied = true;
                 }
                 break;

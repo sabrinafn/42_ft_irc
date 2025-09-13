@@ -59,44 +59,19 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
                     ERR_USERNOTINCHANNEL(targetNick, client.getNickname(), channelName));
                 continue;
             }
+            if (client.getFd() == target->getFd()) {
+                client.sendReply(ERR_USERCANNOTKICKITSELF(client.getNickname(), channelName));
+                continue;
+            }
 
             std::string kickMsg = ":" + client.getPrefix() + " KICK " + channelName + " " +
                                   targetNick + " :" + reason;
+           
             channel->broadcast(kickMsg, &client);
 
             channel->removeMember(target);
             channel->removeOperator(target);
 
-            // DEBUG APENAS: LISTAR OPERADORES
-            std::vector<Client*> ops = channel->getOperators();
-            std::stringstream    ssOps;
-            ssOps << "Current operators in " << channelName << ":";
-            for (size_t i = 0; i < ops.size(); i++) {
-                ssOps << " " << ops[i]->getNickname();
-            }
-            logDebug(ssOps.str());
-
-            // se nao tem operadores, adiciona primeiro membro como operador
-            // ou fica sem operador se nao tiver membros
-            if (ops.empty()) {
-                std::vector<Client*> members = channel->getMembers();
-                if (!members.empty()) {
-                    channel->addOperator(members[0]);
-                    logInfo("KICK: promoted " + members[0]->getNickname() +
-                            " to operator in " + channelName);
-
-                    // DEBUG APENAS: LISTAR OPERADORES DE NOVO
-                    ops = channel->getOperators();
-                    std::stringstream ssOps2;
-                    ssOps2 << "Current operators in " << channelName << ":";
-                    for (size_t i = 0; i < ops.size(); i++) {
-                        ssOps2 << " " << ops[i]->getNickname();
-                    }
-                    logDebug(ssOps2.str());
-                    if (channel->isEmptyChannel())
-                        server.removeChannel(channelName);
-                }
-            }
         }
     }
 }

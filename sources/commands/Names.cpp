@@ -60,7 +60,7 @@ void Commands::handleNames(Client &client, Server &server, const IRCMessage &msg
 }
 
 void Commands::sendChannelMembers(Client &client, Channel *channel) {
-    std::string           membersList = "=";
+    std::string           membersList;
     std::vector<Client *> members     = channel->getMembers();
 
     for (size_t i = 0; i < members.size(); ++i) {
