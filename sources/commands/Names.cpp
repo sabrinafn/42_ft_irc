@@ -13,14 +13,14 @@ void Commands::handleNames(Client &client, Server &server, const IRCMessage &msg
 
     std::vector<std::string> channelstoPrint;
 
-    if (requestedChannels.empty()) { // printing all channels
+    if (requestedChannels.empty()) { 
         std::map<std::string, Channel *>::iterator it = server.get_channels().begin();
         while (it != server.get_channels().end()) {
             Channel *current = it->second;
             channelstoPrint.push_back(current->getName());
             it++;
         }
-    } else { // print only requestedChannels
+    } else { 
         for (size_t i = 0; i < requestedChannels.size(); ++i) {
             const std::string &name = requestedChannels[i];
             if (server.get_channels().find(name) != server.get_channels().end())
@@ -28,13 +28,12 @@ void Commands::handleNames(Client &client, Server &server, const IRCMessage &msg
         }
     }
 
-    // get and send each channel members
     for (size_t i = 0; i < channelstoPrint.size(); ++i) {
         Channel *current = server.get_channels()[channelstoPrint[i]];
         sendChannelMembers(client, current);
     }
 
-    // users not in any channel
+
     if (requestedChannels.empty()) {
         std::string                             clientsList;
         std::map<int, Client *>::const_iterator it = server.getClients().begin();

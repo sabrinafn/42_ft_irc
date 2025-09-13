@@ -1,6 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLENICK */
+
 void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg) {
     if (msg.params.empty()) {
         logError("No nickname provided, sending ERR_NONICKNAMEGIVEN");
@@ -15,7 +15,6 @@ void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg)
         return;
     }
 
-    // Verifica se o nickname já está em uso
     if (isNicknameInUse(server, nickname, client.getFd())) {
         logError("Nickname already in use: " + nickname + ", sending ERR_NICKNAMEINUSE");
         client.sendReply(ERR_NICKNAMEINUSE(nickname));
@@ -37,7 +36,7 @@ void Commands::handleNick(Client &client, Server &server, const IRCMessage &msg)
     }
 }
 
-/* CHECK IF NICKNAME IS ALREADY IN USE */
+
 bool Commands::isNicknameInUse(Server &server, const std::string &nickname, int excludeFd) {
     const std::map<int, Client *> &clients = server.getClients();
     for (std::map<int, Client *>::const_iterator it = clients.begin(); it != clients.end();

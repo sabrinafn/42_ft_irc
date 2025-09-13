@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* CONSTRUCTOR */
 Commands::Commands(void) {
     commandsMap["PASS"]    = &Commands::handlePass;
     commandsMap["NICK"]    = &Commands::handleNick;
@@ -19,22 +18,22 @@ Commands::Commands(void) {
     commandsMap["!TIME"]   = &Commands::handleTime;
 }
 
-/* COPY CONSTRUCTOR */
+
 Commands::Commands(const Commands& other) {
     *this = other;
 }
 
-/* = OPERATOR */
+
 Commands& Commands::operator=(const Commands& other) {
     (void)other;
     return *this;
 }
 
-/* DESTRUCTOR */
+
 Commands::~Commands(void) {
 }
 
-/* COMMAND HANDLER THAT WILL CALL EACH COMMAND */
+
 void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
     std::map<std::string, CommandFunc>::iterator it = this->commandsMap.find(msg.command);
     if (it != commandsMap.end()) {

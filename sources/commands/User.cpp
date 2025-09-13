@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEUSER */
 void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     if (client.getState() == UNREGISTERED) {
@@ -38,7 +37,7 @@ void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg)
         return;
     }
     if (!msg.trailing.empty())
-        client.setRealname(msg.trailing); // no realname is accepted
+        client.setRealname(msg.trailing);
     client.setUsername(msg.params[0]);
     std::stringstream ss3;
     ss3 << "Client [" << client.getFd() << "] set username: " << client.getUsername();

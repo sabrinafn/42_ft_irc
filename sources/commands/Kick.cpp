@@ -1,7 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEKICK */
-// /KICK <#canal> <nick> [motivo]
+
 void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg) {
     if (msg.params.empty() || msg.params.size() < 2) {
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
@@ -11,7 +10,7 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
     std::vector<std::string> _channels = split(msg.params[0], ',');
     std::vector<std::string> targets   = split(msg.params[1], ',');
 
-    // Motivo (se houver)
+
     std::string reason;
     if (msg.params.size() > 2) {
         for (size_t i = 2; i < msg.params.size(); ++i) {

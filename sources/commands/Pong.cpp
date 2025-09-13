@@ -1,7 +1,7 @@
 #include "../includes/ft_irc.hpp"
 
 void Commands::handlePong(Client &client, Server &server, const IRCMessage &msg) {
-    (void)msg; // Suppress unused parameter warning
+    (void)msg; 
     if (std::time(0) - client.getLastPingSent() < server.getPongTimeout()) {
         client.setPingSent(false);
         client.setLastActivity(std::time(0));

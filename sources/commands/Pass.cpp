@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEPASS */
 void Commands::handlePass(Client &client, Server &server, const IRCMessage &msg) {
     if (client.getState() != UNREGISTERED) {
         client.sendReply(ERR_ALREADYREGISTERED(client.getNickname()));

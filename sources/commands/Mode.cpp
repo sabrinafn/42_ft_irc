@@ -60,7 +60,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
     }
 
     bool   modeApplied = false;
-    size_t argIndex    = 2; // índice inicial para argumentos extras
+    size_t argIndex    = 2;
     bool   add         = (mode[0] == '+');
 
     for (size_t i = 1; i < mode.size(); ++i) {
@@ -149,12 +149,12 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                     break;
                 }
                 if (add) {
-                    if (!channel->isOperator(target)) { // só adiciona se não for operador
+                    if (!channel->isOperator(target)) { 
                         channel->addOperator(target);
                         modeApplied = true;
                     }
                 } else {
-                    if (channel->isOperator(target)) { // só remove se for operador
+                    if (channel->isOperator(target)) { 
                         channel->removeOperator(target);
                         modeApplied = true;
                     }
@@ -169,7 +169,7 @@ void Commands::handleMode(Client &client, Server &server, const IRCMessage &msg)
                 break;
         }
 
-        // Broadcast da alteração para todos do canal
+
         if (modeApplied) {
             std::string broadcastMsg =
                 ":" + client.getNickname() + " MODE " + channelName + " " + modeChange;

@@ -1,6 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEPRIVMSG */
+
 
 bool Commands::sendMsgToChannel(Client &client, Server &server, const IRCMessage &msg) {
     Channel                         *channel;
@@ -28,12 +28,10 @@ bool Commands::sendMsgToClient(Client &client, Server &server, const IRCMessage 
     Client *targetClient = server.getClientByNick(dest);
 
     if (targetClient) {
-        // encontrado
         std::string fullMessage = RPL_PRIVMSG(client.getPrefix(), dest, msg.trailing);
         targetClient->sendReply(fullMessage);
         return true;
     }
-    // não encontrado
     client.sendReply(ERR_NOSUCHNICK(dest));
     return false;
 }

@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* CONSTRUCTOR */
 Client::Client(void)
     : fd(0),
       buffer(""),
@@ -12,12 +11,10 @@ Client::Client(void)
       username("") {
 }
 
-/* COPY CONSTRUCTOR */
 Client::Client(const Client& other) {
     *this = other;
 }
 
-/* OPERATORS */
 Client& Client::operator=(const Client& other) {
     if (this != &other) {
         this->fd             = other.fd;
@@ -33,11 +30,9 @@ Client& Client::operator=(const Client& other) {
     return *this;
 }
 
-/* DESTRUCTOR */
 Client::~Client(void) {
 }
 
-/* SETTERS */
 void Client::setFd(int other) {
     this->fd = other;
 }
@@ -78,7 +73,6 @@ void Client::setRealname(const std::string& real) {
     this->realname = real;
 }
 
-/* GETTERS */
 int Client::getFd(void) const {
     return this->fd;
 }
@@ -124,12 +118,10 @@ std::string Client::getPrefix() const {
     return prefix;
 }
 
-/* APPEND MORE DATA TO CURRENT BUFFER DATA */
 void Client::appendData(std::string other) {
     this->buffer += other;
 }
 
-/* SEND IRC REPLY MESSAGE TO EACH CLIENT */
 void Client::sendReply(const std::string& message) {
     std::string msg = message + "\r\n";
     ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
@@ -159,7 +151,6 @@ void Client::sendReplySilent(const std::string& message) {
     }
 }
 
-/* SEND WELCOME MESSAGES AFTER REGISTRATION */
 void Client::sendWelcomeMessages(void) {
     this->sendReply(RPL_WELCOME(this->nickname, this->getPrefix()));
     this->sendReply(RPL_YOURHOST(this->nickname));

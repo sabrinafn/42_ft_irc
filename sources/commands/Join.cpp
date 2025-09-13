@@ -81,25 +81,24 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             logDebug("Client added as operator to channel " + name);
         } else {
             channel = server.get_channels()[name];
-            // verifica se o usuario ja eh membro desse canal
+
             if (channel->isMember(&client)) {
                 client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
                 continue;
             }
 
-            // verifica limite de usuarios (+l), sai daqui. nao entra mais ninguem
             if (channel->hasMode(Channel::LIMIT_SET) &&
                 (int)channel->getMembers().size() >= channel->getLimit()) {
                 client.sendReply(ERR_CHANNELISFULL(channel->getName()));
                 continue;
             }
 
-            // verifica se o canal eh invite only (+i) nao foi convidado, sai daqui
+
             if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
                 client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
                 continue;
             }
-            // verifica se precisa de senha (+k) senha errada? sai daqui
+
             if (channel->hasMode(Channel::KEY_REQUIRED)) {
                 if (i >= modes.size() || channel->getKey() != modes[i]) {
                     client.sendReply(
@@ -108,20 +107,19 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
                 }
             }
         }
-        // adiciona o usuario como membro do canal nada de errado com os modes? entao entra
+
         channel->addMember(&client);
         logDebug("Client added to channel " + name);
 
-        // broadcast do JOIN para todos membros
+
         channel->broadcast(JOIN(client.getPrefix(), name));
 
-        // remove o convite desse usuario da lista de convidados
         if (channel->isInvited(&client)) {
             logDebug("Removing invite for client " + client.getNickname());
             channel->removeInvite(&client);
         }
 
-        // envia informacoes do topico do canal
+
         std::string topic = channel->getTopic();
         if (topic.empty()) {
             client.sendReply(RPL_NOTOPIC(client.getNickname(), channel->getName()));
@@ -138,11 +136,11 @@ bool Commands::isValidChannelName(const std::string &name) {
 
     for (size_t i = 1; i < name.size(); ++i) {
         unsigned char c = name[i];
-        if (std::isspace(c)) // espaço
+        if (std::isspace(c)) 
             return false;
-        if (c == ':') // caractere especial proibido
+        if (c == ':') 
             return false;
-        if (std::iscntrl(c)) // caracteres de controle
+        if (std::iscntrl(c)) 
             return false;
     }
     return true;
@@ -150,15 +148,15 @@ bool Commands::isValidChannelName(const std::string &name) {
 
 bool Commands::isValidkey(std::string key) {
     if (key.empty())
-        return false; // Empty keys are invalid
+        return false; 
 
-    for (size_t i = 0; i < key.size(); ++i) { // Start at index 0
+    for (size_t i = 0; i < key.size(); ++i) { 
         unsigned char c = key[i];
-        if (std::isspace(c)) // espaço
+        if (std::isspace(c)) 
             return false;
-        if (c == ':') // caractere especial proibido
+        if (c == ':') 
             return false;
-        if (std::iscntrl(c)) // caracteres de controle
+        if (std::iscntrl(c)) 
             return false;
     }
     return true;

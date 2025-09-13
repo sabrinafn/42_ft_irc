@@ -1,10 +1,8 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEQUIT */
 void Commands::handleQuit(Client &client, Server &server, const IRCMessage &msg) {
     std::string quitMessage = msg.trailing.empty() ? "Client Quit" : msg.trailing;
 
-    // Remove client from all channels BEFORE disconnecting
     std::map<std::string, Channel *> &channels = server.get_channels();
     std::vector<std::string>          channelsToRemove;
 
@@ -26,7 +24,6 @@ void Commands::handleQuit(Client &client, Server &server, const IRCMessage &msg)
     for (size_t i = 0; i < channelsToRemove.size(); ++i) {
         server.removeChannel(channelsToRemove[i]);
     }
-    // Send quit message to client
     std::stringstream ss;
     ss << "Client [" << client.getFd() << "] (" << client.getNickname()
        << ") quit: " << quitMessage;
