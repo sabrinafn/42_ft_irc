@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLEJOKE */
 void Commands::handleJoke(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     (void)msg;

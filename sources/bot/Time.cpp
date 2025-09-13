@@ -1,6 +1,5 @@
 #include "../includes/ft_irc.hpp"
 
-/* HANDLETIME */
 void Commands::handleTime(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     (void)msg;
