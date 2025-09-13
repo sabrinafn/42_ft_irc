@@ -9,10 +9,11 @@ void Commands::handleTime(Client &client, Server &server, const IRCMessage &msg)
 
     // Get current time
     time_t now = time(0);
-    char* timeStr = ctime(&now);
+    char timeBuffer[64];
+    ctime_r(&now, timeBuffer);
     
     // Remove the newline character at the end
-    std::string timeString(timeStr);
+    std::string timeString(timeBuffer);
     if (!timeString.empty() && timeString[timeString.length()-1] == '\n') {
         timeString.erase(timeString.length()-1);
     }
