@@ -7,7 +7,6 @@ void Commands::handleJoke(Client &client, Server &server, const IRCMessage &msg)
     
     logInfo("Received !JOKE command from " + client.getNickname());
 
-    // Array of jokes (static to avoid recreation)
     static std::vector<std::string> jokes;
     if (jokes.empty()) {
         jokes.push_back("Why don't scientists trust atoms? Because they make up everything!");
@@ -22,7 +21,6 @@ void Commands::handleJoke(Client &client, Server &server, const IRCMessage &msg)
         jokes.push_back("What do you call a dinosaur that crashes his car? Tyrannosaurus Wrecks!");
     }
 
-    // Get a random joke
     static bool seeded = false;
     if (!seeded) {
         srand(time(NULL));
@@ -31,7 +29,6 @@ void Commands::handleJoke(Client &client, Server &server, const IRCMessage &msg)
     int randomIndex = rand() % jokes.size();
     std::string joke = jokes[randomIndex];
 
-    // Send the joke as a PRIVMSG to the client
     std::string response = RPL_PRIVMSG(SERVER2, client.getNickname(), joke);
     client.sendReply(response);
 
