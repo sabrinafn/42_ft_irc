@@ -15,6 +15,8 @@ Commands::Commands(void) {
     commandsMap["INVITE"]  = &Commands::handleInvite;
     commandsMap["MODE"]    = &Commands::handleMode;
     commandsMap["NAMES"]   = &Commands::handleNames;
+    commandsMap["!JOKE"]   = &Commands::handleJoke;
+    commandsMap["!TIME"]   = &Commands::handleTime;
 }
 
 /* COPY CONSTRUCTOR */

@@ -30,6 +30,8 @@ class Commands {
     void handleInvite(Client &client, Server &server, const IRCMessage &msg);
     void handleMode(Client &client, Server &server, const IRCMessage &msg);
     void handleNames(Client &client, Server &server, const IRCMessage &msg);
+    void handleJoke(Client &client, Server &server, const IRCMessage &msg);
+    void handleTime(Client &client, Server &server, const IRCMessage &msg);
 
     /* UTILS FUNCTIONS */
 
