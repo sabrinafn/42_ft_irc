@@ -147,6 +147,18 @@ void Client::sendReply(const std::string& message) {
     }
 }
 
+void Client::sendReplySilent(const std::string& message) {
+    std::string msg = message + "\r\n";
+    ssize_t     ret = send(fd, msg.c_str(), msg.size(), 0);
+    if (ret == -1) {
+        int               err = errno;
+        std::stringstream ss;
+        ss << "send() failed for client [" << this->fd << "]: " << strerror(err)
+           << " (errno=" << err << ")";
+        logError(ss.str());
+    }
+}
+
 /* SEND WELCOME MESSAGES AFTER REGISTRATION */
 void Client::sendWelcomeMessages(void) {
     this->sendReply(RPL_WELCOME(this->nickname, this->getPrefix()));
