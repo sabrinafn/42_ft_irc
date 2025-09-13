@@ -12,7 +12,6 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <unistd.h>
-#include "../standardReplies/StdReplies.hpp" // standard irc reply messages
 
 enum ClientState {
     UNREGISTERED, // Just connected, no authentication

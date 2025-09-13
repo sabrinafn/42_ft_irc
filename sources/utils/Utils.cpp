@@ -57,3 +57,14 @@ std::string getStartupTime() {
        << std::setw(2) << tm_info->tm_sec;
     return ss.str();
 }
+
+bool isStrDigit(const std::string& str) {
+    if (str.empty()) {
+        return false;
+    }
+    for (size_t i = 0; i < str.size(); i++) {
+        if (!isdigit(str[i]))
+            return false;
+    }
+    return true;
+}

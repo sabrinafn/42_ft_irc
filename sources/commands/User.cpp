@@ -4,9 +4,10 @@
 void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg) {
     (void)server;
     if (client.getState() == UNREGISTERED) {
-        client.sendReply(ERR_PASSREQUIRED());
+        client.sendReply(ERR_PASSWDMISMATCH());
         std::stringstream ss;
-        ss << "Client [" << client.getFd() << "] not registered yet, sending ERR_PASSREQUIRED";
+        ss << "Client [" << client.getFd()
+           << "] not registered yet, sending ERR_PASSWDMISMATCH";
         logError(ss.str());
         return;
     }
@@ -16,7 +17,7 @@ void Commands::handleUser(Client &client, Server &server, const IRCMessage &msg)
         ss1 << "Client [" << client.getFd()
             << "] already has username, sending ERR_ALREADYREGISTRED";
         logError(ss1.str());
-        client.sendReply(ERR_ALREADYREGISTRED(client.getNickname()));
+        client.sendReply(ERR_ALREADYREGISTERED(client.getNickname()));
         return;
     }
 

@@ -4,7 +4,6 @@
 // /KICK <#canal> <nick> [motivo]
 void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg) {
     if (msg.params.empty() || msg.params.size() < 2) {
-        logError("KICK: missing parameters");
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
@@ -31,22 +30,17 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
         std::map<std::string, Channel*>& all_channels = server.get_channels();
 
         if (!server.hasChannel(channelName)) {
-            logError("KICK: channel does not exist -> " + channelName);
             client.sendReply(ERR_NOSUCHCHANNEL(channelName));
             continue;
         }
 
         Channel* channel = all_channels[channelName];
         if (!channel->isMember(&client)) {
-            logError("KICK: client " + client.getNickname() + " is not on channel " +
-                     channelName);
             client.sendReply(ERR_NOTONCHANNEL(channelName));
             continue;
         }
 
         if (!channel->isOperator(&client)) {
-            logError("KICK: client " + client.getNickname() +
-                     " tried to kick without operator privilege in " + channelName);
             client.sendReply(ERR_CHANOPRIVSNEEDED(client.getNickname(), channelName));
             continue;
         }
@@ -56,13 +50,11 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
             Client*     target     = server.getClientByNick(targetNick);
 
             if (!target) {
-                logError("KICK: target user not found -> " + targetNick);
                 client.sendReply(ERR_NOSUCHNICK(targetNick));
                 continue;
             }
 
             if (!channel->isMember(target)) {
-                logError("KICK: target " + targetNick + " is not in channel " + channelName);
                 client.sendReply(
                     ERR_USERNOTINCHANNEL(targetNick, client.getNickname(), channelName));
                 continue;
@@ -70,11 +62,8 @@ void Commands::handleKick(Client& client, Server& server, const IRCMessage& msg)
 
             std::string kickMsg = ":" + client.getPrefix() + " KICK " + channelName + " " +
                                   targetNick + " :" + reason;
-
-            logInfo("KICK: " + client.getNickname() + " kicked " + targetNick + " from " +
-                    channelName + " (reason: " + reason + ")");
-
             channel->broadcast(kickMsg, &client);
+
             channel->removeMember(target);
             channel->removeOperator(target);
 

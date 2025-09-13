@@ -5,7 +5,6 @@
 void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg) {
     // verifica se tem parametros depois do JOIN
     if (msg.params.empty()) {
-        logError("JOIN has no arguments");
         client.sendReply(ERR_NEEDMOREPARAMS(msg.command));
         return;
     }
@@ -17,13 +16,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
     std::string              channelName;
 
     while (std::getline(ss, channelName, ',')) {
-        std::stringstream ss;
-        ss << "check channel name: " << channelName;
-        logDebug(ss.str());
         if (!isValidChannelName(channelName)) {
-            std::stringstream ss2;
-            ss2 << "Invalid channel name: " << channelName;
-            logError(ss2.str());
             client.sendReply(ERR_NOSUCHCHANNEL(channelName));
             continue;
         }
@@ -90,7 +83,6 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             channel = server.get_channels()[name];
             // verifica se o usuario ja eh membro desse canal
             if (channel->isMember(&client)) {
-                logDebug("Client already member of channel " + name);
                 client.sendReply(ERR_USERONCHANNEL(client.getNickname(), channel->getName()));
                 continue;
             }
@@ -98,21 +90,18 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
             // verifica limite de usuarios (+l), sai daqui. nao entra mais ninguem
             if (channel->hasMode(Channel::LIMIT_SET) &&
                 (int)channel->getMembers().size() >= channel->getLimit()) {
-                logDebug("Channel " + name + " reached user limit");
                 client.sendReply(ERR_CHANNELISFULL(channel->getName()));
                 continue;
             }
 
             // verifica se o canal eh invite only (+i) nao foi convidado, sai daqui
             if (channel->hasMode(Channel::INVITE_ONLY) && !channel->isInvited(&client)) {
-                logDebug("Client not invited to channel " + name);
                 client.sendReply(ERR_INVITEONLYCHAN(channel->getName()));
                 continue;
             }
             // verifica se precisa de senha (+k) senha errada? sai daqui
             if (channel->hasMode(Channel::KEY_REQUIRED)) {
                 if (i >= modes.size() || channel->getKey() != modes[i]) {
-                    logDebug("Invalid key for channel " + name);
                     client.sendReply(
                         ERR_BADCHANNELKEY(client.getUsername(), channel->getName()));
                     continue;
@@ -124,9 +113,7 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         logDebug("Client added to channel " + name);
 
         // broadcast do JOIN para todos membros
-        std::string joinMsg = ":" + client.getPrefix() + " JOIN :" + name;
-        logDebug("Broadcast JOIN -> " + joinMsg);
-        channel->broadcast(joinMsg);
+        channel->broadcast(JOIN(client.getPrefix(), name));
 
         // remove o convite desse usuario da lista de convidados
         if (channel->isInvited(&client)) {
@@ -137,32 +124,11 @@ void Commands::handleJoin(Client &client, Server &server, const IRCMessage &msg)
         // envia informacoes do topico do canal
         std::string topic = channel->getTopic();
         if (topic.empty()) {
-            logDebug("Channel " + name + " has no topic");
             client.sendReply(RPL_NOTOPIC(client.getNickname(), channel->getName()));
         } else {
-            logDebug("Channel " + name + " topic -> " + topic);
             client.sendReply(RPL_TOPIC(client.getNickname(), channel->getName(), topic));
         }
-
-        // monta a lista de usuarios do canal
-        std::string           namesReply = "=";
-        std::vector<Client *> members    = channel->getMembers();
-        std::stringstream     ss_members;
-        ss_members << "Channel members " << name << ":";
-        for (size_t j = 0; j < members.size(); ++j) {
-            if (channel->isOperator(members[j])) {
-                namesReply += " @" + members[j]->getNickname();
-                ss_members << " @" << members[j]->getNickname();
-            } else {
-                namesReply += " " + members[j]->getNickname();
-                ss_members << " " << members[j]->getNickname();
-            }
-        }
-        logDebug(ss_members.str());
-
-        // envia a lista de usuarios
-        client.sendReply(RPL_NAMREPLY(client.getNickname(), channel->getName(), namesReply));
-        client.sendReply(RPL_ENDOFNAMES(client.getNickname(), channel->getName()));
+        sendChannelMembers(client, channel);
     }
 }
 

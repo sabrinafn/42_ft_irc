@@ -20,4 +20,6 @@ std::vector<std::string> split(const std::string& str, char delimiter);
 /* GET CURRENT DATE FOR WELCOME MESSAGE */
 std::string getStartupTime();
 
+bool isStrDigit(const std::string& str);
+
 #endif

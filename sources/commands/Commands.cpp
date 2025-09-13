@@ -14,6 +14,9 @@ Commands::Commands(void) {
     commandsMap["KICK"]    = &Commands::handleKick;
     commandsMap["INVITE"]  = &Commands::handleInvite;
     commandsMap["MODE"]    = &Commands::handleMode;
+    commandsMap["NAMES"]   = &Commands::handleNames;
+    commandsMap["!JOKE"]   = &Commands::handleJoke;
+    commandsMap["!TIME"]   = &Commands::handleTime;
 }
 
 /* COPY CONSTRUCTOR */
@@ -45,7 +48,7 @@ void Commands::handler(Client& client, Server& server, const IRCMessage& msg) {
         (this->*func)(client, server, msg);
     } else {
         if (client.getState() == REGISTERED) {
-            client.sendReply(ERR_UNKNOWNCMD(msg.command));
+            client.sendReply(ERR_UNKNOWNCOMMAND(client.getNickname(), msg.command));
         }
     }
 }

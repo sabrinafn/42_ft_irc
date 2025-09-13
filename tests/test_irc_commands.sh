@@ -119,7 +119,7 @@ echo ""
 
 # Test 5: PING/PONG ... 
 print_test "Test 5: PING/PONG Test"
-echo -e "PASS $PASSWORD\r\nNICK pinguser\r\nUSER pinguser 0 * :Ping User\r\nPING :testserver\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
+echo -e "PASS $PASSWORD\r\nNICK pinguser\r\nUSER pinguser 0 * :Ping User\r\nPING testserver\r\nQUIT\r\n" | nc -C 0.0.0.0 $PORT > test_output.tmp 2>&1 &
 sleep 2
 
 if grep -q "PONG.*testserver" test_output.tmp; then
