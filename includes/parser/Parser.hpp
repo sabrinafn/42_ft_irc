@@ -8,15 +8,13 @@
 #include <cctype>
 
 struct IRCMessage {
-    std::string              prefix;  // nick!user@host
-    std::string              command; // Command (NICK, USER, PRIVMSG, etc....)
+    std::string              prefix;
+    std::string              command;
     std::vector<std::string> params;
-    std::string              trailing; // Optional parameter (after :)
+    std::string              trailing;
 
-    IRCMessage() {
-    }
-    IRCMessage(const std::string& cmd) : command(cmd) {
-    }
+    IRCMessage() {}
+    IRCMessage(const std::string& cmd) : command(cmd) {}
 };
 
 class Parser {
@@ -44,7 +42,7 @@ class Parser {
     static std::string toLowerASCII(const std::string& s);
     static std::string toLowerRFC1459(const std::string& s);
     static std::string foldLower(const std::string& s, bool useRFC1459);
-    // case sensitive handler
+
     static void normalizeParamsForCommand(IRCMessage& msg, const ParserOptions& options);
 };
 

@@ -72,8 +72,6 @@
 #define ERR_CHANOPRIVSNEEDED(nickname, channel) \
     (SERVER + " 482 " + nickname + SPACE + channel + " :You're not a channel operator" + CRLF)
 
-
-    // no code
 #define JOIN(client_prefix, channel) (COLON + client_prefix + " JOIN :" + channel + CRLF)
 #define RPL_PRIVMSG(nickname, dest, message) \
     (COLON + nickname + " PRIVMSG " + dest + " :" + message + CRLF)
