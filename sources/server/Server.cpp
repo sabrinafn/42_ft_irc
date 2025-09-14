@@ -2,7 +2,6 @@
 
 bool Server::signals = false;
 
-/* CONSTRUCTORS */
 Server::Server(void) {
 }
 
@@ -22,18 +21,15 @@ Server::Server(int port, const std::string &password)
     logInfo(ss.str());
 }
 
-/* COPY CONSTRUCTOR */
 Server::Server(const Server &other) {
     *this = other;
 }
 
-/* OPERATORS */
 Server &Server::operator=(const Server &other) {
     (void)other;
     return *this;
 }
 
-/* DESTRUCTOR */
 Server::~Server(void) {
     for (std::map<int, Client *>::iterator it = clients.begin(); it != clients.end(); ++it) {
         close(it->second->getFd());
@@ -48,7 +44,6 @@ Server::~Server(void) {
     this->pollset.clear();
 }
 
-/* GETTERS */
 int Server::getPortNumber(void) const {
     return this->port;
 }
@@ -96,7 +91,6 @@ size_t Server::getPollsetIdxByFd(int fd) {
     return -1;
 }
 
-/* INIT SERVER */
 void Server::initServer(void) {
     createSocket();
     while (!Server::signals) {
@@ -104,42 +98,34 @@ void Server::initServer(void) {
     }
 }
 
-/* CREATE SOCKET */
 void Server::createSocket(void) {
     sockaddr_in hint;
-    hint.sin_family      = AF_INET;           // IPV4
-    hint.sin_port        = htons(this->port); // convert number to network byte order
-    hint.sin_addr.s_addr = INADDR_ANY;        // set the address to any local machine address
+    hint.sin_family      = AF_INET;          
+    hint.sin_port        = htons(this->port); 
+    hint.sin_addr.s_addr = INADDR_ANY;  
 
-    // create socket
     logInfo("Creating server socket...");
     this->socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (this->socket_fd == -1)
         throwSystemError("socket");
 
-    // Allow address reuse (prevents "Address already in use" error)
     int opt = 1;
     if (setsockopt(this->socket_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) < 0)
         throwSystemError("setsockopt");
 
-    // Setar O_NONBLOCK com fcntl()
     this->setNonBlocking(this->socket_fd);
 
-    // bind socket to a IP/port
     logInfo("Binding server socket to ip address");
     if (bind(this->socket_fd, (struct sockaddr *)&hint, sizeof(hint)) == -1)
         throwSystemError("bind");
 
-    // mark socket to start listening
     logInfo("Marking socket to start listening");
     if (listen(this->socket_fd, SOMAXCONN) == -1)
         throwSystemError("listen");
 
-    // CREATING POLL STRUCT FOR SERVER AND ADDING TO THE POLLFD STRUCT
     this->pollset.add(this->socket_fd);
 }
 
-/* MONITORING FOR ACTIVITY ON FDS */
 void Server::monitorConnections(void) {
     if (this->pollset.poll() == -1 && !Server::signals)
         throwSystemError("poll");
@@ -152,12 +138,12 @@ void Server::monitorConnections(void) {
                 ss << "Server listening socket [" << current.fd
                    << "] is ready to accept a new client";
                 logInfo(ss.str());
-                this->connectClient(); // accept a new client
+                this->connectClient();
             } else {
                 std::stringstream ss;
                 ss << "Client [" << current.fd << "] is sending new data";
                 logDebug(ss.str());
-                this->receiveData(i); // receive data
+                this->receiveData(i);
             }
         } else if (current.revents & POLLHUP || current.revents & POLLERR) {
             this->disconnectClient(current.fd);
@@ -167,7 +153,6 @@ void Server::monitorConnections(void) {
     this->handleInactiveClients();
 }
 
-/* SET SOCKETS AS NON BLOCKING */
 void Server::setNonBlocking(int socket) {
     if (fcntl(socket, F_SETFL, O_NONBLOCK) == -1) {
         if (socket != this->socket_fd)
@@ -176,7 +161,6 @@ void Server::setNonBlocking(int socket) {
     }
 }
 
-/* ACCEPT A NEW CLIENT */
 void Server::connectClient(void) {
     if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, rejecting new connection");
@@ -192,7 +176,6 @@ void Server::connectClient(void) {
         return;
     }
 
-    // Double-check connection limit after accept (race condition protection)
     if (this->clients.size() >= this->max_clients) {
         logInfo("Server is full, closing new connection");
         close(client_fd);
@@ -214,7 +197,6 @@ void Server::connectClient(void) {
     logInfo(ss.str());
 }
 
-/* RECEIVE DATA FROM REGISTERED CLIENT */
 void Server::receiveData(size_t &index) {
     char          buffer[1024];
     struct pollfd current    = this->pollset.getPollFd(index);
@@ -240,9 +222,6 @@ void Server::receiveData(size_t &index) {
         if (buf.empty() || buffer[0] == '\0')
             return;
         this->handleClientMessage(*client, buf);
-
-        // Check if client still exists after handling message (might have been deleted by
-        // QUIT)
         client = getClientByFd(current.fd);
         if (client) {
             client->setLastActivity(std::time(0));
@@ -251,7 +230,6 @@ void Server::receiveData(size_t &index) {
     }
 }
 
-/* DISCONNECT CLIENT */
 void Server::disconnectClient(int client_fd) {
 
     std::map<std::string, Channel *>::iterator itChannel = this->channels.begin();
@@ -280,13 +258,11 @@ void Server::disconnectClient(int client_fd) {
     close(client_fd);
 }
 
-/* THROW + SYSTEM ERROR MESSAGE */
 void Server::throwSystemError(const std::string &msg) {
-    int err = errno; // similar to perror(); returns the same error
+    int err = errno;
     throw std::runtime_error(msg + ": " + strerror(err));
 }
 
-/* SIGNAL HANDLER FUNCTION */
 void Server::signalHandler(int sig) {
     std::stringstream ss;
     ss << "Program terminated with '" << sig << "'";
@@ -295,7 +271,6 @@ void Server::signalHandler(int sig) {
     Server::signals = true;
 }
 
-/* VERIFY CLIENTS ACTIVE TIME */
 void Server::handleInactiveClients(void) {
     time_t                            now = std::time(0);
     std::map<int, Client *>::iterator it  = this->clients.begin();
@@ -310,10 +285,10 @@ void Server::handleInactiveClients(void) {
                 logInfo("Client timed out and will be removed.");
                 this->disconnectClient(client->getFd());
                 it = this->clients.begin();
-            } else { // PING sent, but PONG timeout is not over
+            } else {
                 ++it;
             }
-        } else { // The client is still active
+        } else { 
             ++it;
         }
     }
@@ -339,7 +314,6 @@ void Server::sendPing(Client *client, time_t now) {
     logDebug(ss2.str());
 }
 
-/* HANDLER FOR MESSAGE */
 void Server::handleClientMessage(Client &client, const std::string &msg) {
     client.appendData(msg);
     Commands commands;
@@ -360,7 +334,6 @@ void Server::handleClientMessage(Client &client, const std::string &msg) {
     }
 }
 
-/* CHANNEL HANDLER METHODS */
 void Server::setChannel(Channel *new_channel) {
     channels[new_channel->getName()] = new_channel;
 }

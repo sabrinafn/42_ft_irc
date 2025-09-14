@@ -1,7 +1,6 @@
 #include "../includes/ft_irc.hpp"
 
 std::pair<int, std::string> parsePortAndPassword(char** av) {
-    // validate port from 1024 to 65535
     int               port;
     std::stringstream ss(av[1]);
     if (!(ss >> port) || !(ss >> std::ws).eof()) {
@@ -12,7 +11,7 @@ std::pair<int, std::string> parsePortAndPassword(char** av) {
                                     std::string(av[1]) + "'");
     }
 
-    // validate password
+
     std::string password = av[2];
     if (password.find(" ") != std::string::npos ||
         (password.length() < 3 || password.length() > 10)) {
@@ -27,13 +26,9 @@ std::pair<int, std::string> parsePortAndPassword(char** av) {
 }
 
 void setupSignals(void (*handler)(int)) {
-    // ctrl+c
     signal(SIGINT, handler);
-    // ctrl+'\'
     signal(SIGQUIT, handler);
-    // kill [pid]
     signal(SIGTERM, handler);
-    //handle broken pipe
     signal(SIGPIPE, SIG_IGN);
 }
 
