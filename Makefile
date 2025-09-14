@@ -29,10 +29,4 @@ fclean: clean
 
 re: fclean all
 
-lint:
-	clang-tidy $(SRCS) -p=. -- -std=c++98 -I$(INCDIR)
-
-format:
-	clang-format -i $(SRCS) $(INCLUDES)
-
 .PHONY: all clean fclean re
